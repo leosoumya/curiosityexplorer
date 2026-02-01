@@ -1,0 +1,3050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curiosity Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #4ecdc4;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .subtitle {
+            color: #95a5a6;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            min-width: 200px;
+            margin: 10px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.6);
+        }
+
+        .btn-large {
+            font-size: 32px;
+            padding: 30px 60px;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .mission-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            text-align: center;
+        }
+
+        .mission-card:hover {
+            transform: scale(1.05);
+            border-color: #ff6b6b;
+        }
+
+        .mission-card h3 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .mission-card p {
+            color: #34495e;
+            font-size: 18px;
+        }
+
+        .plane-visual {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            border-radius: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #4ecdc4;
+        }
+
+        .plane {
+            position: absolute;
+            font-size: 60px;
+            transition: all 1s ease;
+        }
+
+        /* Custom SVG Plane Styles */
+        .plane-svg {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            transition: all 2s ease;
+            left: 30px;
+            top: 120px;
+        }
+
+        .plane-body {
+            fill: #5a9fd4;
+            stroke: #2c3e50;
+            stroke-width: 2;
+        }
+
+        .plane-wing {
+            fill: #f39c12;
+            stroke: #2c3e50;
+            stroke-width: 2;
+        }
+
+        .plane-tail {
+            fill: #e74c3c;
+            stroke: #2c3e50;
+            stroke-width: 2;
+        }
+
+        .plane-nose {
+            fill: #3498db;
+            stroke: #2c3e50;
+            stroke-width: 2;
+        }
+
+        .plane-window {
+            fill: #ecf0f1;
+            stroke: #2c3e50;
+            stroke-width: 1;
+        }
+
+        /* Flight animations */
+        @keyframes flyGreat {
+            0% { left: 30px; top: 180px; transform: rotate(0deg); }
+            30% { top: 80px; transform: rotate(-15deg); }
+            100% { left: 85%; top: 50px; transform: rotate(-10deg); }
+        }
+
+        @keyframes flyOkay {
+            0% { left: 30px; top: 180px; transform: rotate(0deg); }
+            25% { top: 120px; transform: rotate(-8deg); }
+            50% { top: 100px; transform: rotate(-5deg); }
+            100% { left: 55%; top: 110px; transform: rotate(-3deg); }
+        }
+
+        @keyframes flyPoor {
+            0% { left: 30px; top: 180px; transform: rotate(0deg); }
+            15% { top: 160px; transform: rotate(-5deg); }
+            30% { top: 170px; transform: rotate(5deg); }
+            45% { top: 150px; transform: rotate(-8deg); }
+            60% { top: 180px; transform: rotate(10deg); }
+            75% { top: 200px; transform: rotate(5deg); }
+            100% { left: 30%; top: 230px; transform: rotate(15deg); }
+        }
+
+        @keyframes flyImproved {
+            0% { left: 30px; top: 150px; transform: rotate(0deg); }
+            20% { top: 80px; transform: rotate(-15deg); }
+            100% { left: 90%; top: 30px; transform: rotate(-12deg); }
+        }
+
+        .flight-great { animation: flyGreat 3s ease-out forwards; }
+        .flight-okay { animation: flyOkay 3s ease-out forwards; }
+        .flight-poor { animation: flyPoor 3s ease-in-out forwards; }
+        .flight-improved { animation: flyImproved 2.5s ease-out forwards; }
+
+        /* Trail effect */
+        .smoke-trail {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: smoke 1s ease-out forwards;
+        }
+
+        @keyframes smoke {
+            0% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 0; transform: scale(3) translateX(-30px); }
+        }
+
+        /* Ground/runway */
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, #7cb342 0%, #558b2f 100%);
+            border-top: 3px solid #33691e;
+        }
+
+        .runway {
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            width: 100px;
+            height: 40px;
+            background: #424242;
+        }
+
+        .runway-line {
+            position: absolute;
+            bottom: 18px;
+            left: 30px;
+            width: 80px;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #fff 0px,
+                #fff 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        /* Distance markers */
+        .distance-marker {
+            position: absolute;
+            bottom: 50px;
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        /* Sun */
+        .sun {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #f1c40f;
+            border-radius: 50%;
+            box-shadow: 0 0 30px #f39c12;
+        }
+
+        /* Flight result labels */
+        .flight-label {
+            position: absolute;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            opacity: 0;
+            animation: fadeInLabel 0.5s ease-out 2.5s forwards;
+        }
+
+        @keyframes fadeInLabel {
+            to { opacity: 1; }
+        }
+
+        .label-great {
+            background: #27ae60;
+            color: white;
+            top: 30px;
+            right: 50px;
+        }
+
+        .label-okay {
+            background: #f39c12;
+            color: white;
+            top: 90px;
+            right: 180px;
+        }
+
+        .label-poor {
+            background: #e74c3c;
+            color: white;
+            bottom: 60px;
+            left: 25%;
+        }
+
+        .plane-parts-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .part-option {
+            background: #fff;
+            border: 3px solid #4ecdc4;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .part-option:hover {
+            background: #e8f8f7;
+            transform: scale(1.05);
+        }
+
+        .part-option.selected {
+            background: #4ecdc4;
+            color: white;
+            border-color: #2c3e50;
+        }
+
+        .part-option .label {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .feedback-box {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px;
+            border-radius: 20px;
+            margin: 20px 0;
+            border: 3px solid #f39c12;
+            text-align: center;
+            font-size: 20px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 3px solid #4ecdc4;
+            padding: 25px 35px;
+            font-size: 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: #2c3e50;
+            min-width: 250px;
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            background: #e8f8f7;
+            transform: translateY(-3px);
+            border-color: #ff6b6b;
+        }
+
+        .choice-btn.selected {
+            background: #4ecdc4;
+            color: white;
+            border-color: #2c3e50;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 24px;
+            margin: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            animation: bounceIn 0.6s ease;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .celebration {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .celebration-emoji {
+            font-size: 100px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .parent-view {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .parent-view h3 {
+            color: #495057;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .skill-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .skill-list li {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 5px solid #4ecdc4;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+
+        .back-btn {
+            background: #95a5a6;
+            font-size: 18px;
+            padding: 15px 30px;
+            margin-top: 20px;
+        }
+
+        .back-btn:hover {
+            background: #7f8c8d;
+        }
+
+        .progress-indicator {
+            text-align: center;
+            color: #95a5a6;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.7;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            from { left: -100px; }
+            to { left: 100%; }
+        }
+
+        .flight-path {
+            position: absolute;
+            bottom: 100px;
+            left: 50px;
+            width: 0;
+            height: 3px;
+            background: rgba(255, 107, 107, 0.5);
+            transition: width 2s ease;
+        }
+
+        .question-mark {
+            font-size: 80px;
+            text-align: center;
+            color: #ff6b6b;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Topic Input Styles */
+        .topic-input-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .topic-input {
+            font-family: inherit;
+            font-size: 32px;
+            padding: 20px 30px;
+            border: 4px solid #4ecdc4;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .topic-input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            transform: scale(1.05);
+        }
+
+        .topic-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .topic-chip {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border: 3px solid #4ecdc4;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .topic-chip:hover {
+            transform: scale(1.1);
+            border-color: #ff6b6b;
+            box-shadow: 0 6px 20px rgba(78, 206, 196, 0.4);
+        }
+
+        /* Dashboard Styles */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .topic-card {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 25px;
+            border: 3px solid #4ecdc4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #ff6b6b;
+        }
+
+        .topic-card-header {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .topic-card-meta {
+            font-size: 14px;
+            color: #95a5a6;
+            margin-bottom: 15px;
+        }
+
+        .topic-card-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .mini-badge {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* Recap Styles */
+        .recap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .recap-card {
+            background: white;
+            border: 3px solid #4ecdc4;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .recap-card:hover {
+            background: #e8f8f7;
+            transform: scale(1.05);
+        }
+
+        .recap-card-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .recap-card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .recap-card-content {
+            font-size: 16px;
+            color: #34495e;
+            line-height: 1.4;
+        }
+
+        .concept-bubble {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border: 3px solid #4ecdc4;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px;
+            font-size: 20px;
+            color: #2c3e50;
+            animation: bounceIn 0.6s ease;
+        }
+
+        .welcome-back-banner {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border: 3px solid #f39c12;
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .welcome-back-banner h3 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .welcome-back-banner p {
+            color: #34495e;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* Menu button styles */
+        .menu-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .menu-btn span {
+            display: block;
+            width: 20px;
+            height: 3px;
+            background: #2c3e50;
+            border-radius: 2px;
+        }
+
+        /* About modal styles */
+        .about-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .about-modal.active {
+            display: flex;
+        }
+
+        .about-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .about-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .about-close:hover {
+            background: #e0e0e0;
+        }
+
+        .about-content h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-right: 40px;
+        }
+
+        .about-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .about-section h4 {
+            color: #4ecdc4;
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+
+        .about-section p {
+            color: #555;
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Button -->
+    <button class="menu-btn" onclick="toggleAboutModal()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- About Modal -->
+    <div class="about-modal" id="aboutModal" onclick="closeAboutModalOutside(event)">
+        <div class="about-content" onclick="event.stopPropagation()">
+            <button class="about-close" onclick="toggleAboutModal()">✕</button>
+            <h2>🌟 About Curiosity Explorer</h2>
+
+            <div class="about-section">
+                <h4>🎯 What is this app?</h4>
+                <p>Curiosity Explorer is an educational app designed for children ages 4-8 that teaches critical thinking through playful exploration of topics they're curious about.</p>
+            </div>
+
+            <div class="about-section">
+                <h4>🧠 How does it help kids learn?</h4>
+                <p>Instead of giving answers directly, this app guides children to think through problems, test ideas, spot mistakes, and make thoughtful choices. There are no scores or grades—just exploration and growth!</p>
+            </div>
+
+            <div class="about-section">
+                <h4>📚 Three Types of Missions</h4>
+                <p><strong>1. Build & Test:</strong> Design something and see how it works<br>
+                <strong>2. Spot the Mistake:</strong> Find facts that don't make sense<br>
+                <strong>3. Make a Choice:</strong> Think through tradeoffs and decisions</p>
+            </div>
+
+            <div class="about-section">
+                <h4>👨‍👩‍👧 For Parents</h4>
+                <p>Click "Parent View" on the home screen to see a summary of what your child has learned, including topics explored and key facts they discovered.</p>
+            </div>
+
+            <div class="about-section">
+                <h4>💾 Progress is Saved</h4>
+                <p>All progress is saved automatically in your browser. Kids can return anytime to continue exploring or try new topics!</p>
+            </div>
+
+            <!-- Contact/Feedback Section -->
+            <div class="about-section" style="background: #e3f2fd; border: 2px solid #2196f3;">
+                <h4>📬 Share Your Feedback</h4>
+                <div id="feedbackForm">
+                    <p style="margin-bottom: 10px;">We'd love to hear from you! Share suggestions, ideas, or tell us how your child is enjoying the app.</p>
+                    <textarea
+                        id="feedbackText"
+                        placeholder="Type your feedback here..."
+                        style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical; box-sizing: border-box;"
+                    ></textarea>
+                    <input
+                        type="email"
+                        id="feedbackEmail"
+                        placeholder="Your email (optional)"
+                        style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 10px; font-size: 14px; margin-top: 10px; box-sizing: border-box;"
+                    />
+                    <button
+                        onclick="submitFeedback()"
+                        style="width: 100%; padding: 12px; background: #2196f3; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s;"
+                        onmouseover="this.style.background='#1976d2'"
+                        onmouseout="this.style.background='#2196f3'"
+                    >
+                        Send Feedback 📤
+                    </button>
+                </div>
+                <div id="feedbackSuccess" style="display: none; text-align: center; padding: 20px;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
+                    <p style="color: #2e7d32; font-weight: bold; margin: 0;">Thank you for your feedback!</p>
+                    <p style="color: #666; font-size: 13px; margin-top: 5px;">We appreciate you taking the time to share your thoughts.</p>
+                    <button
+                        onclick="resetFeedbackForm()"
+                        style="padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 10px;"
+                    >
+                        Send Another
+                    </button>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px; color: #888; font-size: 13px;">
+                Made with ❤️ to nurture curiosity
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Screen with Topic Input -->
+        <div id="welcome" class="screen active">
+            <h1>🌟 Curiosity Explorer 🌟</h1>
+            <p class="subtitle">What do you want to explore today?</p>
+
+            <div class="topic-input-container">
+                <input
+                    type="text"
+                    class="topic-input"
+                    id="topicInput"
+                    placeholder="Type anything!"
+                    maxlength="20"
+                />
+
+                <p style="font-size: 18px; color: #95a5a6; margin: 15px 0;">Or pick one of these:</p>
+
+                <div class="topic-suggestions">
+                    <button class="topic-chip" onclick="selectTopic('planes')">✈️ Planes</button>
+                    <button class="topic-chip" onclick="selectTopic('stars')">⭐ Stars</button>
+                    <button class="topic-chip" onclick="selectTopic('dinosaurs')">🦕 Dinosaurs</button>
+                    <button class="topic-chip" onclick="selectTopic('ocean')">🌊 Ocean</button>
+                    <button class="topic-chip" onclick="selectTopic('robots')">🤖 Robots</button>
+                    <button class="topic-chip" onclick="selectTopic('space')">🚀 Space</button>
+                </div>
+
+                <button class="btn btn-large btn-primary" onclick="startExploring()">Let's Explore!</button>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <button class="btn back-btn" onclick="showScreen('dashboard')">My Curiosity Dashboard</button>
+                <button class="btn back-btn" onclick="showScreen('parentView')">Parent View</button>
+            </div>
+        </div>
+
+        <!-- My Curiosity Dashboard -->
+        <div id="dashboard" class="screen">
+            <h2>🏆 My Curiosity Dashboard 🏆</h2>
+            <p class="subtitle">All the amazing things you've explored!</p>
+
+            <div id="dashboardContent" class="dashboard-grid"></div>
+
+            <div class="feedback-box" id="emptyDashboard" style="display: none;">
+                No explorations yet!<br>
+                Pick a topic and start your adventure!
+            </div>
+
+            <button class="btn btn-primary" onclick="showScreen('welcome')">Explore Something New</button>
+        </div>
+
+        <!-- Mission Selection Screen -->
+        <div id="missionSelect" class="screen">
+            <div id="welcomeBackBanner"></div>
+            <h2 id="missionSelectTitle">Choose Your Mission</h2>
+            <div class="mission-grid" id="missionGrid">
+                <!-- Missions will be dynamically inserted here -->
+            </div>
+            <button class="btn back-btn" onclick="showScreen('welcome')">Pick Different Topic</button>
+            <button class="btn back-btn" onclick="showScreen('hangar')">My Badges</button>
+            <button class="btn btn-success" onclick="showRecap()" id="recapBtn" style="display: none;">See What I Learned!</button>
+        </div>
+
+        <!-- Mission 1: Build Something -->
+        <div id="mission1-intro" class="screen">
+            <h2 id="mission1IntroTitle">Make Something</h2>
+            <p class="subtitle" id="mission1IntroSubtitle">You get to build something!<br>Pick the parts you think will work best.</p>
+            <button class="btn btn-primary" onclick="showScreen('mission1-build')">Let's Build!</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')">Return to Home</button>
+        </div>
+
+        <div id="mission1-build" class="screen">
+            <div class="progress-indicator">Step 1 of 3: Pick Your Parts</div>
+            <h2 id="mission1BuildTitle">Choose Your Parts</h2>
+
+            <!-- Live preview - hidden for non-plane topics -->
+            <div id="buildPreview" class="plane-preview" style="background: linear-gradient(to bottom, #87CEEB 60%, #90EE90 100%); border-radius: 15px; padding: 20px; margin: 15px 0; text-align: center; position: relative; height: 120px; display: none;">
+                <svg id="planePreview" width="180" height="100" viewBox="0 0 120 80" style="filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));">
+                    <!-- Tail -->
+                    <polygon class="plane-tail" points="10,35 25,25 25,45" style="fill: #e74c3c;"/>
+                    <!-- Body -->
+                    <ellipse class="plane-body" cx="60" cy="40" rx="45" ry="15" style="fill: #5a9fd4;"/>
+                    <!-- Wing (will change) -->
+                    <ellipse id="previewWing" class="plane-wing" cx="55" cy="40" rx="15" ry="25" style="fill: #f39c12;"/>
+                    <!-- Nose (will change) -->
+                    <circle id="previewNose" cx="100" cy="40" r="10" style="fill: #3498db;"/>
+                    <!-- Windows -->
+                    <circle cx="45" cy="37" r="4" style="fill: #ecf0f1;"/>
+                    <circle cx="60" cy="37" r="4" style="fill: #ecf0f1;"/>
+                    <circle cx="75" cy="37" r="4" style="fill: #ecf0f1;"/>
+                </svg>
+                <div id="previewLabel" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #666;">Your plane!</div>
+            </div>
+
+            <p id="part1Label" style="text-align: center; font-size: 20px; margin: 20px 0; color: #2c3e50;">Pick wings:</p>
+            <div class="plane-parts-selector" id="part1Options">
+                <!-- Dynamically populated by startMission1() -->
+            </div>
+
+            <p id="part2Label" style="text-align: center; font-size: 20px; margin: 20px 0; color: #2c3e50;">Pick a nose:</p>
+            <div class="plane-parts-selector" id="part2Options">
+                <!-- Dynamically populated by startMission1() -->
+            </div>
+
+            <button class="btn btn-success btn-large" onclick="testPlane()" id="testBtn" style="display: none;">Test My Plane!</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 15px;">🏠 Home</button>
+        </div>
+
+        <div id="mission1-result" class="screen">
+            <div class="progress-indicator">Step 2 of 3: See What Happens</div>
+            <h2 id="mission1ResultTitle">Let's see how it works!</h2>
+            <div class="plane-visual" id="planeVisual" style="display: none;">
+                <!-- Sky elements -->
+                <div class="sun"></div>
+                <div class="cloud" style="width: 80px; height: 40px; top: 30px; animation-delay: 0s;"></div>
+                <div class="cloud" style="width: 60px; height: 30px; top: 80px; animation-delay: 5s;"></div>
+
+                <!-- Distance markers -->
+                <div class="distance-marker" style="left: 30%;">Short</div>
+                <div class="distance-marker" style="left: 55%;">Medium</div>
+                <div class="distance-marker" style="left: 80%;">Far!</div>
+
+                <!-- Ground and runway -->
+                <div class="ground"></div>
+                <div class="runway"></div>
+                <div class="runway-line"></div>
+
+                <!-- The plane (SVG) -->
+                <svg id="planeAnimation" class="plane-svg" viewBox="0 0 120 80">
+                    <!-- Tail -->
+                    <polygon id="planeTail" class="plane-tail" points="10,35 25,25 25,45"/>
+                    <!-- Body -->
+                    <ellipse id="planeBody" class="plane-body" cx="60" cy="40" rx="45" ry="15"/>
+                    <!-- Wing -->
+                    <ellipse id="planeWing" class="plane-wing" cx="55" cy="40" rx="20" ry="35"/>
+                    <!-- Nose -->
+                    <path id="planeNose" class="plane-nose" d="M95,40 Q115,40 105,30 Q95,35 95,40 Q95,45 105,50 Q115,40 95,40"/>
+                    <!-- Windows -->
+                    <circle class="plane-window" cx="45" cy="37" r="5"/>
+                    <circle class="plane-window" cx="60" cy="37" r="5"/>
+                    <circle class="plane-window" cx="75" cy="37" r="5"/>
+                </svg>
+
+                <!-- Flight result label -->
+                <div id="flightLabel" class="flight-label"></div>
+            </div>
+            <!-- Generic result visual for non-plane topics -->
+            <div id="genericResultVisual" class="feedback-box" style="display: none; font-size: 60px; padding: 40px; text-align: center;">
+                <div id="resultEmoji">🎯</div>
+            </div>
+            <div class="feedback-box" id="flightFeedback"></div>
+            <button class="btn btn-primary" onclick="showScreen('mission1-improve')">Let's Make It Better!</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+        </div>
+
+        <div id="mission1-improve" class="screen">
+            <div class="progress-indicator">Step 3 of 3: Improve Your Design</div>
+            <h2 id="mission1ImproveTitle">What could make it work better?</h2>
+            <p class="subtitle">Pick one thing to change.</p>
+
+            <div class="button-group" style="flex-direction: column; align-items: center;" id="improveButtons">
+                <button class="choice-btn" onclick="improveChoice('part1')">
+                    ✨ Change the first part
+                </button>
+                <button class="choice-btn" onclick="improveChoice('part2')">
+                    ✨ Change the second part
+                </button>
+                <button class="choice-btn" onclick="improveChoice('both')">
+                    ⭐ Change both parts
+                </button>
+            </div>
+            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
+        </div>
+
+        <div id="mission1-final" class="screen">
+            <div class="celebration">
+                <div class="celebration-emoji">🎉</div>
+                <h2>Amazing Work!</h2>
+                <div class="feedback-box" id="improvementFeedback"></div>
+                <div class="plane-visual" id="improvedPlaneVisual" style="display: none;">
+                    <!-- Sky elements -->
+                    <div class="sun"></div>
+                    <div class="cloud" style="width: 80px; height: 40px; top: 30px; animation-delay: 0s;"></div>
+
+                    <!-- Distance markers -->
+                    <div class="distance-marker" style="left: 30%;">Short</div>
+                    <div class="distance-marker" style="left: 55%;">Medium</div>
+                    <div class="distance-marker" style="left: 80%;">Far!</div>
+
+                    <!-- Ground and runway -->
+                    <div class="ground"></div>
+                    <div class="runway"></div>
+                    <div class="runway-line"></div>
+
+                    <!-- The improved plane (SVG) -->
+                    <svg id="improvedPlaneAnimation" class="plane-svg" viewBox="0 0 120 80">
+                        <!-- Tail -->
+                        <polygon class="plane-tail" points="10,35 25,25 25,45"/>
+                        <!-- Body -->
+                        <ellipse class="plane-body" cx="60" cy="40" rx="45" ry="15"/>
+                        <!-- Medium Wing (optimal) -->
+                        <ellipse class="plane-wing" cx="55" cy="40" rx="20" ry="35"/>
+                        <!-- Pointy Nose (optimal) -->
+                        <polygon class="plane-nose" points="95,40 120,40 95,30 95,50"/>
+                        <!-- Windows -->
+                        <circle class="plane-window" cx="45" cy="37" r="5"/>
+                        <circle class="plane-window" cx="60" cy="37" r="5"/>
+                        <circle class="plane-window" cx="75" cy="37" r="5"/>
+                    </svg>
+
+                    <!-- Success label -->
+                    <div class="flight-label label-great" style="opacity: 0; animation: fadeInLabel 0.5s ease-out 2s forwards;">Super Flight!</div>
+                </div>
+                <p class="subtitle">You earned a badge!</p>
+                <div class="badge-container" id="mission1BadgeDisplay">
+                    <div class="badge">✈️ Plane Builder</div>
+                </div>
+                <button class="btn btn-success" onclick="completeMission(1)">Continue</button>
+                <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+            </div>
+        </div>
+
+        <!-- Mission 2: Spot the Mistake -->
+        <div id="mission2-intro" class="screen">
+            <h2>Spot the Mistake</h2>
+            <p class="subtitle">Even smart computers can get facts wrong!<br>Can you find which fact is a mistake?</p>
+            <button class="btn btn-primary" onclick="showScreen('mission2-facts')">Let's Look!</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+        </div>
+
+        <div id="mission2-facts" class="screen">
+            <div class="progress-indicator">Step 1 of 2: Find the Wrong Fact</div>
+            <h2>Which fact seems wrong?</h2>
+            <div class="question-mark">❓</div>
+
+            <div class="button-group" style="flex-direction: column; align-items: center; margin-top: 30px;">
+                <button class="choice-btn" onclick="checkFact('correct')">
+                    ✈️ Planes have wings to help them fly
+                </button>
+                <button class="choice-btn" onclick="checkFact('wrong')">
+                    🚗 Planes drive on roads to take off
+                </button>
+            </div>
+            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
+        </div>
+
+        <div id="mission2-hint" class="screen">
+            <h2>Hmm, let's think about this...</h2>
+            <p id="mission2HintText" class="subtitle">Think about this carefully.<br>What do you know about this?</p>
+            <div class="feedback-box" id="mission2HintBox">
+                Let's think more carefully.<br>
+                What do you already know?
+            </div>
+            <button class="btn btn-primary" onclick="showScreen('mission2-facts')">Try Again!</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+        </div>
+
+        <div id="mission2-success" class="screen">
+            <div class="celebration">
+                <div class="celebration-emoji">🎯</div>
+                <h2>You Found It!</h2>
+                <div class="feedback-box">
+                    That's right!<br><br>
+                    Great thinking!<br><br>
+                    Sometimes computers or people get facts wrong.<br>
+                    It's good to check if something feels strange!
+                </div>
+                <p class="subtitle">You earned a badge!</p>
+                <div class="badge-container" id="mission2BadgeDisplay">
+                    <div class="badge">🔍 Truth Checker</div>
+                </div>
+                <button class="btn btn-success" onclick="completeMission(2)">Continue</button>
+                <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+            </div>
+        </div>
+
+        <!-- Mission 3: Make a Choice -->
+        <div id="mission3-intro" class="screen">
+            <h2 id="mission3IntroTitle">Make a Choice</h2>
+            <p class="subtitle" id="mission3IntroSubtitle">You have a challenge!<br>Which option is better?</p>
+            <button class="btn btn-primary" onclick="showScreen('mission3-choice')">Let's Think!</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+        </div>
+
+        <div id="mission3-choice" class="screen">
+            <div class="progress-indicator">Step 1 of 3: Make Your Choice</div>
+            <h2 id="mission3ChoiceTitle">Which should you choose?</h2>
+            <p class="subtitle" id="mission3Challenge">Think about this carefully.</p>
+
+            <div class="button-group" style="flex-direction: column; align-items: center;" id="mission3Options">
+                <button class="choice-btn" id="mission3Option1" onclick="selectPlaneType('small')">
+                    Option 1
+                </button>
+                <button class="choice-btn" id="mission3Option2" onclick="selectPlaneType('big')">
+                    Option 2
+                </button>
+            </div>
+            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
+        </div>
+
+        <div id="mission3-option-feedback" class="screen">
+            <div class="progress-indicator">Step 2 of 3: Think About It</div>
+            <h2 id="mission3FeedbackTitle">Interesting choice!</h2>
+            <div class="feedback-box" id="mission3OptionFeedback">
+                Let's think about this together.<br>
+                Why might this be a good choice?
+            </div>
+            <button class="btn btn-primary" onclick="showScreen('mission3-rethink')">Let's Think Deeper!</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+        </div>
+
+        <div id="mission3-rethink" class="screen">
+            <div class="progress-indicator">Step 3 of 3: Think It Through</div>
+            <h2 id="mission3RethinkTitle">What matters most?</h2>
+            <p class="subtitle" id="mission3RethinkSubtitle">Think about your challenge.</p>
+
+            <div class="button-group" style="flex-direction: column; align-items: center;" id="mission3RethinkOptions">
+                <button class="choice-btn" onclick="finalAnswer('option1')">
+                    🎯 The first thing matters most
+                </button>
+                <button class="choice-btn" onclick="finalAnswer('option2')">
+                    🎯 The second thing matters most
+                </button>
+                <button class="choice-btn" onclick="finalAnswer('option3')">
+                    🎯 The third thing matters most
+                </button>
+                <button class="choice-btn" onclick="finalAnswer('all')">
+                    🤔 All of these matter together
+                </button>
+            </div>
+            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
+        </div>
+
+        <div id="mission3-success" class="screen">
+            <div class="celebration">
+                <div class="celebration-emoji">🌟</div>
+                <h2>Awesome Thinking!</h2>
+                <div class="feedback-box" id="mission3FinalFeedback">
+                    Awesome thinking!<br><br>
+                    You thought carefully about the challenge!<br><br>
+                    Sometimes you have to think about<br>
+                    what matters most for the job.
+                </div>
+                <div class="plane-visual" id="mission3Visual" style="display: none;">
+                    <div class="plane" style="left: 70%; top: 45%; font-size: 50px; animation: bounce 2s infinite;">✈️</div>
+                    <div style="position: absolute; right: 30px; top: 50%; font-size: 50px;">🏝️</div>
+                    <div style="position: absolute; left: 60%; top: 60%; font-size: 30px;">📦📦📦</div>
+                </div>
+                <p class="subtitle">You earned a badge!</p>
+                <div class="badge-container" id="mission3BadgeDisplay">
+                    <div class="badge">🗺️ Smart Planner</div>
+                </div>
+                <button class="btn btn-success" onclick="completeMission(3)">Continue</button>
+                <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+            </div>
+        </div>
+
+        <!-- Interactive Recap Screen -->
+        <div id="recap" class="screen">
+            <div class="celebration">
+                <div class="celebration-emoji">🎉</div>
+                <h2 id="recapTitle">What You Discovered!</h2>
+                <p class="subtitle" id="recapSubtitle">Amazing work, explorer!</p>
+
+                <div style="background: white; border-radius: 20px; padding: 30px; margin: 20px 0; border: 3px solid #4ecdc4;">
+                    <h3 style="color: #2c3e50; font-size: 24px; margin-bottom: 20px;">Key Ideas You Explored:</h3>
+                    <div id="conceptsLearned"></div>
+                </div>
+
+                <div class="recap-grid" id="recapGrid">
+                    <!-- Dynamically filled recap cards -->
+                </div>
+
+                <p class="subtitle" style="margin-top: 30px;">Badges You Earned Today:</p>
+                <div class="badge-container" id="recapBadges"></div>
+
+                <button class="btn btn-success btn-large" onclick="finishSession()">Finish Exploring!</button>
+                <button class="btn btn-primary" onclick="showScreen('missionSelect')">Do More Missions</button>
+                <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+            </div>
+        </div>
+
+        <!-- Hangar (Badge Collection) -->
+        <div id="hangar" class="screen">
+            <h2>🏆 Your Badges 🏆</h2>
+            <p class="subtitle" id="hangarSubtitle">Look at all the badges you've earned!</p>
+            <div class="badge-container" id="badgeDisplay"></div>
+            <div class="feedback-box" style="margin-top: 30px;">
+                Keep exploring to earn more badges!
+            </div>
+            <button class="btn btn-primary" onclick="showScreen('missionSelect')">Choose Another Mission</button>
+            <button class="btn back-btn" onclick="showScreen('welcome')">Back to Home</button>
+        </div>
+
+        <!-- Parent View -->
+        <div id="parentView" class="screen">
+            <h2>👨‍👩‍👧 Parent Summary</h2>
+            <div class="parent-view">
+
+                <!-- Topics and Facts Learned Section -->
+                <div id="parentTopicsLearned" style="background: #e8f5e9; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #4caf50;">
+                    <h3 style="color: #2e7d32; margin-bottom: 15px;">📚 Topics Your Child Explored</h3>
+                    <div id="parentTopicsList">
+                        <!-- Will be populated dynamically -->
+                        <p style="color: #666; font-style: italic;">No topics explored yet. Start exploring to see progress here!</p>
+                    </div>
+                </div>
+
+                <h3>🧠 Skills Being Developed</h3>
+                <p style="color: #6c757d; margin-bottom: 20px;">
+                    This app helps children develop critical thinking skills through playful exploration.
+                </p>
+
+                <ul class="skill-list">
+                    <li>
+                        <strong>Testing Ideas</strong><br>
+                        Building and testing designs to see what works
+                    </li>
+                    <li>
+                        <strong>Asking Questions</strong><br>
+                        Thinking about "why" and "what if" instead of just accepting answers
+                    </li>
+                    <li>
+                        <strong>Fixing Mistakes</strong><br>
+                        Learning that mistakes help us improve our ideas
+                    </li>
+                    <li>
+                        <strong>Making Choices</strong><br>
+                        Thinking through tradeoffs and what matters most
+                    </li>
+                    <li>
+                        <strong>Checking Facts</strong><br>
+                        Understanding that even computers can make mistakes
+                    </li>
+                </ul>
+
+                <div style="background: #fff; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h3 style="font-size: 20px; color: #495057; margin-bottom: 10px;">📖 Design Philosophy</h3>
+                    <p style="color: #6c757d; line-height: 1.6;">
+                        This prototype encourages curiosity over correctness. There are no scores or grades—just exploration,
+                        reflection, and growth. The missions guide children to think through problems step by step,
+                        building confidence in their reasoning abilities.
+                    </p>
+                </div>
+            </div>
+            <button class="btn back-btn" onclick="showScreen('welcome')">Back to Home</button>
+        </div>
+    </div>
+
+    <script>
+        // State management with localStorage persistence
+        const gameState = {
+            currentTopic: null,
+            currentTopicData: null,
+            completedMissions: [],
+            currentPlane: {
+                wings: null,
+                nose: null
+            },
+            badges: [],
+            conceptsLearned: [],
+            questionsAsked: [],
+            ideasTested: []
+        };
+
+        // Topic content database - defines missions for each topic
+        const topicDatabase = {
+            planes: {
+                emoji: '✈️',
+                name: 'Planes',
+                mission1: {
+                    title: 'Build a Flying Machine',
+                    description: 'Build your own plane and test it!',
+                    icon: '✈️',
+                    buildPrompt: 'Pick parts for your plane',
+                    partType1: 'wings',
+                    partType2: 'nose',
+                    conceptLearned: 'Wings give lift and pointy noses cut through air'
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: 'Find the wrong fact about planes!',
+                    icon: '🔍',
+                    facts: [
+                        { correct: 'Planes have wings to help them fly', wrong: 'Planes drive on roads to take off', correctIcon: '✈️', wrongIcon: '🚗', concept: 'Planes use runways, not roads' },
+                        { correct: 'Pilots sit in the cockpit to fly the plane', wrong: 'Planes fly themselves with no pilot', correctIcon: '👨‍✈️', wrongIcon: '🤷', concept: 'Pilots are trained to fly planes safely' },
+                        { correct: 'Planes need fuel to fly', wrong: 'Planes run on water from clouds', correctIcon: '⛽', wrongIcon: '💧', concept: 'Planes use special fuel called jet fuel' },
+                        { correct: 'Jet engines push planes forward', wrong: 'Planes are pulled by invisible strings', correctIcon: '🔥', wrongIcon: '🧵', concept: 'Engines create thrust to move planes' },
+                        { correct: 'Planes can fly above the clouds', wrong: 'Planes must stay below all clouds', correctIcon: '☁️', wrongIcon: '⛈️', concept: 'Planes often fly very high in the sky' },
+                        { correct: 'Airplane wheels fold up after takeoff', wrong: 'Airplane wheels fall off after takeoff', correctIcon: '🛞', wrongIcon: '💥', concept: 'Landing gear retracts to reduce drag' },
+                        { correct: 'Wings help planes stay in the air', wrong: 'Wings are just for decoration', correctIcon: '🦅', wrongIcon: '🎨', concept: 'Wings create lift to keep planes flying' },
+                        { correct: 'Planes have lights for flying at night', wrong: 'Planes can only fly during the day', correctIcon: '💡', wrongIcon: '🌙', concept: 'Planes have navigation lights for safety' },
+                        { correct: 'Big planes can carry hundreds of people', wrong: 'All planes can only fit 2 people', correctIcon: '👥', wrongIcon: '👫', concept: 'Different planes have different sizes' },
+                        { correct: 'Planes take off into the wind', wrong: 'Planes take off with the wind pushing from behind', correctIcon: '🌬️', wrongIcon: '💨', concept: 'Taking off into wind helps planes lift faster' }
+                    ]
+                },
+                mission3: {
+                    title: 'Plan a Flight',
+                    description: 'Choose the best plane for a job!',
+                    icon: '🗺️',
+                    challenges: [
+                        { challenge: 'You need to carry toys across the ocean!', option1: { name: 'Small Fast Plane', icon: '🛩️', traits: ['Flies super fast', 'Can\'t carry much', 'Runs out of fuel quickly'] }, option2: { name: 'Big Cargo Plane', icon: '✈️', traits: ['Flies slower', 'Carries lots of toys', 'Has plenty of fuel'] }, concept: 'Big planes carry more but fly slower' },
+                        { challenge: 'Someone is sick and needs to get to the hospital fast!', option1: { name: 'Fast Emergency Plane', icon: '🚁', traits: ['Very fast', 'Small inside', 'Gets there quickly'] }, option2: { name: 'Big Slow Plane', icon: '✈️', traits: ['Lots of room', 'Takes a long time', 'Too slow for emergencies'] }, concept: 'Speed matters most in emergencies' },
+                        { challenge: 'You want to see your city from above!', option1: { name: 'Small Sightseeing Plane', icon: '🛩️', traits: ['Flies low and slow', 'Big windows', 'Great views'] }, option2: { name: 'High-Flying Jet', icon: '✈️', traits: ['Flies very high', 'Small windows', 'Everything looks tiny'] }, concept: 'Flying lower lets you see more details' },
+                        { challenge: 'A pilot is learning to fly for the first time!', option1: { name: 'Simple Training Plane', icon: '🛩️', traits: ['Easy to control', 'Flies slowly', 'Safe for beginners'] }, option2: { name: 'Super Fast Jet', icon: '🛫', traits: ['Very complicated', 'Extremely fast', 'Hard to control'] }, concept: 'Beginners need simple, slow planes to learn' },
+                        { challenge: 'You need to put out a forest fire from the sky!', option1: { name: 'Tiny Plane', icon: '🛩️', traits: ['Very small', 'Carries little water', 'Too small to help'] }, option2: { name: 'Water Bomber Plane', icon: '✈️', traits: ['Holds lots of water', 'Drops water on fires', 'Built for firefighting'] }, concept: 'Fighting fires needs planes that carry lots of water' },
+                        { challenge: 'Mail needs to go to a small mountain village!', option1: { name: 'Small Bush Plane', icon: '🛩️', traits: ['Lands on short runways', 'Goes to remote places', 'Perfect for mountains'] }, option2: { name: 'Giant Airliner', icon: '✈️', traits: ['Needs long runways', 'Can\'t land in mountains', 'Too big'] }, concept: 'Small places need small planes' },
+                        { challenge: 'Scientists want to study clouds up close!', option1: { name: 'Weather Research Plane', icon: '🛩️', traits: ['Special instruments', 'Flies through clouds', 'Collects data'] }, option2: { name: 'Regular Passenger Plane', icon: '✈️', traits: ['Avoids bad weather', 'No science tools', 'Just carries people'] }, concept: 'Scientists need special planes with instruments' },
+                        { challenge: 'Skywriters want to draw pictures in the sky!', option1: { name: 'Skywriting Plane', icon: '🛩️', traits: ['Makes smoke trails', 'Flies loops and turns', 'Draws in the sky'] }, option2: { name: 'Big Jet', icon: '✈️', traits: ['Flies in straight lines', 'No smoke machine', 'Can\'t do tricks'] }, concept: 'Skywriting needs small planes that can do tricks' },
+                        { challenge: 'Farmers need to spray crops in their fields!', option1: { name: 'Crop Duster Plane', icon: '🛩️', traits: ['Flies very low', 'Has spray tanks', 'Made for farms'] }, option2: { name: 'High-Flying Jet', icon: '✈️', traits: ['Flies too high', 'No spray equipment', 'Wrong for farming'] }, concept: 'Farm planes fly low and have special spray equipment' },
+                        { challenge: 'You want to travel around the whole world!', option1: { name: 'Short-Range Plane', icon: '🛩️', traits: ['Small fuel tank', 'Stops many times', 'Takes forever'] }, option2: { name: 'Long-Range Jet', icon: '✈️', traits: ['Huge fuel tank', 'Flies very far', 'Fewer stops needed'] }, concept: 'Long trips need planes with big fuel tanks' }
+                    ]
+                }
+            },
+            stars: {
+                emoji: '⭐',
+                name: 'Stars',
+                mission1: {
+                    title: 'Build a Telescope',
+                    description: 'Build a telescope to see stars!',
+                    icon: '🔭',
+                    buildPrompt: 'Pick parts for your telescope',
+                    partType1: 'lens',
+                    partType2: 'length',
+                    conceptLearned: 'Bigger lenses and longer tubes help see farther'
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: 'Find the wrong fact about stars!',
+                    icon: '🔍',
+                    facts: [
+                        { correct: 'Stars are very far away from Earth', wrong: 'You can touch stars with your hand', correctIcon: '⭐', wrongIcon: '✋', concept: 'Stars are far away and very hot' },
+                        { correct: 'The Sun is a star', wrong: 'The Sun is a planet', correctIcon: '☀️', wrongIcon: '🪐', concept: 'Our Sun is actually a medium-sized star' },
+                        { correct: 'Stars look tiny because they are far away', wrong: 'Stars are actually smaller than apples', correctIcon: '🔭', wrongIcon: '🍎', concept: 'Stars are huge but look small from far away' },
+                        { correct: 'Stars make their own light', wrong: 'Stars reflect light from the Moon', correctIcon: '💡', wrongIcon: '🌙', concept: 'Stars glow because they are very hot' },
+                        { correct: 'There are billions of stars in the sky', wrong: 'There are only 100 stars total', correctIcon: '✨', wrongIcon: '💯', concept: 'The universe has more stars than we can count' },
+                        { correct: 'Stars can be different colors', wrong: 'All stars are yellow', correctIcon: '🌈', wrongIcon: '🟡', concept: 'Star colors depend on how hot they are' },
+                        { correct: 'Some stars are bigger than our Sun', wrong: 'Our Sun is the biggest star ever', correctIcon: '🌟', wrongIcon: '☀️', concept: 'Some stars are giants, much bigger than the Sun' },
+                        { correct: 'Stars twinkle because of Earths air', wrong: 'Stars twinkle because they are blinking', correctIcon: '🌬️', wrongIcon: '👁️', concept: 'Air makes starlight wiggle and twinkle' },
+                        { correct: 'We see old light from distant stars', wrong: 'We see stars exactly as they are right now', correctIcon: '⏰', wrongIcon: '📸', concept: 'Light from stars takes years to reach us' },
+                        { correct: 'Groups of stars make patterns called constellations', wrong: 'Stars move around randomly every night', correctIcon: '⭐', wrongIcon: '🎲', concept: 'People named star patterns long ago' }
+                    ]
+                },
+                mission3: {
+                    title: 'Plan Stargazing',
+                    description: 'Make the best choice for seeing stars!',
+                    icon: '🌙',
+                    challenges: [
+                        { challenge: 'You want to see lots of stars tonight!', option1: { name: 'Look at Noon', icon: '☀️', traits: ['Very bright outside', 'Sun is shining', 'Can\'t see stars'] }, option2: { name: 'Look at Night', icon: '🌙', traits: ['Dark outside', 'No sunlight', 'Stars are visible'] }, concept: 'Stars are best seen when it\'s dark outside' },
+                        { challenge: 'You want to see stars clearly!', option1: { name: 'Stay in the Bright City', icon: '🏙️', traits: ['Lots of streetlights', 'Light pollution', 'Hard to see stars'] }, option2: { name: 'Go to the Countryside', icon: '🏕️', traits: ['Very dark', 'No city lights', 'Stars shine bright'] }, concept: 'City lights make it hard to see stars' },
+                        { challenge: 'You want to look at the Moon up close!', option1: { name: 'Use Your Eyes Only', icon: '👀', traits: ['Moon looks small', 'Can\'t see details', 'No magnification'] }, option2: { name: 'Use a Telescope', icon: '🔭', traits: ['Moon looks big', 'See craters', 'Amazing details'] }, concept: 'Telescopes help us see space objects up close' },
+                        { challenge: 'It\'s cloudy tonight but you want to see stars!', option1: { name: 'Wait for Clear Skies', icon: '⏰', traits: ['Be patient', 'Clouds will pass', 'Stars will appear'] }, option2: { name: 'Look Through Clouds', icon: '☁️', traits: ['Clouds block light', 'Can\'t see through', 'Won\'t work'] }, concept: 'Clouds block our view of the stars' },
+                        { challenge: 'You want to find a specific constellation!', option1: { name: 'Use a Star Map', icon: '🗺️', traits: ['Shows star positions', 'Helps you navigate', 'Find constellations'] }, option2: { name: 'Look Randomly', icon: '🎲', traits: ['No guidance', 'Might get lost', 'Hard to find'] }, concept: 'Star maps help us find constellations' },
+                        { challenge: 'You want to take photos of stars!', option1: { name: 'Quick Snapshot', icon: '📸', traits: ['Too fast', 'Stars too dim', 'Dark photo'] }, option2: { name: 'Long Exposure Camera', icon: '📷', traits: ['Collects more light', 'Stars appear bright', 'Beautiful photos'] }, concept: 'Cameras need time to capture dim starlight' },
+                        { challenge: 'You want to see a meteor shower!', option1: { name: 'Check the Schedule', icon: '📅', traits: ['Know when it happens', 'Be prepared', 'Don\'t miss it'] }, option2: { name: 'Hope to Get Lucky', icon: '🍀', traits: ['Might miss it', 'No planning', 'Probably won\'t see'] }, concept: 'Meteor showers happen at predictable times' },
+                        { challenge: 'Your eyes need to adjust to see faint stars!', option1: { name: 'Keep Looking at Phone', icon: '📱', traits: ['Bright screen', 'Ruins night vision', 'Can\'t see dim stars'] }, option2: { name: 'Let Eyes Adjust in Dark', icon: '👁️', traits: ['Takes 20 minutes', 'Eyes get sensitive', 'See more stars'] }, concept: 'Our eyes need time to adjust to darkness' },
+                        { challenge: 'You want to learn what stars you\'re seeing!', option1: { name: 'Use a Stargazing App', icon: '📱', traits: ['Names the stars', 'Shows information', 'Great for learning'] }, option2: { name: 'Make Up Names', icon: '🤔', traits: ['Fun but not real', 'Won\'t learn facts', 'Just guessing'] }, concept: 'Apps can teach us real star names' },
+                        { challenge: 'You want to see the Milky Way galaxy!', option1: { name: 'Very Dark Location', icon: '🏔️', traits: ['Far from cities', 'Super dark', 'Milky Way visible'] }, option2: { name: 'Your Backyard in City', icon: '🏠', traits: ['Too much light', 'Can\'t see it', 'Too bright'] }, concept: 'The Milky Way needs very dark skies to see' }
+                    ]
+                }
+            },
+            dinosaurs: {
+                emoji: '🦕',
+                name: 'Dinosaurs',
+                mission1: {
+                    title: 'Build a Dinosaur',
+                    description: 'Design your own dinosaur!',
+                    icon: '🦕',
+                    buildPrompt: 'Pick parts for your dinosaur',
+                    partType1: 'size',
+                    partType2: 'teeth',
+                    conceptLearned: 'Dinosaurs had different sizes and teeth for different foods'
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: 'Find the wrong fact about dinosaurs!',
+                    icon: '🔍',
+                    facts: [
+                        { correct: 'Dinosaurs lived millions of years ago', wrong: 'Dinosaurs live in the zoo today', correctIcon: '🦴', wrongIcon: '🦁', concept: 'Dinosaurs are extinct and lived long ago' },
+                        { correct: 'We learn about dinosaurs from fossils', wrong: 'We learn about dinosaurs from videos of them', correctIcon: '🦴', wrongIcon: '📹', concept: 'Fossils are preserved bones from long ago' },
+                        { correct: 'Some dinosaurs ate only plants', wrong: 'All dinosaurs ate meat', correctIcon: '🌿', wrongIcon: '🥩', concept: 'Dinosaurs had different diets like animals today' },
+                        { correct: 'T-Rex had tiny arms', wrong: 'T-Rex had super long arms', correctIcon: '🦖', wrongIcon: '🦧', concept: 'T-Rex arms were small compared to its body' },
+                        { correct: 'Some dinosaurs had feathers', wrong: 'No dinosaur ever had feathers', correctIcon: '🪶', wrongIcon: '🦎', concept: 'Scientists found fossils showing feathered dinosaurs' },
+                        { correct: 'Dinosaurs hatched from eggs', wrong: 'Dinosaurs were born like puppies', correctIcon: '🥚', wrongIcon: '🐕', concept: 'Dinosaurs laid eggs like birds and reptiles' },
+                        { correct: 'Birds are related to dinosaurs', wrong: 'Birds and dinosaurs are not related at all', correctIcon: '🐦', wrongIcon: '❌', concept: 'Birds evolved from small dinosaurs' },
+                        { correct: 'Some dinosaurs were as small as chickens', wrong: 'All dinosaurs were bigger than houses', correctIcon: '🐔', wrongIcon: '🏠', concept: 'Dinosaurs came in many different sizes' },
+                        { correct: 'Dinosaurs lived on land', wrong: 'Most dinosaurs lived underwater', correctIcon: '🏜️', wrongIcon: '🌊', concept: 'Dinosaurs were land animals' },
+                        { correct: 'A big asteroid helped end the dinosaurs', wrong: 'Dinosaurs just decided to leave Earth', correctIcon: '☄️', wrongIcon: '🚀', concept: 'A giant space rock changed Earths climate' }
+                    ]
+                },
+                mission3: {
+                    title: 'Dinosaur Decisions',
+                    description: 'Make smart choices about dinosaurs!',
+                    icon: '⛏️',
+                    challenges: [
+                        { challenge: 'You want to find dinosaur bones!', option1: { name: 'Dig in Your Backyard', icon: '🏡', traits: ['Easy to dig', 'Dirt is soft', 'No fossils there'] }, option2: { name: 'Dig Where Scientists Found Some', icon: '🏜️', traits: ['Hard to get to', 'Special rocky places', 'Fossils are there'] }, concept: 'Fossils are found in special rocky places' },
+                        { challenge: 'You found a dinosaur bone! How do you dig it out?', option1: { name: 'Use Gentle Brushes', icon: '🖌️', traits: ['Very careful', 'Won\'t break bone', 'Takes time'] }, option2: { name: 'Use a Big Shovel', icon: '🪓', traits: ['Too rough', 'Might break it', 'Not careful enough'] }, concept: 'Fossils are fragile and need gentle tools' },
+                        { challenge: 'You want to learn what a dinosaur looked like!', option1: { name: 'Look at Bones Only', icon: '🦴', traits: ['Just the skeleton', 'No skin or color', 'Missing details'] }, option2: { name: 'Study Bones Plus Clues', icon: '🔍', traits: ['Look at relatives', 'Study the environment', 'Make smart guesses'] }, concept: 'Scientists use many clues to imagine how dinosaurs looked' },
+                        { challenge: 'You want to know what a T-Rex ate!', option1: { name: 'Look at Its Teeth', icon: '🦷', traits: ['Sharp teeth = meat eater', 'Tells us about diet', 'Good evidence'] }, option2: { name: 'Just Guess Randomly', icon: '🎲', traits: ['No evidence', 'Might be wrong', 'Not scientific'] }, concept: 'Dinosaur teeth tell us what they ate' },
+                        { challenge: 'A dinosaur fossil is very heavy! How do you move it?', option1: { name: 'Wrap in Plaster Cast', icon: '🩹', traits: ['Protects the fossil', 'Safe to move', 'Scientists do this'] }, option2: { name: 'Just Carry It', icon: '💪', traits: ['Too heavy', 'Might drop it', 'Could break'] }, concept: 'Plaster casts protect fossils when moving them' },
+                        { challenge: 'You want to know how big a dinosaur was!', option1: { name: 'Measure the Bones', icon: '📏', traits: ['Accurate size', 'Scientific method', 'Real data'] }, option2: { name: 'Imagine Any Size', icon: '💭', traits: ['Just made up', 'Probably wrong', 'No proof'] }, concept: 'Measuring bones tells us how big dinosaurs really were' },
+                        { challenge: 'You want to know how fast dinosaurs could run!', option1: { name: 'Study Leg Bones and Footprints', icon: '🦶', traits: ['Shows stride length', 'Leg size matters', 'Real clues'] }, option2: { name: 'Make Up a Speed', icon: '🏃', traits: ['No evidence', 'Just guessing', 'Not scientific'] }, concept: 'Footprints and legs tell us about dinosaur speed' },
+                        { challenge: 'You found two fossil bones. Are they from the same dinosaur?', option1: { name: 'Check If They Fit Together', icon: '🧩', traits: ['See if they match', 'Check the size', 'Look at location'] }, option2: { name: 'Assume They Match', icon: '👍', traits: ['No checking', 'Could be wrong', 'Sloppy science'] }, concept: 'Scientists carefully match bones that belong together' },
+                        { challenge: 'You want to know if dinosaurs were warm or cold blooded!', option1: { name: 'Study Growth Rings in Bones', icon: '🔬', traits: ['Bones have clues', 'Shows how they grew', 'Scientific evidence'] }, option2: { name: 'Just Pick One', icon: '🤷', traits: ['No evidence', 'Random guess', 'Not helpful'] }, concept: 'Bones can tell us about dinosaur body temperature' },
+                        { challenge: 'A museum wants to display a dinosaur skeleton!', option1: { name: 'Use a Copy Made of Plastic', icon: '🏛️', traits: ['Protects real fossil', 'Can be touched', 'Real one stays safe'] }, option2: { name: 'Use the Real Bones', icon: '🦴', traits: ['Could get damaged', 'Very fragile', 'Risky to display'] }, concept: 'Museums often display copies to protect real fossils' }
+                    ]
+                }
+            },
+            ocean: {
+                emoji: '🌊',
+                name: 'Ocean',
+                mission1: {
+                    title: 'Build a Submarine',
+                    description: 'Build a submarine to explore!',
+                    icon: '🚢',
+                    buildPrompt: 'Pick parts for your submarine',
+                    partType1: 'hull',
+                    partType2: 'windows',
+                    conceptLearned: 'Strong hulls and thick windows help submarines go deep'
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: 'Find the wrong fact about oceans!',
+                    icon: '🔍',
+                    facts: [
+                        { correct: 'Fish can breathe underwater using gills', wrong: 'Fish wear tiny scuba tanks to breathe', correctIcon: '🐟', wrongIcon: '🤿', concept: 'Fish use gills to breathe underwater' },
+                        { correct: 'The ocean is salty', wrong: 'The ocean tastes like lemonade', correctIcon: '🧂', wrongIcon: '🍋', concept: 'Ocean water has salt dissolved in it' },
+                        { correct: 'Whales are mammals, not fish', wrong: 'Whales are the biggest fish', correctIcon: '🐋', wrongIcon: '🐟', concept: 'Whales breathe air and feed milk to babies' },
+                        { correct: 'Octopuses have eight arms', wrong: 'Octopuses have two arms like people', correctIcon: '🐙', wrongIcon: '💪', concept: 'Octo means eight in Latin' },
+                        { correct: 'The deep ocean is very dark', wrong: 'The deep ocean has streetlights', correctIcon: '🌑', wrongIcon: '💡', concept: 'Sunlight cannot reach the deep ocean' },
+                        { correct: 'Dolphins are very smart animals', wrong: 'Dolphins are robots made by scientists', correctIcon: '🐬', wrongIcon: '🤖', concept: 'Dolphins can learn tricks and communicate' },
+                        { correct: 'Coral reefs are home to many fish', wrong: 'Coral reefs are made of plastic', correctIcon: '🪸', wrongIcon: '🧱', concept: 'Coral is made by tiny living creatures' },
+                        { correct: 'Sharks have been around for millions of years', wrong: 'Sharks were invented 50 years ago', correctIcon: '🦈', wrongIcon: '🆕', concept: 'Sharks are older than dinosaurs' },
+                        { correct: 'Jellyfish dont have brains', wrong: 'Jellyfish are the smartest ocean animals', correctIcon: '🧠', wrongIcon: '🎓', concept: 'Jellyfish are simple creatures without brains' },
+                        { correct: 'Sea turtles can live for over 100 years', wrong: 'Sea turtles only live for 1 year', correctIcon: '🐢', wrongIcon: '📅', concept: 'Sea turtles are one of the longest-living animals' }
+                    ]
+                },
+                mission3: {
+                    title: 'Ocean Adventures',
+                    description: 'Make smart ocean choices!',
+                    icon: '🌊',
+                    challenges: [
+                        { challenge: 'You want to see colorful fish!', option1: { name: 'Super Deep Dark Place', icon: '🕳️', traits: ['Very deep', 'No sunlight', 'Few creatures'] }, option2: { name: 'Shallow Sunny Water', icon: '☀️', traits: ['Not too deep', 'Lots of sunlight', 'Colorful fish'] }, concept: 'Colorful fish live where there is sunlight' },
+                        { challenge: 'You want to see a whale up close!', option1: { name: 'Swim Right Up To It', icon: '🏊', traits: ['Dangerous', 'Might scare it', 'Not safe'] }, option2: { name: 'Watch From a Boat', icon: '🚤', traits: ['Safe distance', 'Don\'t disturb whale', 'Better for everyone'] }, concept: 'We should watch whales from a safe distance' },
+                        { challenge: 'You found a pretty seashell with something inside!', option1: { name: 'Leave It Alone', icon: '👋', traits: ['Animal lives there', 'Don\'t disturb it', 'Kind choice'] }, option2: { name: 'Take It Home', icon: '🏠', traits: ['Takes animal\'s home', 'Could hurt it', 'Not nice'] }, concept: 'Seashells are homes for ocean creatures' },
+                        { challenge: 'You want to explore a coral reef!', option1: { name: 'Touch Everything', icon: '✋', traits: ['Damages coral', 'Coral is fragile', 'Hurts the reef'] }, option2: { name: 'Look But Don\'t Touch', icon: '👀', traits: ['Keeps coral safe', 'Respectful', 'Reef stays healthy'] }, concept: 'Coral is alive and fragile - look but don\'t touch' },
+                        { challenge: 'You see trash floating in the ocean!', option1: { name: 'Leave It There', icon: '🚶', traits: ['Hurts animals', 'Pollutes water', 'Makes ocean dirty'] }, option2: { name: 'Pick It Up Safely', icon: '🧤', traits: ['Helps ocean', 'Protects animals', 'Good choice'] }, concept: 'Picking up trash helps keep oceans clean' },
+                        { challenge: 'You want to learn about deep sea creatures!', option1: { name: 'Read Books and Watch Videos', icon: '📚', traits: ['Safe way to learn', 'Lots of information', 'See amazing creatures'] }, option2: { name: 'Dive Super Deep Yourself', icon: '🤿', traits: ['Too dangerous', 'Need special submarine', 'Not possible alone'] }, concept: 'We learn about the deep sea through science and videos' },
+                        { challenge: 'A sea turtle is tangled in a fishing net!', option1: { name: 'Call Wildlife Rescue', icon: '📞', traits: ['Experts can help', 'Safe for turtle', 'Right thing to do'] }, option2: { name: 'Ignore It', icon: '🙈', traits: ['Turtle might die', 'Needs help', 'Not kind'] }, concept: 'Wildlife rescuers know how to help sea animals' },
+                        { challenge: 'You want to swim with dolphins!', option1: { name: 'Join a Safe Tour', icon: '🎫', traits: ['Trained guides', 'Rules to follow', 'Safe for everyone'] }, option2: { name: 'Chase Wild Dolphins', icon: '🏃', traits: ['Scares dolphins', 'Could be dangerous', 'Not respectful'] }, concept: 'Safe tours let us see dolphins without scaring them' },
+                        { challenge: 'You\'re at the beach and see a jellyfish!', option1: { name: 'Stay Away From It', icon: '⛔', traits: ['Some can sting', 'Better to be safe', 'Smart choice'] }, option2: { name: 'Poke It With a Stick', icon: '🪵', traits: ['Might sting you', 'Hurts jellyfish', 'Not safe'] }, concept: 'Jellyfish can sting - it\'s best to stay away' },
+                        { challenge: 'You want to help protect the ocean!', option1: { name: 'Use Less Plastic', icon: '♻️', traits: ['Less trash in ocean', 'Helps sea animals', 'Good for Earth'] }, option2: { name: 'Do Nothing', icon: '🤷', traits: ['Ocean gets dirtier', 'Animals suffer', 'Not helpful'] }, concept: 'Using less plastic helps keep oceans clean' }
+                    ]
+                }
+            },
+            robots: {
+                emoji: '🤖',
+                name: 'Robots',
+                mission1: {
+                    title: 'Build a Robot',
+                    description: 'Design your own robot helper!',
+                    icon: '🤖',
+                    buildPrompt: 'Pick parts for your robot',
+                    partType1: 'arms',
+                    partType2: 'wheels',
+                    conceptLearned: 'Different robot parts help with different tasks'
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: 'Find the wrong fact about robots!',
+                    icon: '🔍',
+                    facts: [
+                        { correct: 'Robots follow instructions from people', wrong: 'Robots can think all by themselves', correctIcon: '💻', wrongIcon: '🧠', concept: 'Robots need instructions called programs' },
+                        { correct: 'Robots need electricity to work', wrong: 'Robots eat food like humans do', correctIcon: '🔌', wrongIcon: '🍕', concept: 'Robots run on batteries or electricity' },
+                        { correct: 'People build and program robots', wrong: 'Robots grow from robot seeds', correctIcon: '👨‍🔧', wrongIcon: '🌱', concept: 'Engineers and programmers create robots' },
+                        { correct: 'Robots can help doctors do surgery', wrong: 'Robots go to school to become doctors', correctIcon: '🏥', wrongIcon: '🎒', concept: 'Robots are tools that help human doctors' },
+                        { correct: 'Some robots can vacuum floors', wrong: 'Robots are too proud to clean', correctIcon: '🧹', wrongIcon: '👑', concept: 'Robot vacuums help keep homes clean' },
+                        { correct: 'Robots dont have feelings', wrong: 'Robots get sad when you turn them off', correctIcon: '😐', wrongIcon: '😢', concept: 'Robots are machines without emotions' },
+                        { correct: 'Robots can work in dangerous places', wrong: 'Robots are scared of the dark', correctIcon: '☢️', wrongIcon: '😨', concept: 'Robots can go where humans cannot' },
+                        { correct: 'Some robots look like arms in factories', wrong: 'All robots look like metal humans', correctIcon: '🦾', wrongIcon: '🚶', concept: 'Robots come in many shapes and sizes' },
+                        { correct: 'Robots do exactly what they are programmed to do', wrong: 'Robots make up their own rules', correctIcon: '📋', wrongIcon: '🎲', concept: 'Robots follow code written by people' },
+                        { correct: 'Mars rovers are robots exploring another planet', wrong: 'Robots refuse to travel to space', correctIcon: '🔴', wrongIcon: '🚫', concept: 'Robot explorers help us learn about Mars' }
+                    ]
+                },
+                mission3: {
+                    title: 'Robot Challenges',
+                    description: 'Pick the right robot for the job!',
+                    icon: '⚙️',
+                    challenges: [
+                        { challenge: 'You need to carry heavy boxes!', option1: { name: 'Tiny Robot', icon: '🤏', traits: ['Very small', 'Can\'t lift much', 'Good for small tasks'] }, option2: { name: 'Strong Robot', icon: '💪', traits: ['Big and strong', 'Can lift heavy things', 'Perfect for boxes'] }, concept: 'Big jobs need big strong robots' },
+                        { challenge: 'You need a robot to vacuum your house!', option1: { name: 'Round Vacuum Robot', icon: '🔵', traits: ['Fits under furniture', 'Cleans floors', 'Made for vacuuming'] }, option2: { name: 'Giant Factory Robot', icon: '🏭', traits: ['Way too big', 'Can\'t fit in house', 'Wrong for cleaning'] }, concept: 'Home robots need to be the right size for homes' },
+                        { challenge: 'A robot needs to explore a volcano!', option1: { name: 'Robot Made of Ice', icon: '🧊', traits: ['Would melt', 'Can\'t handle heat', 'Bad choice'] }, option2: { name: 'Heat-Resistant Robot', icon: '🔥', traits: ['Survives heat', 'Special materials', 'Built for volcanoes'] }, concept: 'Robots for hot places need heat protection' },
+                        { challenge: 'You want a robot to paint a picture!', option1: { name: 'Robot with Precise Arm', icon: '🦾', traits: ['Careful movements', 'Holds brush well', 'Good for art'] }, option2: { name: 'Robot Bulldozer', icon: '🚜', traits: ['Too big', 'Not precise', 'Would make a mess'] }, concept: 'Art robots need precise, careful movements' },
+                        { challenge: 'A robot needs to swim underwater!', option1: { name: 'Waterproof Robot', icon: '🤿', traits: ['Sealed tight', 'Can swim', 'Works underwater'] }, option2: { name: 'Regular Robot', icon: '🤖', traits: ['Water gets inside', 'Breaks down', 'Not waterproof'] }, concept: 'Underwater robots must be waterproof' },
+                        { challenge: 'You want a robot to help find people after an earthquake!', option1: { name: 'Small Rescue Robot', icon: '🔍', traits: ['Fits in small spaces', 'Has cameras', 'Finds trapped people'] }, option2: { name: 'Giant Walking Robot', icon: '🦿', traits: ['Too big for rubble', 'Might cause more damage', 'Can\'t fit'] }, concept: 'Rescue robots need to fit in tight spaces' },
+                        { challenge: 'A robot needs to work in the dark!', option1: { name: 'Robot with Lights and Sensors', icon: '💡', traits: ['Has flashlights', 'Uses sensors', 'Sees in the dark'] }, option2: { name: 'Robot with Only Eyes', icon: '👀', traits: ['Needs light to see', 'Can\'t work in dark', 'Would be blind'] }, concept: 'Dark-working robots need lights and special sensors' },
+                        { challenge: 'You want a robot to deliver packages!', option1: { name: 'Delivery Robot with Wheels', icon: '📦', traits: ['Carries packages', 'Rolls on sidewalk', 'Made for delivery'] }, option2: { name: 'Robot Hand Only', icon: '🖐️', traits: ['Can\'t move around', 'Stays in one place', 'Can\'t deliver'] }, concept: 'Delivery robots need to move from place to place' },
+                        { challenge: 'A robot needs to work with people safely!', option1: { name: 'Soft Gentle Robot', icon: '🧸', traits: ['Soft edges', 'Moves slowly', 'Won\'t hurt anyone'] }, option2: { name: 'Fast Sharp Robot', icon: '⚔️', traits: ['Sharp parts', 'Moves fast', 'Could be dangerous'] }, concept: 'Robots near people should be soft and gentle' },
+                        { challenge: 'You want a robot to sort tiny computer chips!', option1: { name: 'Super Precise Mini Robot', icon: '🔬', traits: ['Tiny movements', 'Very accurate', 'Handles small parts'] }, option2: { name: 'Big Clumsy Robot', icon: '🤖', traits: ['Movements too big', 'Would break chips', 'Not precise enough'] }, concept: 'Tiny jobs need precise mini robots' }
+                    ]
+                }
+            },
+            space: {
+                emoji: '🚀',
+                name: 'Space',
+                mission1: {
+                    title: 'Build a Rocket',
+                    description: 'Build a rocket to go to space!',
+                    icon: '🚀',
+                    buildPrompt: 'Pick parts for your rocket',
+                    partType1: 'engines',
+                    partType2: 'fuel tank',
+                    conceptLearned: 'Powerful engines and lots of fuel help rockets reach space'
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: 'Find the wrong fact about space!',
+                    icon: '🔍',
+                    facts: [
+                        { correct: 'There is no air to breathe in space', wrong: 'You can breathe normally in space', correctIcon: '🌌', wrongIcon: '😮', concept: 'Astronauts need spacesuits because theres no air' },
+                        { correct: 'The Moon orbits around Earth', wrong: 'The Moon is glued to the sky', correctIcon: '🌙', wrongIcon: '🧲', concept: 'The Moon travels in a path around our planet' },
+                        { correct: 'Astronauts float in space', wrong: 'Astronauts walk normally in space', correctIcon: '🧑‍🚀', wrongIcon: '🚶', concept: 'There is very little gravity in space' },
+                        { correct: 'Space is very cold and dark', wrong: 'Space is warm and sunny everywhere', correctIcon: '🥶', wrongIcon: '☀️', concept: 'Space has no air to hold heat or scatter light' },
+                        { correct: 'Rockets need lots of fuel to escape Earth', wrong: 'Rockets float up like balloons', correctIcon: '⛽', wrongIcon: '🎈', concept: 'Rockets must push hard against gravity' },
+                        { correct: 'The Sun is much bigger than Earth', wrong: 'Earth is bigger than the Sun', correctIcon: '☀️', wrongIcon: '🌍', concept: 'The Sun is huge - a million Earths could fit inside' },
+                        { correct: 'There are 8 planets in our solar system', wrong: 'There are 100 planets in our solar system', correctIcon: '🪐', wrongIcon: '💯', concept: 'Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune' },
+                        { correct: 'It takes light from the Sun 8 minutes to reach Earth', wrong: 'Sunlight reaches Earth instantly', correctIcon: '⏱️', wrongIcon: '⚡', concept: 'Even light takes time to travel through space' },
+                        { correct: 'Saturn has beautiful rings made of ice and rock', wrong: 'Saturns rings are made of rainbows', correctIcon: '💍', wrongIcon: '🌈', concept: 'Saturns rings are bits of ice and rock orbiting the planet' },
+                        { correct: 'Astronauts train for years before going to space', wrong: 'Anyone can go to space tomorrow', correctIcon: '🎓', wrongIcon: '🎫', concept: 'Space travel requires lots of preparation' }
+                    ]
+                },
+                mission3: {
+                    title: 'Space Missions',
+                    description: 'Make smart space choices!',
+                    icon: '🌙',
+                    challenges: [
+                        { challenge: 'You\'re going to the Moon for a week!', option1: { name: 'Just a Sandwich', icon: '🥪', traits: ['Light to carry', 'Runs out fast', 'Not enough'] }, option2: { name: 'Food, Water, and Air', icon: '📦', traits: ['Heavier', 'Lasts all week', 'Everything you need'] }, concept: 'Space trips need careful planning for supplies' },
+                        { challenge: 'You want to walk on the Moon!', option1: { name: 'Wear Regular Clothes', icon: '👕', traits: ['No air to breathe', 'Too cold', 'Very dangerous'] }, option2: { name: 'Wear a Spacesuit', icon: '🧑‍🚀', traits: ['Has oxygen', 'Keeps you warm', 'Protects you'] }, concept: 'Spacesuits protect astronauts from space' },
+                        { challenge: 'Your spaceship is running low on fuel!', option1: { name: 'Keep Going Full Speed', icon: '🚀', traits: ['Uses more fuel', 'Might run out', 'Risky choice'] }, option2: { name: 'Slow Down to Save Fuel', icon: '🐢', traits: ['Uses less fuel', 'Safer choice', 'Good planning'] }, concept: 'Managing fuel is important in space' },
+                        { challenge: 'You want to talk to Earth from the Moon!', option1: { name: 'Use a Radio', icon: '📻', traits: ['Radio waves work in space', 'Can reach Earth', 'How astronauts communicate'] }, option2: { name: 'Just Yell Really Loud', icon: '📢', traits: ['Sound can\'t travel in space', 'No air to carry sound', 'Won\'t work'] }, concept: 'Sound needs air - radios work in space' },
+                        { challenge: 'Something breaks on the space station!', option1: { name: 'Wait for Help from Earth', icon: '⏳', traits: ['Takes too long', 'Could be dangerous', 'Not always possible'] }, option2: { name: 'Fix It Yourself with Training', icon: '🔧', traits: ['Astronauts learn repairs', 'Faster solution', 'Important skill'] }, concept: 'Astronauts must know how to fix things in space' },
+                        { challenge: 'You want to grow food in space!', option1: { name: 'Plant Seeds in Special Containers', icon: '🌱', traits: ['Plants can grow', 'Need special lights', 'Astronauts do this'] }, option2: { name: 'Throw Seeds in the Air', icon: '🎯', traits: ['Seeds float away', 'No soil', 'Won\'t grow'] }, concept: 'Growing food in space needs special equipment' },
+                        { challenge: 'You need to exercise in space!', option1: { name: 'Skip Exercise', icon: '🛋️', traits: ['Muscles get weak', 'Bones get weak', 'Bad for health'] }, option2: { name: 'Use Special Exercise Machines', icon: '🏋️', traits: ['Keeps muscles strong', 'Astronauts do this daily', 'Very important'] }, concept: 'Astronauts must exercise to stay healthy in space' },
+                        { challenge: 'A meteor is heading toward your spaceship!', option1: { name: 'Stay in the Same Spot', icon: '🎯', traits: ['Might get hit', 'Very dangerous', 'Bad choice'] }, option2: { name: 'Move Out of the Way', icon: '↩️', traits: ['Avoid the meteor', 'Stay safe', 'Smart choice'] }, concept: 'Spaceships can move to avoid space dangers' },
+                        { challenge: 'You want to land on Mars!', option1: { name: 'Land Really Fast', icon: '💨', traits: ['Too fast', 'Would crash', 'Very dangerous'] }, option2: { name: 'Use Parachutes and Rockets to Slow Down', icon: '🪂', traits: ['Slows you down', 'Safe landing', 'How rovers land'] }, concept: 'Landing on planets requires slowing down carefully' },
+                        { challenge: 'You want to bring a pet to space!', option1: { name: 'Bring Any Pet', icon: '🐕', traits: ['Hard to care for', 'Might float around', 'Complicated'] }, option2: { name: 'Learn About Space Animals First', icon: '📚', traits: ['Some animals went to space', 'Need special care', 'Scientists study this'] }, concept: 'Taking care of animals in space is very complicated' }
+                    ]
+                }
+            },
+            // Generic fallback - will be dynamically customized for any topic
+            generic: {
+                emoji: '🔬',
+                name: 'Explorer',
+                mission1: {
+                    title: 'Design & Test',
+                    description: 'Create and test your ideas!',
+                    icon: '🔨',
+                    buildPrompt: 'Pick parts to build with',
+                    partType1: 'size',
+                    partType2: 'shape',
+                    conceptLearned: 'Testing ideas helps us learn what works'
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: 'Find what doesn\'t make sense!',
+                    icon: '🔍',
+                    facts: [
+                        { correct: 'Learning new things takes practice', wrong: 'You can learn everything in one day', correctIcon: '📚', wrongIcon: '⏰', concept: 'Learning takes time and practice' },
+                        { correct: 'Asking questions helps you understand', wrong: 'Questions are not allowed', correctIcon: '❓', wrongIcon: '🚫', concept: 'Curious minds ask lots of questions' },
+                        { correct: 'Making mistakes helps you improve', wrong: 'You should never make mistakes', correctIcon: '💡', wrongIcon: '😰', concept: 'Mistakes are part of learning' },
+                        { correct: 'Everyone starts as a beginner', wrong: 'Experts were never beginners', correctIcon: '🌱', wrongIcon: '🏆', concept: 'Everyone starts somewhere and grows with practice' },
+                        { correct: 'Trying different ways can solve problems', wrong: 'There is only one way to do anything', correctIcon: '🔄', wrongIcon: '1️⃣', concept: 'There are often many ways to solve a problem' },
+                        { correct: 'Books and experts can teach us new things', wrong: 'You can only learn by yourself', correctIcon: '📖', wrongIcon: '🙈', concept: 'We can learn from books, teachers, and experts' },
+                        { correct: 'Practicing makes you better over time', wrong: 'If you can\'t do it the first time, give up', correctIcon: '💪', wrongIcon: '😞', concept: 'Practice and persistence lead to improvement' },
+                        { correct: 'It\'s okay to say "I don\'t know yet"', wrong: 'You should always pretend to know everything', correctIcon: '🤔', wrongIcon: '🎭', concept: 'Admitting what we don\'t know helps us learn' },
+                        { correct: 'Experiments help us discover new things', wrong: 'Experiments are a waste of time', correctIcon: '🧪', wrongIcon: '🚫', concept: 'Experiments teach us how things work' },
+                        { correct: 'Working together can solve harder problems', wrong: 'Smart people never need help', correctIcon: '🤝', wrongIcon: '🦸', concept: 'Teamwork helps solve bigger challenges' }
+                    ]
+                },
+                mission3: {
+                    title: 'Make a Choice',
+                    description: 'Think about what\'s best!',
+                    icon: '🤔',
+                    challenges: [
+                        { challenge: 'You want to learn something new!', option1: { name: 'Practice a Little Each Day', icon: '📅', traits: ['Steady progress', 'Remember better', 'Less stressful'] }, option2: { name: 'Try Everything at Once', icon: '🤯', traits: ['Too much at once', 'Hard to remember', 'Overwhelming'] }, concept: 'Learning a little each day works better than cramming' },
+                        { challenge: 'You need to solve a tricky problem!', option1: { name: 'Think First, Then Act', icon: '🤔', traits: ['Plan ahead', 'Consider options', 'Make good choices'] }, option2: { name: 'Rush Into It', icon: '🏃', traits: ['No planning', 'Might make mistakes', 'Could go wrong'] }, concept: 'Thinking before acting leads to better results' },
+                        { challenge: 'You made a mistake on your project!', option1: { name: 'Learn From It', icon: '💡', traits: ['Figure out what went wrong', 'Try again', 'Get better'] }, option2: { name: 'Give Up Completely', icon: '😞', traits: ['Stop trying', 'Never improve', 'Miss out on learning'] }, concept: 'Mistakes are chances to learn and improve' },
+                        { challenge: 'You don\'t understand something!', option1: { name: 'Ask Questions', icon: '❓', traits: ['Get help', 'Learn faster', 'Understand better'] }, option2: { name: 'Pretend You Know', icon: '🎭', traits: ['Stay confused', 'Fall behind', 'Miss learning'] }, concept: 'Asking questions is a sign of being smart' },
+                        { challenge: 'A friend has a different idea than you!', option1: { name: 'Listen and Discuss', icon: '👂', traits: ['Hear their idea', 'Share yours too', 'Maybe learn something'] }, option2: { name: 'Ignore Them', icon: '🙉', traits: ['Miss good ideas', 'Not friendly', 'Stay stuck'] }, concept: 'Different ideas can teach us new things' },
+                        { challenge: 'You want to try something hard!', option1: { name: 'Start with Small Steps', icon: '👣', traits: ['Build up slowly', 'Gain confidence', 'Eventually succeed'] }, option2: { name: 'Try the Hardest Part First', icon: '🏔️', traits: ['Might get frustrated', 'Too difficult', 'Could give up'] }, concept: 'Breaking big challenges into small steps helps' },
+                        { challenge: 'You have a great idea!', option1: { name: 'Test It Out', icon: '🧪', traits: ['See if it works', 'Learn from results', 'Improve it'] }, option2: { name: 'Just Imagine It', icon: '💭', traits: ['Never know if it works', 'Stays just an idea', 'No real learning'] }, concept: 'Testing ideas shows us what really works' },
+                        { challenge: 'Something didn\'t work the way you expected!', option1: { name: 'Try a Different Way', icon: '🔄', traits: ['Experiment more', 'Find what works', 'Keep learning'] }, option2: { name: 'Do the Same Thing Again', icon: '🔁', traits: ['Same result', 'No progress', 'Waste of time'] }, concept: 'If something doesn\'t work, try a different approach' },
+                        { challenge: 'You want to remember what you learned!', option1: { name: 'Practice and Review', icon: '📝', traits: ['Remember longer', 'Understand deeper', 'Build skills'] }, option2: { name: 'Just Hope You Remember', icon: '🤞', traits: ['Might forget', 'No reinforcement', 'Skills fade'] }, concept: 'Reviewing what we learn helps us remember' },
+                        { challenge: 'You found something really interesting!', option1: { name: 'Explore and Learn More', icon: '🔍', traits: ['Dig deeper', 'Find cool facts', 'Become an expert'] }, option2: { name: 'Ignore It', icon: '🚶', traits: ['Miss out', 'Stay curious forever', 'Never know'] }, concept: 'Following your curiosity leads to amazing discoveries' }
+                    ]
+                }
+            }
+        };
+
+        // Function to generate dynamic content for custom topics
+        function generateCustomTopicData(topicName) {
+            const topic = topicName.toLowerCase();
+            const capitalizedTopic = topicName.charAt(0).toUpperCase() + topicName.slice(1);
+
+            return {
+                emoji: '🔬',
+                name: capitalizedTopic,
+                mission1: {
+                    title: `Design a ${capitalizedTopic} Project`,
+                    description: `Create and test something about ${topic}!`,
+                    icon: '🔨',
+                    buildPrompt: `Pick parts for your ${topic} project`,
+                    partType1: 'size',
+                    partType2: 'shape',
+                    conceptLearned: `Testing ideas about ${topic} helps us learn what works`
+                },
+                mission2: {
+                    title: 'Spot the Mistake',
+                    description: `Find what doesn't make sense about ${topic}!`,
+                    icon: '🔍',
+                    facts: [
+                        { correct: `You can learn about ${topic} from books and experts`, wrong: `Nobody knows anything about ${topic}`, correctIcon: '📚', wrongIcon: '🤷', concept: `There are many ways to learn about ${topic}` },
+                        { correct: `${capitalizedTopic} can be studied and understood`, wrong: `${capitalizedTopic} is impossible to understand`, correctIcon: '🧠', wrongIcon: '❌', concept: `With curiosity and effort, we can learn about anything` },
+                        { correct: `Experts study ${topic} carefully`, wrong: `Experts just guess about ${topic}`, correctIcon: '🔬', wrongIcon: '🎲', concept: 'Scientists and experts study things carefully' },
+                        { correct: `There are interesting facts about ${topic}`, wrong: `${capitalizedTopic} is completely boring`, correctIcon: '✨', wrongIcon: '😴', concept: 'Every topic has interesting things to discover' },
+                        { correct: `People have been curious about ${topic} for a long time`, wrong: `${capitalizedTopic} was just invented yesterday`, correctIcon: '📜', wrongIcon: '🆕', concept: 'Many topics have long histories of study' },
+                        { correct: `You can explore ${topic} by asking questions`, wrong: `Questions about ${topic} are not allowed`, correctIcon: '❓', wrongIcon: '🚫', concept: 'Questions are the key to learning' },
+                        { correct: `Learning about ${topic} takes time and practice`, wrong: `You can know everything about ${topic} instantly`, correctIcon: '⏰', wrongIcon: '⚡', concept: 'Deep learning takes time and effort' },
+                        { correct: `${capitalizedTopic} connects to other things we know`, wrong: `${capitalizedTopic} has nothing to do with anything else`, correctIcon: '🔗', wrongIcon: '🏝️', concept: 'Everything is connected in interesting ways' },
+                        { correct: `Experiments help us learn about ${topic}`, wrong: `We should never experiment with ${topic}`, correctIcon: '🧪', wrongIcon: '⛔', concept: 'Experiments teach us how things work' },
+                        { correct: `Different people might see ${topic} differently`, wrong: `Everyone must think the same about ${topic}`, correctIcon: '👥', wrongIcon: '🤖', concept: 'Different perspectives help us understand better' }
+                    ]
+                },
+                mission3: {
+                    title: `${capitalizedTopic} Choices`,
+                    description: `Think about the best choice for ${topic}!`,
+                    icon: '🤔',
+                    challenges: [
+                        { challenge: `You want to learn more about ${topic}!`, option1: { name: 'Read and Explore', icon: '📚', traits: ['Find good sources', 'Learn step by step', 'Build knowledge'] }, option2: { name: 'Make Things Up', icon: '💭', traits: ['No real facts', 'Might be wrong', 'Not real learning'] }, concept: `Good sources help us learn real facts about ${topic}` },
+                        { challenge: `You have a question about ${topic}!`, option1: { name: 'Research the Answer', icon: '🔍', traits: ['Find real facts', 'Learn something new', 'Satisfy curiosity'] }, option2: { name: 'Ignore the Question', icon: '🙈', traits: ['Stay curious', 'Never know', 'Miss learning'] }, concept: 'Researching answers helps us grow smarter' },
+                        { challenge: `Someone tells you something about ${topic} that seems wrong!`, option1: { name: 'Check the Facts', icon: '✅', traits: ['Verify information', 'Think critically', 'Find the truth'] }, option2: { name: 'Believe Everything', icon: '😶', traits: ['Might be tricked', 'No critical thinking', 'Could be wrong'] }, concept: 'Checking facts helps us know what\'s true' },
+                        { challenge: `You want to share what you learned about ${topic}!`, option1: { name: 'Explain Clearly', icon: '🗣️', traits: ['Help others learn', 'Practice explaining', 'Share knowledge'] }, option2: { name: 'Keep It Secret', icon: '🤐', traits: ['Others miss out', 'No discussion', 'Learning stays small'] }, concept: 'Sharing knowledge helps everyone learn' },
+                        { challenge: `You find ${topic} confusing!`, option1: { name: 'Break It Into Parts', icon: '🧩', traits: ['Easier to understand', 'Take it step by step', 'Less overwhelming'] }, option2: { name: 'Give Up', icon: '🏳️', traits: ['Never understand', 'Miss out on learning', 'Stay confused'] }, concept: 'Breaking things into smaller parts makes learning easier' },
+                        { challenge: `You discovered something new about ${topic}!`, option1: { name: 'Write It Down', icon: '📝', traits: ['Remember it', 'Can review later', 'Build notes'] }, option2: { name: 'Just Forget It', icon: '🧠', traits: ['Might forget', 'No record', 'Lost learning'] }, concept: 'Writing things down helps us remember' },
+                        { challenge: `You want to become an expert on ${topic}!`, option1: { name: 'Study Regularly', icon: '📅', traits: ['Build knowledge slowly', 'Remember better', 'Become expert over time'] }, option2: { name: 'Study Once and Stop', icon: '🛑', traits: ['Forget quickly', 'Never master it', 'Stay beginner'] }, concept: 'Regular practice builds expertise' },
+                        { challenge: `You and a friend disagree about ${topic}!`, option1: { name: 'Research Together', icon: '🤝', traits: ['Find the answer', 'Learn from each other', 'Friendly discussion'] }, option2: { name: 'Argue Without Facts', icon: '😤', traits: ['No resolution', 'No learning', 'Hurt feelings'] }, concept: 'Looking up facts together solves disagreements' },
+                        { challenge: `You want to teach someone about ${topic}!`, option1: { name: 'Use Examples', icon: '💡', traits: ['Easier to understand', 'More interesting', 'Better teaching'] }, option2: { name: 'Just List Facts', icon: '📋', traits: ['Boring', 'Hard to remember', 'Less engaging'] }, concept: 'Examples make learning more fun and memorable' },
+                        { challenge: `You realize you were wrong about ${topic}!`, option1: { name: 'Update Your Understanding', icon: '🔄', traits: ['Learn the truth', 'Grow smarter', 'Stay humble'] }, option2: { name: 'Pretend You Were Right', icon: '🙅', traits: ['Stay wrong', 'No growth', 'Miss learning'] }, concept: 'Changing our minds when we learn new facts is smart' }
+                    ]
+                }
+            };
+        }
+
+        // Track which fact/challenge index was used for each topic to avoid repeats
+        let usedFactIndices = {};
+        let usedChallengeIndices = {};
+
+        // Helper function to deduplicate arrays
+        function deduplicateArray(arr) {
+            return [...new Set(arr)];
+        }
+
+        function deduplicateBadges(badges) {
+            const seen = new Set();
+            return badges.filter(badge => {
+                if (seen.has(badge.id)) return false;
+                seen.add(badge.id);
+                return true;
+            });
+        }
+
+        // localStorage Functions
+        function saveToLocalStorage() {
+            const explorationsData = JSON.parse(localStorage.getItem('curiosityExplorations')) || {};
+
+            if (gameState.currentTopic) {
+                const topicKey = gameState.currentTopic.toLowerCase();
+                const existingTopic = explorationsData[topicKey] || {
+                    topic: gameState.currentTopic,
+                    badges: [],
+                    concepts: [],
+                    lastExplored: null,
+                    missionsCompleted: []
+                };
+
+                // Merge badges and deduplicate
+                const allBadges = [...existingTopic.badges, ...gameState.badges];
+                existingTopic.badges = deduplicateBadges(allBadges);
+
+                // Merge concepts and deduplicate
+                const allConcepts = [...existingTopic.concepts, ...gameState.conceptsLearned];
+                existingTopic.concepts = deduplicateArray(allConcepts);
+
+                existingTopic.lastExplored = new Date().toISOString();
+                existingTopic.missionsCompleted = gameState.completedMissions;
+
+                explorationsData[topicKey] = existingTopic;
+                localStorage.setItem('curiosityExplorations', JSON.stringify(explorationsData));
+            }
+        }
+
+        function loadTopicData(topic) {
+            const explorationsData = JSON.parse(localStorage.getItem('curiosityExplorations')) || {};
+            const topicKey = topic.toLowerCase();
+            return explorationsData[topicKey] || null;
+        }
+
+        function getAllExplorations() {
+            return JSON.parse(localStorage.getItem('curiosityExplorations')) || {};
+        }
+
+        // Topic Selection
+        function selectTopic(topic) {
+            document.getElementById('topicInput').value = topic;
+        }
+
+        function startExploring() {
+            const topicInput = document.getElementById('topicInput').value.trim();
+
+            if (!topicInput) {
+                alert('Please type a topic or pick one from the suggestions!');
+                return;
+            }
+
+            gameState.currentTopic = topicInput.charAt(0).toUpperCase() + topicInput.slice(1).toLowerCase();
+            gameState.completedMissions = [];
+            gameState.badges = [];
+            gameState.conceptsLearned = [];
+            gameState.questionsAsked = [];
+            gameState.ideasTested = [];
+
+            // Load topic data from database or generate custom content
+            const topicKey = gameState.currentTopic.toLowerCase();
+            if (topicDatabase[topicKey]) {
+                // Use preset topic data
+                gameState.currentTopicData = topicDatabase[topicKey];
+            } else {
+                // Generate dynamic content for custom topic
+                gameState.currentTopicData = generateCustomTopicData(gameState.currentTopic);
+            }
+
+            // Check if returning user
+            const existingData = loadTopicData(gameState.currentTopic);
+
+            // Show welcome back banner if returning
+            if (existingData && existingData.lastExplored) {
+                showWelcomeBackBanner(existingData);
+            } else {
+                document.getElementById('welcomeBackBanner').innerHTML = '';
+            }
+
+            // Populate missions
+            populateMissions();
+            showScreen('missionSelect');
+        }
+
+        function showWelcomeBackBanner(topicData) {
+            const banner = document.getElementById('welcomeBackBanner');
+            const lastDate = new Date(topicData.lastExplored).toLocaleDateString();
+
+            banner.innerHTML = `
+                <div class="welcome-back-banner">
+                    <h3>Welcome Back to ${gameState.currentTopic}! ${gameState.currentTopicData.emoji}</h3>
+                    <p>Last time you explored this on ${lastDate}!<br>
+                    You learned: ${topicData.concepts[0] || 'lots of cool things'}<br>
+                    Ready for more missions?</p>
+                </div>
+            `;
+        }
+
+        function populateMissions() {
+            const missionGrid = document.getElementById('missionGrid');
+            const topicData = gameState.currentTopicData;
+
+            document.getElementById('missionSelectTitle').textContent = `Explore ${gameState.currentTopic}!`;
+
+            missionGrid.innerHTML = `
+                <div class="mission-card" onclick="startMission1()">
+                    <h3>${topicData.mission1.icon} ${topicData.mission1.title}</h3>
+                    <p>${topicData.mission1.description}</p>
+                </div>
+                <div class="mission-card" onclick="startMission2()">
+                    <h3>${topicData.mission2.icon} ${topicData.mission2.title}</h3>
+                    <p>${topicData.mission2.description}</p>
+                </div>
+                <div class="mission-card" onclick="startMission3()">
+                    <h3>${topicData.mission3.icon} ${topicData.mission3.title}</h3>
+                    <p>${topicData.mission3.description}</p>
+                </div>
+            `;
+
+            // Show recap button if any missions completed
+            updateRecapButton();
+        }
+
+        function updateRecapButton() {
+            const recapBtn = document.getElementById('recapBtn');
+            if (gameState.completedMissions.length > 0) {
+                recapBtn.style.display = 'inline-block';
+            } else {
+                recapBtn.style.display = 'none';
+            }
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            const dashboardContent = document.getElementById('dashboardContent');
+            const emptyDashboard = document.getElementById('emptyDashboard');
+
+            // Clean up duplicates in localStorage first
+            cleanupLocalStorage();
+
+            const explorations = getAllExplorations();
+            const topics = Object.values(explorations);
+
+            if (topics.length === 0) {
+                dashboardContent.innerHTML = '';
+                emptyDashboard.style.display = 'block';
+                return;
+            }
+
+            emptyDashboard.style.display = 'none';
+
+            // Sort by most recent
+            topics.sort((a, b) => new Date(b.lastExplored) - new Date(a.lastExplored));
+
+            dashboardContent.innerHTML = topics.map(topicData => {
+                const topicKey = topicData.topic.toLowerCase();
+                const emoji = topicDatabase[topicKey]?.emoji || '🎯';
+                const date = new Date(topicData.lastExplored).toLocaleDateString();
+
+                // Deduplicate badges for display
+                const uniqueBadges = deduplicateBadges(topicData.badges || []);
+
+                return `
+                    <div class="topic-card" onclick="continueExploring('${topicData.topic}')">
+                        <div class="topic-card-header">${emoji} ${topicData.topic}</div>
+                        <div class="topic-card-meta">Last explored: ${date}</div>
+                        <div class="topic-card-badges">
+                            ${uniqueBadges.map(b => `<div class="mini-badge">${b.name}</div>`).join('')}
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; font-size: 16px; padding: 12px;">
+                            Continue Exploring
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Clean up duplicates in localStorage
+        function cleanupLocalStorage() {
+            const explorationsData = JSON.parse(localStorage.getItem('curiosityExplorations')) || {};
+
+            Object.keys(explorationsData).forEach(topicKey => {
+                const topic = explorationsData[topicKey];
+                if (topic.badges) {
+                    topic.badges = deduplicateBadges(topic.badges);
+                }
+                if (topic.concepts) {
+                    topic.concepts = deduplicateArray(topic.concepts);
+                }
+            });
+
+            localStorage.setItem('curiosityExplorations', JSON.stringify(explorationsData));
+        }
+
+        function continueExploring(topic) {
+            document.getElementById('topicInput').value = topic;
+            startExploring();
+        }
+
+        // Recap Functions
+        function showRecap() {
+            const topicData = gameState.currentTopicData;
+
+            document.getElementById('recapTitle').textContent = `What You Discovered About ${gameState.currentTopic}!`;
+            document.getElementById('recapSubtitle').textContent = `Amazing work, explorer! ${topicData.emoji}`;
+
+            // Concepts learned (deduplicated)
+            const uniqueConcepts = deduplicateArray(gameState.conceptsLearned);
+            const conceptsContainer = document.getElementById('conceptsLearned');
+            conceptsContainer.innerHTML = uniqueConcepts.map(concept =>
+                `<div class="concept-bubble">${concept}</div>`
+            ).join('');
+
+            // Recap cards
+            const recapGrid = document.getElementById('recapGrid');
+            recapGrid.innerHTML = `
+                <div class="recap-card">
+                    <div class="recap-card-icon">🎯</div>
+                    <div class="recap-card-title">Missions Completed</div>
+                    <div class="recap-card-content">${gameState.completedMissions.length} out of 3</div>
+                </div>
+                <div class="recap-card">
+                    <div class="recap-card-icon">💡</div>
+                    <div class="recap-card-title">Ideas Tested</div>
+                    <div class="recap-card-content">${gameState.ideasTested.length || 'Many'} different ideas!</div>
+                </div>
+                <div class="recap-card">
+                    <div class="recap-card-icon">❓</div>
+                    <div class="recap-card-title">Questions Asked</div>
+                    <div class="recap-card-content">You wondered about ${gameState.questionsAsked.length || 'lots of'} things!</div>
+                </div>
+            `;
+
+            // Badges (deduplicated)
+            const uniqueBadges = deduplicateBadges(gameState.badges);
+            const recapBadges = document.getElementById('recapBadges');
+            recapBadges.innerHTML = uniqueBadges.map(b =>
+                `<div class="badge">${b.name}</div>`
+            ).join('');
+
+            showScreen('recap');
+        }
+
+        function finishSession() {
+            saveToLocalStorage();
+            updateDashboard();
+            showScreen('welcome');
+
+            // Reset for next session
+            gameState.currentTopic = null;
+            gameState.currentTopicData = null;
+            gameState.completedMissions = [];
+            gameState.badges = [];
+            gameState.conceptsLearned = [];
+            gameState.questionsAsked = [];
+            gameState.ideasTested = [];
+
+            document.getElementById('topicInput').value = '';
+        }
+
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+
+            // Update dashboard when showing it
+            if (screenId === 'dashboard') {
+                updateDashboard();
+            }
+
+            // Update parent view when showing it
+            if (screenId === 'parentView') {
+                updateParentView();
+            }
+        }
+
+        // Populate parent view with topics and facts learned
+        function updateParentView() {
+            const parentTopicsList = document.getElementById('parentTopicsList');
+            const explorations = getAllExplorations();
+            const topics = Object.values(explorations);
+
+            if (topics.length === 0) {
+                parentTopicsList.innerHTML = '<p style="color: #666; font-style: italic;">No topics explored yet. Start exploring to see progress here!</p>';
+                return;
+            }
+
+            // Sort by most recent
+            topics.sort((a, b) => new Date(b.lastExplored) - new Date(a.lastExplored));
+
+            let html = '';
+
+            topics.forEach(topicData => {
+                const topicKey = topicData.topic.toLowerCase();
+                const emoji = topicDatabase[topicKey]?.emoji || '🔬';
+                const lastDate = new Date(topicData.lastExplored).toLocaleDateString();
+                const uniqueConcepts = deduplicateArray(topicData.concepts || []);
+                const uniqueBadges = deduplicateBadges(topicData.badges || []);
+
+                html += `
+                    <div style="background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #4caf50;">
+                        <h4 style="color: #2c3e50; margin: 0 0 10px 0; font-size: 18px;">
+                            ${emoji} ${topicData.topic}
+                            <span style="font-size: 12px; color: #888; font-weight: normal; margin-left: 10px;">
+                                Last: ${lastDate}
+                            </span>
+                        </h4>
+                `;
+
+                // Show badges earned
+                if (uniqueBadges.length > 0) {
+                    html += `
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #666; font-size: 13px;">🏆 Badges Earned:</strong>
+                            <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px;">
+                                ${uniqueBadges.map(b => `<span style="background: #fff3e0; padding: 3px 8px; border-radius: 10px; font-size: 12px;">${b.name}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Show top 4 concepts/facts learned
+                if (uniqueConcepts.length > 0) {
+                    const topConcepts = uniqueConcepts.slice(0, 4);
+                    html += `
+                        <div>
+                            <strong style="color: #666; font-size: 13px;">💡 Key Things Learned:</strong>
+                            <ul style="margin: 5px 0 0 0; padding-left: 20px; color: #555; font-size: 14px; line-height: 1.6;">
+                                ${topConcepts.map(c => `<li>${c}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+
+                html += '</div>';
+            });
+
+            // Add summary stats
+            const totalBadges = topics.reduce((sum, t) => sum + (t.badges?.length || 0), 0);
+            const totalConcepts = topics.reduce((sum, t) => sum + (t.concepts?.length || 0), 0);
+
+            html += `
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                    <strong style="color: #1976d2;">📊 Total Progress</strong><br>
+                    <span style="color: #555;">
+                        ${topics.length} topic${topics.length !== 1 ? 's' : ''} explored •
+                        ${totalBadges} badge${totalBadges !== 1 ? 's' : ''} earned •
+                        ${totalConcepts} fact${totalConcepts !== 1 ? 's' : ''} learned
+                    </span>
+                </div>
+            `;
+
+            parentTopicsList.innerHTML = html;
+        }
+
+        // Mission 1: Build Something (Dynamic)
+        function startMission1() {
+            const m1 = gameState.currentTopicData.mission1;
+            const topicData = gameState.currentTopicData;
+
+            gameState.currentPlane = { wings: null, nose: null };
+
+            // Update intro screen
+            document.getElementById('mission1IntroTitle').textContent = m1.title;
+            document.getElementById('mission1IntroSubtitle').innerHTML = `You get to ${m1.buildPrompt.toLowerCase()}!<br>Pick the parts you think will work best.`;
+
+            // Update build screen
+            document.getElementById('mission1BuildTitle').textContent = m1.buildPrompt;
+
+            // Update result screen title
+            document.getElementById('mission1ResultTitle').textContent = `Let's see how it works!`;
+
+            // Update improve screen
+            document.getElementById('mission1ImproveTitle').textContent = `What could make it work better?`;
+            const part1Type = m1.partType1 || 'part';
+            const part2Type = m1.partType2 || 'part';
+            document.getElementById('improveButtons').innerHTML = `
+                <button class="choice-btn" onclick="improveChoice('part1')">
+                    ✨ Change the ${part1Type}
+                </button>
+                <button class="choice-btn" onclick="improveChoice('part2')">
+                    ✨ Change the ${part2Type}
+                </button>
+                <button class="choice-btn" onclick="improveChoice('both')">
+                    ⭐ Change both parts
+                </button>
+            `;
+
+            // Update part labels dynamically based on topic
+            const part1Label = document.getElementById('part1Label');
+            const part2Label = document.getElementById('part2Label');
+
+            part1Label.textContent = `Pick ${part1Type}:`;
+            part2Label.textContent = `Pick ${part2Type}:`;
+
+            // Update part options dynamically
+            updatePartOptions('part1Options', part1Type);
+            updatePartOptions('part2Options', part2Type);
+
+            // Show/hide preview based on topic (only show for planes)
+            const buildPreview = document.getElementById('buildPreview');
+            const previewLabel = document.getElementById('previewLabel');
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                buildPreview.style.display = 'block';
+                previewLabel.textContent = 'Your plane!';
+            } else {
+                buildPreview.style.display = 'none';
+            }
+
+            // Reset part selections
+            document.querySelectorAll('.part-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.getElementById('testBtn').style.display = 'none';
+
+            // Update test button text based on topic
+            const testBtn = document.getElementById('testBtn');
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                testBtn.textContent = 'Test My Plane!';
+            } else {
+                testBtn.textContent = 'Test It!';
+            }
+
+            // Reset preview plane
+            resetPreviewPlane();
+
+            // Reset flight animation plane
+            resetFlightPlane();
+
+            // Track the question
+            gameState.questionsAsked.push(`What parts work best for ${gameState.currentTopic}?`);
+
+            showScreen('mission1-intro');
+        }
+
+        // Helper function to update part options based on part type
+        function updatePartOptions(containerId, partType) {
+            const container = document.getElementById(containerId);
+
+            // Define part options for different types
+            const partDefinitions = {
+                // Planes
+                wings: [
+                    { value: 'tiny', label: 'Tiny Wings' },
+                    { value: 'medium', label: 'Medium Wings' },
+                    { value: 'huge', label: 'Huge Wings' }
+                ],
+                nose: [
+                    { value: 'pointy', label: 'Pointy Nose' },
+                    { value: 'round', label: 'Round Nose' },
+                    { value: 'flat', label: 'Flat Nose' }
+                ],
+                // Stars - Telescope
+                lens: [
+                    { value: 'tiny', label: 'Small Lens' },
+                    { value: 'medium', label: 'Medium Lens' },
+                    { value: 'huge', label: 'Big Lens' }
+                ],
+                length: [
+                    { value: 'pointy', label: 'Short Tube' },
+                    { value: 'round', label: 'Medium Tube' },
+                    { value: 'flat', label: 'Long Tube' }
+                ],
+                // Dinosaurs
+                size: [
+                    { value: 'tiny', label: 'Tiny Size' },
+                    { value: 'medium', label: 'Medium Size' },
+                    { value: 'huge', label: 'Huge Size' }
+                ],
+                teeth: [
+                    { value: 'pointy', label: 'Sharp Teeth' },
+                    { value: 'round', label: 'Flat Teeth' },
+                    { value: 'flat', label: 'No Teeth' }
+                ],
+                // Ocean - Submarine
+                hull: [
+                    { value: 'tiny', label: 'Thin Hull' },
+                    { value: 'medium', label: 'Medium Hull' },
+                    { value: 'huge', label: 'Strong Hull' }
+                ],
+                windows: [
+                    { value: 'pointy', label: 'Small Window' },
+                    { value: 'round', label: 'Medium Window' },
+                    { value: 'flat', label: 'Big Window' }
+                ],
+                // Robots
+                arms: [
+                    { value: 'tiny', label: 'Small Arms' },
+                    { value: 'medium', label: 'Medium Arms' },
+                    { value: 'huge', label: 'Strong Arms' }
+                ],
+                wheels: [
+                    { value: 'pointy', label: 'Small Wheels' },
+                    { value: 'round', label: 'Medium Wheels' },
+                    { value: 'flat', label: 'Big Wheels' }
+                ],
+                // Space - Rocket
+                engines: [
+                    { value: 'tiny', label: 'Small Engine' },
+                    { value: 'medium', label: 'Medium Engine' },
+                    { value: 'huge', label: 'Big Engine' }
+                ],
+                'fuel tank': [
+                    { value: 'pointy', label: 'Small Tank' },
+                    { value: 'round', label: 'Medium Tank' },
+                    { value: 'flat', label: 'Large Tank' }
+                ],
+                // Custom topic
+                shape: [
+                    { value: 'pointy', label: 'Pointy Shape' },
+                    { value: 'round', label: 'Round Shape' },
+                    { value: 'flat', label: 'Flat Shape' }
+                ],
+                // Generic fallback
+                'part A': [
+                    { value: 'tiny', label: 'Small' },
+                    { value: 'medium', label: 'Medium' },
+                    { value: 'huge', label: 'Large' }
+                ],
+                'part B': [
+                    { value: 'pointy', label: 'Type 1' },
+                    { value: 'round', label: 'Type 2' },
+                    { value: 'flat', label: 'Type 3' }
+                ]
+            };
+
+            // Get part options or use generic
+            const options = partDefinitions[partType] || partDefinitions['part A'];
+
+            // Generate HTML for options - text labels only, no icons
+            container.innerHTML = options.map(opt => `
+                <div class="part-option" data-part="${partType}" data-value="${opt.value}" onclick="selectPart('${partType}', '${opt.value}', this)">
+                    <div class="label">${opt.label}</div>
+                </div>
+            `).join('');
+        }
+
+        function resetPreviewPlane() {
+            const previewSvg = document.getElementById('planePreview');
+            if (previewSvg) {
+                // Reset wing
+                const wing = document.getElementById('previewWing');
+                if (wing) {
+                    wing.setAttribute('rx', '15');
+                    wing.setAttribute('ry', '25');
+                    wing.style.fill = '#f39c12';
+                }
+
+                // Reset nose - replace with default circle
+                const oldNose = document.getElementById('previewNose');
+                if (oldNose) {
+                    const newNose = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    newNose.id = 'previewNose';
+                    newNose.setAttribute('cx', '100');
+                    newNose.setAttribute('cy', '40');
+                    newNose.setAttribute('r', '10');
+                    newNose.style.fill = '#3498db';
+                    oldNose.parentNode.replaceChild(newNose, oldNose);
+                }
+            }
+        }
+
+        function resetFlightPlane() {
+            const planeAnimation = document.getElementById('planeAnimation');
+            if (planeAnimation) {
+                // Reset animation classes and position
+                planeAnimation.classList.remove('flight-great', 'flight-okay', 'flight-poor');
+                planeAnimation.style.left = '30px';
+                planeAnimation.style.top = '180px';
+
+                // Reset wing
+                const wing = planeAnimation.querySelector('#planeWing');
+                if (wing) {
+                    wing.setAttribute('rx', '20');
+                    wing.setAttribute('ry', '35');
+                    wing.style.fill = '#f39c12';
+                }
+
+                // Reset nose - replace with default path
+                const oldNose = planeAnimation.querySelector('#planeNose');
+                if (oldNose) {
+                    const newNose = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    newNose.id = 'planeNose';
+                    newNose.classList.add('plane-nose');
+                    newNose.setAttribute('d', 'M95,40 Q115,40 105,30 Q95,35 95,40 Q95,45 105,50 Q115,40 95,40');
+                    newNose.style.fill = '#3498db';
+                    oldNose.parentNode.replaceChild(newNose, oldNose);
+                }
+            }
+        }
+
+        function selectPart(partType, value, element) {
+            // Deselect all parts of this type
+            document.querySelectorAll(`[data-part="${partType}"]`).forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Select this part
+            element.classList.add('selected');
+
+            // Store the selection - map to generic keys for the logic
+            const m1 = gameState.currentTopicData.mission1;
+            if (partType === m1.partType1) {
+                gameState.currentPlane.wings = value; // Use 'wings' as first part key
+            } else if (partType === m1.partType2) {
+                gameState.currentPlane.nose = value; // Use 'nose' as second part key
+            }
+
+            // Update live preview (only for planes)
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                updatePreview();
+            }
+
+            // Show test button if both parts selected
+            if (gameState.currentPlane.wings && gameState.currentPlane.nose) {
+                document.getElementById('testBtn').style.display = 'block';
+            }
+        }
+
+        function updatePreview() {
+            const previewWing = document.getElementById('previewWing');
+            const previewNose = document.getElementById('previewNose');
+            const previewSvg = document.getElementById('planePreview');
+
+            // Update wing preview
+            if (previewWing && gameState.currentPlane.wings) {
+                switch(gameState.currentPlane.wings) {
+                    case 'tiny':
+                        previewWing.setAttribute('rx', '8');
+                        previewWing.setAttribute('ry', '12');
+                        previewWing.style.fill = '#e74c3c';
+                        break;
+                    case 'medium':
+                        previewWing.setAttribute('rx', '18');
+                        previewWing.setAttribute('ry', '32');
+                        previewWing.style.fill = '#27ae60';
+                        break;
+                    case 'huge':
+                        previewWing.setAttribute('rx', '28');
+                        previewWing.setAttribute('ry', '45');
+                        previewWing.style.fill = '#e74c3c';
+                        break;
+                }
+            }
+
+            // Update nose preview - need to replace the element
+            if (previewNose && gameState.currentPlane.nose) {
+                const oldNose = document.getElementById('previewNose');
+                let newNose;
+
+                switch(gameState.currentPlane.nose) {
+                    case 'pointy':
+                        newNose = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                        newNose.setAttribute('points', '95,40 115,40 95,30 95,50');
+                        newNose.style.fill = '#27ae60';
+                        break;
+                    case 'round':
+                        newNose = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                        newNose.setAttribute('cx', '100');
+                        newNose.setAttribute('cy', '40');
+                        newNose.setAttribute('r', '10');
+                        newNose.style.fill = '#f39c12';
+                        break;
+                    case 'flat':
+                        newNose = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        newNose.setAttribute('x', '95');
+                        newNose.setAttribute('y', '30');
+                        newNose.setAttribute('width', '12');
+                        newNose.setAttribute('height', '20');
+                        newNose.style.fill = '#e74c3c';
+                        break;
+                }
+
+                if (newNose) {
+                    newNose.id = 'previewNose';
+                    oldNose.parentNode.replaceChild(newNose, oldNose);
+                }
+            }
+        }
+
+        function testPlane() {
+            showScreen('mission1-result');
+
+            const plane = gameState.currentPlane;
+            const planeEl = document.getElementById('planeAnimation');
+            const feedbackEl = document.getElementById('flightFeedback');
+            const flightLabel = document.getElementById('flightLabel');
+            const topicData = gameState.currentTopicData;
+            const m1 = topicData.mission1;
+
+            // Track the idea tested
+            gameState.ideasTested.push(`Tested ${m1.partType1}: ${plane.wings} and ${m1.partType2}: ${plane.nose}`);
+
+            // Show plane visual only for planes, generic visual for others
+            const planeVisual = document.getElementById('planeVisual');
+            const genericVisual = document.getElementById('genericResultVisual');
+            const resultEmoji = document.getElementById('resultEmoji');
+
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                planeVisual.style.display = 'block';
+                genericVisual.style.display = 'none';
+            } else {
+                planeVisual.style.display = 'none';
+                genericVisual.style.display = 'block';
+                resultEmoji.textContent = topicData.emoji;
+            }
+
+            // Update plane appearance based on selected parts
+            updatePlaneAppearance(planeEl, plane);
+
+            // Reset animation
+            planeEl.classList.remove('flight-great', 'flight-okay', 'flight-poor');
+            planeEl.style.left = '30px';
+            planeEl.style.top = '180px';
+
+            // Determine flight quality based on parts
+            let flightQuality = 'poor';
+            let feedback = '';
+
+            if (plane.wings === 'medium' && plane.nose === 'pointy') {
+                flightQuality = 'great';
+                feedback = "Wow! It worked really well!<br>The medium parts gave it the right balance,<br>and the pointy part cut through smoothly.";
+            } else if (plane.wings === 'medium' || plane.nose === 'pointy') {
+                flightQuality = 'okay';
+                if (plane.wings === 'medium') {
+                    feedback = "Not bad! It worked pretty well.<br>The medium part helped!<br>But what about the other part?";
+                } else {
+                    feedback = "Not bad! It worked pretty well.<br>The pointy part helped!<br>But what about the other part?";
+                }
+            } else {
+                flightQuality = 'poor';
+                if (plane.wings === 'tiny') {
+                    feedback = "Hmm, it wobbled a lot.<br>The tiny part was too small!<br>What if it was bigger?";
+                } else if (plane.wings === 'huge') {
+                    feedback = "Hmm, it moved slowly.<br>The huge part was too big!<br>What if it was smaller?";
+                } else if (plane.nose === 'flat') {
+                    feedback = "Hmm, it couldn't go very far.<br>The flat part slowed it down.<br>What if it was more pointy?";
+                } else {
+                    feedback = "Hmm, it didn't work quite right.<br>Let's think about the shape!";
+                }
+            }
+
+            feedbackEl.innerHTML = feedback;
+
+            // Update label and generic visual based on quality
+            flightLabel.className = 'flight-label';
+            if (flightQuality === 'great') {
+                flightLabel.textContent = 'Works Great!';
+                flightLabel.classList.add('label-great');
+                resultEmoji.textContent = topicData.emoji + '✨';
+                genericVisual.style.background = 'linear-gradient(135deg, #a8edea 0%, #d4fc79 100%)';
+            } else if (flightQuality === 'okay') {
+                flightLabel.textContent = 'Getting There!';
+                flightLabel.classList.add('label-okay');
+                resultEmoji.textContent = topicData.emoji + '🤔';
+                genericVisual.style.background = 'linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)';
+            } else {
+                flightLabel.textContent = 'Needs Work!';
+                flightLabel.classList.add('label-poor');
+                resultEmoji.textContent = topicData.emoji + '😬';
+                genericVisual.style.background = 'linear-gradient(135deg, #fab1a0 0%, #e17055 100%)';
+            }
+
+            // Animate plane with appropriate flight class (only for planes)
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                setTimeout(() => {
+                    planeEl.classList.add('flight-' + flightQuality);
+                }, 100);
+            }
+        }
+
+        function updatePlaneAppearance(planeEl, parts) {
+            const wingEl = planeEl.querySelector('#planeWing');
+
+            // Update wing size
+            if (wingEl) {
+                switch(parts.wings) {
+                    case 'tiny':
+                        wingEl.setAttribute('rx', '10');
+                        wingEl.setAttribute('ry', '15');
+                        wingEl.style.fill = '#e74c3c'; // Red for bad choice
+                        break;
+                    case 'medium':
+                        wingEl.setAttribute('rx', '20');
+                        wingEl.setAttribute('ry', '35');
+                        wingEl.style.fill = '#27ae60'; // Green for good choice
+                        break;
+                    case 'huge':
+                        wingEl.setAttribute('rx', '30');
+                        wingEl.setAttribute('ry', '50');
+                        wingEl.style.fill = '#e74c3c'; // Red for bad choice
+                        break;
+                }
+            }
+
+            // Update nose shape - always replace the element
+            const oldNose = planeEl.querySelector('#planeNose');
+            if (oldNose) {
+                let newNose;
+
+                switch(parts.nose) {
+                    case 'pointy':
+                        newNose = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                        newNose.setAttribute('points', '95,40 120,40 95,30 95,50');
+                        newNose.style.fill = '#27ae60'; // Green for good choice
+                        break;
+                    case 'round':
+                        newNose = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+                        newNose.setAttribute('cx', '102');
+                        newNose.setAttribute('cy', '40');
+                        newNose.setAttribute('rx', '12');
+                        newNose.setAttribute('ry', '10');
+                        newNose.style.fill = '#f39c12'; // Orange for okay choice
+                        break;
+                    case 'flat':
+                        newNose = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        newNose.setAttribute('x', '95');
+                        newNose.setAttribute('y', '28');
+                        newNose.setAttribute('width', '15');
+                        newNose.setAttribute('height', '24');
+                        newNose.style.fill = '#e74c3c'; // Red for bad choice
+                        break;
+                }
+
+                if (newNose) {
+                    newNose.id = 'planeNose';
+                    newNose.classList.add('plane-nose');
+                    oldNose.parentNode.replaceChild(newNose, oldNose);
+                }
+            }
+        }
+
+        function improveChoice(choice) {
+            const improvedPlane = document.getElementById('improvedPlaneAnimation');
+            const feedbackEl = document.getElementById('improvementFeedback');
+            const m1 = gameState.currentTopicData.mission1;
+            const topicData = gameState.currentTopicData;
+
+            let feedback = '';
+            const part1Name = m1.partType1 || 'first part';
+            const part2Name = m1.partType2 || 'second part';
+
+            gameState.ideasTested.push(`Improved by changing ${choice}`);
+
+            if (choice === 'part1') {
+                feedback = `Great thinking!<br>You changed the ${part1Name}.<br>Now it works much better!`;
+            } else if (choice === 'part2') {
+                feedback = `Smart idea!<br>You changed the ${part2Name}.<br>Now it works smoothly!`;
+            } else if (choice === 'both') {
+                feedback = `Excellent thinking!<br>You improved both the ${part1Name} and ${part2Name}!<br>Now everything works together. Perfect!`;
+            }
+
+            feedbackEl.innerHTML = feedback;
+
+            // Add concept learned
+            gameState.conceptsLearned.push(m1.conceptLearned);
+
+            // Update badge display dynamically
+            const badgeDisplay = document.getElementById('mission1BadgeDisplay');
+            const badgeName = `${topicData.mission1.icon} ${topicData.name} Builder`;
+            badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
+
+            // Show/hide improved plane visual based on topic
+            const improvedPlaneVisual = document.getElementById('improvedPlaneVisual');
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                improvedPlaneVisual.style.display = 'block';
+            } else {
+                improvedPlaneVisual.style.display = 'none';
+            }
+
+            showScreen('mission1-final');
+
+            // Reset and animate improved plane (only for planes topic)
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                improvedPlane.classList.remove('flight-improved');
+                improvedPlane.style.left = '30px';
+                improvedPlane.style.top = '150px';
+
+                // Animate improved flight after a short delay
+                setTimeout(() => {
+                    improvedPlane.classList.add('flight-improved');
+                }, 300);
+            }
+        }
+
+        // Store the current fact for Mission 2
+        let currentMission2Fact = null;
+
+        // Get a random fact that hasn't been used recently
+        function getRandomFact(facts, topicKey) {
+            if (!usedFactIndices[topicKey]) {
+                usedFactIndices[topicKey] = [];
+            }
+
+            // If all facts have been used, reset the tracking
+            if (usedFactIndices[topicKey].length >= facts.length) {
+                usedFactIndices[topicKey] = [];
+            }
+
+            // Find an unused fact index
+            let availableIndices = [];
+            for (let i = 0; i < facts.length; i++) {
+                if (!usedFactIndices[topicKey].includes(i)) {
+                    availableIndices.push(i);
+                }
+            }
+
+            // Pick a random available index
+            const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            usedFactIndices[topicKey].push(randomIndex);
+
+            return facts[randomIndex];
+        }
+
+        // Mission 2: Spot the Mistake (Dynamic)
+        function startMission2() {
+            const m2 = gameState.currentTopicData.mission2;
+            const topicKey = gameState.currentTopic.toLowerCase();
+
+            // Get a random fact from the facts array
+            currentMission2Fact = getRandomFact(m2.facts, topicKey);
+
+            // Update the intro screen
+            document.querySelector('#mission2-intro h2').textContent = m2.title;
+            document.querySelector('#mission2-intro .subtitle').innerHTML = `Even smart computers can get facts wrong!<br>Can you find which fact is a mistake?`;
+
+            // Update the facts screen
+            document.querySelector('#mission2-facts h2').textContent = 'Which fact seems wrong?';
+
+            // Randomize the order of correct and wrong facts
+            const choiceButtons = document.querySelectorAll('#mission2-facts .choice-btn');
+            const showCorrectFirst = Math.random() < 0.5;
+
+            if (showCorrectFirst) {
+                choiceButtons[0].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct}`;
+                choiceButtons[0].setAttribute('onclick', "checkFact('correct')");
+                choiceButtons[1].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong}`;
+                choiceButtons[1].setAttribute('onclick', "checkFact('wrong')");
+            } else {
+                choiceButtons[0].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong}`;
+                choiceButtons[0].setAttribute('onclick', "checkFact('wrong')");
+                choiceButtons[1].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct}`;
+                choiceButtons[1].setAttribute('onclick', "checkFact('correct')");
+            }
+
+            // Update hint screen with topic-appropriate hints
+            const hintText = document.getElementById('mission2HintText');
+            const hintBox = document.getElementById('mission2HintBox');
+            hintText.innerHTML = `Think about ${gameState.currentTopic.toLowerCase()}.<br>What do you know about them?`;
+            hintBox.innerHTML = `Let's think more carefully.<br>What have you learned about ${gameState.currentTopic.toLowerCase()}?`;
+
+            // Track the question
+            gameState.questionsAsked.push(`Which fact about ${gameState.currentTopic} is wrong?`);
+
+            showScreen('mission2-intro');
+        }
+
+        function checkFact(choice) {
+            gameState.ideasTested.push(choice === 'wrong' ? 'Found the wrong fact' : 'Tested a fact');
+
+            if (choice === 'wrong') {
+                const topicData = gameState.currentTopicData;
+
+                // Update success message using the current fact's concept
+                document.querySelector('#mission2-success .feedback-box').innerHTML = `
+                    That's right!<br><br>
+                    ${currentMission2Fact.concept}<br><br>
+                    Great thinking! Sometimes computers or people get facts wrong.<br>
+                    It's good to check if something feels strange!
+                `;
+
+                gameState.conceptsLearned.push(currentMission2Fact.concept);
+
+                // Update badge display dynamically
+                const badgeDisplay = document.getElementById('mission2BadgeDisplay');
+                const badgeName = `🔍 ${topicData.name} Checker`;
+                badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
+
+                showScreen('mission2-success');
+            } else {
+                showScreen('mission2-hint');
+            }
+        }
+
+        // Store the current challenge for Mission 3
+        let currentMission3Challenge = null;
+
+        // Get a random challenge that hasn't been used recently
+        function getRandomChallenge(challenges, topicKey) {
+            if (!usedChallengeIndices[topicKey]) {
+                usedChallengeIndices[topicKey] = [];
+            }
+
+            // If all challenges have been used, reset the tracking
+            if (usedChallengeIndices[topicKey].length >= challenges.length) {
+                usedChallengeIndices[topicKey] = [];
+            }
+
+            // Find an unused challenge index
+            let availableIndices = [];
+            for (let i = 0; i < challenges.length; i++) {
+                if (!usedChallengeIndices[topicKey].includes(i)) {
+                    availableIndices.push(i);
+                }
+            }
+
+            // Pick a random available index
+            const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            usedChallengeIndices[topicKey].push(randomIndex);
+
+            return challenges[randomIndex];
+        }
+
+        // Mission 3: Plan/Choose (Dynamic)
+        function startMission3() {
+            const m3 = gameState.currentTopicData.mission3;
+            const topicData = gameState.currentTopicData;
+            const topicKey = gameState.currentTopic.toLowerCase();
+
+            // Get a random challenge from the challenges array
+            currentMission3Challenge = getRandomChallenge(m3.challenges, topicKey);
+
+            // Update intro screen
+            document.getElementById('mission3IntroTitle').textContent = m3.title;
+            document.getElementById('mission3IntroSubtitle').innerHTML = `${currentMission3Challenge.challenge}<br>Which choice is better?`;
+
+            // Update choice screen
+            document.getElementById('mission3ChoiceTitle').textContent = 'Which should you choose?';
+            document.getElementById('mission3Challenge').textContent = currentMission3Challenge.challenge;
+
+            // Update choice buttons
+            document.getElementById('mission3Option1').innerHTML = `
+                ${currentMission3Challenge.option1.icon} ${currentMission3Challenge.option1.name}<br>
+                <span style="font-size: 16px;">${currentMission3Challenge.option1.traits.map(t => `• ${t}`).join('<br>')}</span>
+            `;
+            document.getElementById('mission3Option2').innerHTML = `
+                ${currentMission3Challenge.option2.icon} ${currentMission3Challenge.option2.name}<br>
+                <span style="font-size: 16px;">${currentMission3Challenge.option2.traits.map(t => `• ${t}`).join('<br>')}</span>
+            `;
+
+            // Update rethink screen with actual options
+            document.getElementById('mission3RethinkTitle').textContent = 'What matters most for this job?';
+            document.getElementById('mission3RethinkSubtitle').textContent = currentMission3Challenge.challenge;
+
+            // Dynamically populate the rethink options with actual choice names
+            const rethinkOptionsEl = document.getElementById('mission3RethinkOptions');
+            const opt1 = currentMission3Challenge.option1;
+            const opt2 = currentMission3Challenge.option2;
+
+            // Extract key traits for each option
+            const opt1KeyTrait = opt1.traits[0] || 'First option';
+            const opt2KeyTrait = opt2.traits[0] || 'Second option';
+
+            rethinkOptionsEl.innerHTML = `
+                <button class="choice-btn" onclick="finalAnswer('option1')" style="text-align: left; padding: 15px 20px;">
+                    ${opt1.icon} <strong>${opt1.name}</strong><br>
+                    <span style="font-size: 14px; opacity: 0.9;">${opt1KeyTrait}</span>
+                </button>
+                <button class="choice-btn" onclick="finalAnswer('option2')" style="text-align: left; padding: 15px 20px;">
+                    ${opt2.icon} <strong>${opt2.name}</strong><br>
+                    <span style="font-size: 14px; opacity: 0.9;">${opt2KeyTrait}</span>
+                </button>
+                <button class="choice-btn" onclick="finalAnswer('both')" style="text-align: left; padding: 15px 20px;">
+                    🤔 <strong>Both matter!</strong><br>
+                    <span style="font-size: 14px; opacity: 0.9;">It depends on the situation</span>
+                </button>
+            `;
+
+            // Show/hide plane visual based on topic (only show for planes)
+            const mission3Visual = document.getElementById('mission3Visual');
+            if (gameState.currentTopic.toLowerCase() === 'planes') {
+                mission3Visual.style.display = 'block';
+            } else {
+                mission3Visual.style.display = 'none';
+            }
+
+            // Track the question
+            gameState.questionsAsked.push(`What's the best choice for: ${currentMission3Challenge.challenge}`);
+
+            showScreen('mission3-intro');
+        }
+
+        function selectPlaneType(type) {
+            gameState.ideasTested.push(`Chose ${type} option`);
+
+            // Show feedback based on which option was chosen
+            const chosenOption = type === 'small' ? currentMission3Challenge.option1 : currentMission3Challenge.option2;
+            const feedbackTitle = document.getElementById('mission3FeedbackTitle');
+            const feedbackBox = document.getElementById('mission3OptionFeedback');
+
+            feedbackTitle.textContent = `You chose: ${chosenOption.name}!`;
+            feedbackBox.innerHTML = `
+                Interesting choice! Let's think about this.<br><br>
+                ${currentMission3Challenge.challenge}<br><br>
+                You picked <strong>${chosenOption.icon} ${chosenOption.name}</strong>.<br>
+                Now let's think about what matters most!
+            `;
+
+            showScreen('mission3-option-feedback');
+        }
+
+        function finalAnswer(answer) {
+            const feedbackEl = document.getElementById('mission3FinalFeedback');
+            const topicData = gameState.currentTopicData;
+
+            gameState.ideasTested.push(`Final answer: ${answer}`);
+
+            // All answers lead to learning - we celebrate thinking!
+            feedbackEl.innerHTML = `
+                Awesome thinking!<br><br>
+                ${currentMission3Challenge.concept}<br><br>
+                You thought carefully about<br>
+                what matters most! Great job!
+            `;
+
+            gameState.conceptsLearned.push(currentMission3Challenge.concept);
+
+            // Update badge display dynamically
+            const badgeDisplay = document.getElementById('mission3BadgeDisplay');
+            const badgeName = `${topicData.mission3.icon} ${topicData.name} Planner`;
+            badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
+
+            showScreen('mission3-success');
+        }
+
+        // Mission completion
+        function completeMission(missionNum) {
+            if (!gameState.completedMissions.includes(missionNum)) {
+                gameState.completedMissions.push(missionNum);
+
+                // Add badge based on topic and mission
+                const topicData = gameState.currentTopicData;
+                const badges = [
+                    { id: `${gameState.currentTopic}-1`, name: `${topicData.mission1.icon} ${topicData.name} Builder` },
+                    { id: `${gameState.currentTopic}-2`, name: `🔍 ${topicData.name} Checker` },
+                    { id: `${gameState.currentTopic}-3`, name: `${topicData.mission3.icon} ${topicData.name} Planner` }
+                ];
+
+                const badge = badges[missionNum - 1];
+                if (badge && !gameState.badges.find(b => b.id === badge.id)) {
+                    gameState.badges.push(badge);
+                }
+            }
+
+            // Auto-save progress
+            saveToLocalStorage();
+
+            showScreen('missionSelect');
+            updateBadgeDisplay();
+            updateRecapButton();
+        }
+
+        function updateBadgeDisplay() {
+            const badgeContainer = document.getElementById('badgeDisplay');
+            const hangarSubtitle = document.getElementById('hangarSubtitle');
+
+            if (gameState.currentTopic) {
+                hangarSubtitle.textContent = `Your ${gameState.currentTopic} badges!`;
+            } else {
+                hangarSubtitle.textContent = 'Look at all the badges you\'ve earned!';
+            }
+
+            if (gameState.badges.length === 0) {
+                badgeContainer.innerHTML = '<p class="subtitle">Complete missions to earn badges!</p>';
+            } else {
+                badgeContainer.innerHTML = gameState.badges
+                    .map(badge => `<div class="badge">${badge.name}</div>`)
+                    .join('');
+
+                if (gameState.completedMissions.length === 3) {
+                    badgeContainer.innerHTML += `
+                        <div style="width: 100%; text-align: center; margin-top: 30px;">
+                            <div class="celebration-emoji">🎉</div>
+                            <p class="subtitle" style="color: #ff6b6b; font-weight: bold; font-size: 24px;">
+                                You completed all ${gameState.currentTopic} missions!<br>
+                                You're an amazing thinker!
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // About modal functions
+        function toggleAboutModal() {
+            const modal = document.getElementById('aboutModal');
+            modal.classList.toggle('active');
+        }
+
+        function closeAboutModalOutside(event) {
+            if (event.target.id === 'aboutModal') {
+                toggleAboutModal();
+            }
+        }
+
+        // Feedback form functions
+        function submitFeedback() {
+            const feedbackText = document.getElementById('feedbackText').value.trim();
+            const feedbackEmail = document.getElementById('feedbackEmail').value.trim();
+
+            if (!feedbackText) {
+                alert('Please enter your feedback before sending!');
+                return;
+            }
+
+            // Store feedback in localStorage (for demo purposes)
+            const feedbackData = {
+                text: feedbackText,
+                email: feedbackEmail || 'Not provided',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            };
+
+            // Get existing feedback array or create new one
+            const existingFeedback = JSON.parse(localStorage.getItem('curiosityExplorerFeedback')) || [];
+            existingFeedback.push(feedbackData);
+            localStorage.setItem('curiosityExplorerFeedback', JSON.stringify(existingFeedback));
+
+            // Show success message
+            document.getElementById('feedbackForm').style.display = 'none';
+            document.getElementById('feedbackSuccess').style.display = 'block';
+
+            // Log to console (useful if you want to see feedback during development)
+            console.log('Feedback submitted:', feedbackData);
+        }
+
+        function resetFeedbackForm() {
+            document.getElementById('feedbackText').value = '';
+            document.getElementById('feedbackEmail').value = '';
+            document.getElementById('feedbackForm').style.display = 'block';
+            document.getElementById('feedbackSuccess').style.display = 'none';
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('aboutModal');
+                if (modal.classList.contains('active')) {
+                    toggleAboutModal();
+                }
+            }
+        });
+
+        // Initialize
+        updateBadgeDisplay();
+        updateDashboard();
+    </script>
+</body>
+</html>
