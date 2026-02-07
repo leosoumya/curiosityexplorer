@@ -430,21 +430,54 @@
         }
 
         .badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 24px;
-            margin: 10px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-            animation: bounceIn 0.6s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #B8860B 100%);
+            color: #5D4E37;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 8px;
+            border: 3px solid #DAA520;
+            box-shadow:
+                0 4px 8px rgba(0,0,0,0.3),
+                inset 0 2px 4px rgba(255,255,255,0.4),
+                inset 0 -2px 4px rgba(0,0,0,0.1);
+            animation: badgeAppear 0.6s ease;
+            cursor: default;
+            position: relative;
+            text-shadow: 0 1px 1px rgba(255,255,255,0.3);
         }
 
-        @keyframes bounceIn {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+        .badge::before {
+            content: '🏆';
+            margin-right: 8px;
+            font-size: 20px;
+        }
+
+        .badge::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 10px 10px 0 0;
+            pointer-events: none;
+        }
+
+        @keyframes badgeAppear {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
         }
 
         .badge-container {
@@ -649,11 +682,15 @@
         }
 
         .mini-badge {
-            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
+            background: linear-gradient(180deg, #FFD700 0%, #FFA500 50%, #B8860B 100%);
+            color: #5D4E37;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid #DAA520;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: default;
         }
 
         /* Recap Styles */
