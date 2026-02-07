@@ -931,10 +931,31 @@
     </div>
 
     <div class="container">
-        <!-- Welcome Screen with Topic Input -->
-        <div id="welcome" class="screen active">
+        <!-- Name Entry Screen (shown only on first visit) -->
+        <div id="nameEntry" class="screen">
             <h1>🌟 Curiosity Explorer 🌟</h1>
-            <p class="subtitle">What do you want to explore today?</p>
+            <div class="celebration-emoji">👋</div>
+            <h2>Hi there, explorer!</h2>
+            <p class="subtitle">What's your name?</p>
+
+            <input
+                type="text"
+                class="topic-input"
+                id="nameInput"
+                placeholder="Type your name..."
+                maxlength="20"
+                style="text-align: center; font-size: 28px;"
+            />
+
+            <button class="btn btn-large btn-primary" onclick="saveName()" style="margin-top: 20px;">
+                Start Exploring!
+            </button>
+        </div>
+
+        <!-- Welcome Screen with Topic Input -->
+        <div id="welcome" class="screen">
+            <h1>🌟 Curiosity Explorer 🌟</h1>
+            <p class="subtitle">Hi <span id="userName">Explorer</span>! What do you want to explore today?</p>
 
             <div class="topic-input-container">
                 <input
@@ -2948,9 +2969,56 @@
             }
         });
 
-        // Initialize
-        updateBadgeDisplay();
-        updateDashboard();
+        // Name management functions
+        function getSavedName() {
+            return localStorage.getItem('curiosityExplorerName');
+        }
+
+        function saveName() {
+            const nameInput = document.getElementById('nameInput').value.trim();
+            if (!nameInput) {
+                alert('Please enter your name!');
+                return;
+            }
+
+            localStorage.setItem('curiosityExplorerName', nameInput);
+            displayUserName(nameInput);
+            showScreen('welcome');
+        }
+
+        function displayUserName(name) {
+            const userNameEl = document.getElementById('userName');
+            if (userNameEl) {
+                userNameEl.textContent = name;
+            }
+        }
+
+        // Initialize app
+        function initializeApp() {
+            const savedName = getSavedName();
+
+            if (savedName) {
+                // Name exists - go to welcome screen
+                displayUserName(savedName);
+                document.getElementById('welcome').classList.add('active');
+            } else {
+                // No name - show name entry screen
+                document.getElementById('nameEntry').classList.add('active');
+            }
+
+            updateBadgeDisplay();
+            updateDashboard();
+        }
+
+        // Allow Enter key to submit name
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveName();
+            }
+        });
+
+        // Run initialization
+        initializeApp();
     </script>
 </body>
 </html>
