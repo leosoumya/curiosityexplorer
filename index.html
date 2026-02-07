@@ -992,175 +992,16 @@
             <button class="btn btn-success" onclick="showRecap()" id="recapBtn" style="display: none;">See What I Learned!</button>
         </div>
 
-        <!-- Mission 1: Build Something -->
-        <div id="mission1-intro" class="screen">
-            <h2 id="mission1IntroTitle">Make Something</h2>
-            <p class="subtitle" id="mission1IntroSubtitle">You get to build something!<br>Pick the parts you think will work best.</p>
-            <button class="btn btn-primary" onclick="showScreen('mission1-build')">Let's Build!</button>
-            <button class="btn back-btn" onclick="showScreen('welcome')">Return to Home</button>
-        </div>
-
-        <div id="mission1-build" class="screen">
-            <div class="progress-indicator">Step 1 of 3: Pick Your Parts</div>
-            <h2 id="mission1BuildTitle">Choose Your Parts</h2>
-
-            <!-- Live preview - hidden for non-plane topics -->
-            <div id="buildPreview" class="plane-preview" style="background: linear-gradient(to bottom, #87CEEB 60%, #90EE90 100%); border-radius: 15px; padding: 20px; margin: 15px 0; text-align: center; position: relative; height: 120px; display: none;">
-                <svg id="planePreview" width="180" height="100" viewBox="0 0 120 80" style="filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));">
-                    <!-- Tail -->
-                    <polygon class="plane-tail" points="10,35 25,25 25,45" style="fill: #e74c3c;"/>
-                    <!-- Body -->
-                    <ellipse class="plane-body" cx="60" cy="40" rx="45" ry="15" style="fill: #5a9fd4;"/>
-                    <!-- Wing (will change) -->
-                    <ellipse id="previewWing" class="plane-wing" cx="55" cy="40" rx="15" ry="25" style="fill: #f39c12;"/>
-                    <!-- Nose (will change) -->
-                    <circle id="previewNose" cx="100" cy="40" r="10" style="fill: #3498db;"/>
-                    <!-- Windows -->
-                    <circle cx="45" cy="37" r="4" style="fill: #ecf0f1;"/>
-                    <circle cx="60" cy="37" r="4" style="fill: #ecf0f1;"/>
-                    <circle cx="75" cy="37" r="4" style="fill: #ecf0f1;"/>
-                </svg>
-                <div id="previewLabel" style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #666;">Your plane!</div>
-            </div>
-
-            <p id="part1Label" style="text-align: center; font-size: 20px; margin: 20px 0; color: #2c3e50;">Pick wings:</p>
-            <div class="plane-parts-selector" id="part1Options">
-                <!-- Dynamically populated by startMission1() -->
-            </div>
-
-            <p id="part2Label" style="text-align: center; font-size: 20px; margin: 20px 0; color: #2c3e50;">Pick a nose:</p>
-            <div class="plane-parts-selector" id="part2Options">
-                <!-- Dynamically populated by startMission1() -->
-            </div>
-
-            <button class="btn btn-success btn-large" onclick="testPlane()" id="testBtn" style="display: none;">Test My Plane!</button>
-            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 15px;">🏠 Home</button>
-        </div>
-
-        <div id="mission1-result" class="screen">
-            <div class="progress-indicator">Step 2 of 3: See What Happens</div>
-            <h2 id="mission1ResultTitle">Let's see how it works!</h2>
-            <div class="plane-visual" id="planeVisual" style="display: none;">
-                <!-- Sky elements -->
-                <div class="sun"></div>
-                <div class="cloud" style="width: 80px; height: 40px; top: 30px; animation-delay: 0s;"></div>
-                <div class="cloud" style="width: 60px; height: 30px; top: 80px; animation-delay: 5s;"></div>
-
-                <!-- Distance markers -->
-                <div class="distance-marker" style="left: 30%;">Short</div>
-                <div class="distance-marker" style="left: 55%;">Medium</div>
-                <div class="distance-marker" style="left: 80%;">Far!</div>
-
-                <!-- Ground and runway -->
-                <div class="ground"></div>
-                <div class="runway"></div>
-                <div class="runway-line"></div>
-
-                <!-- The plane (SVG) -->
-                <svg id="planeAnimation" class="plane-svg" viewBox="0 0 120 80">
-                    <!-- Tail -->
-                    <polygon id="planeTail" class="plane-tail" points="10,35 25,25 25,45"/>
-                    <!-- Body -->
-                    <ellipse id="planeBody" class="plane-body" cx="60" cy="40" rx="45" ry="15"/>
-                    <!-- Wing -->
-                    <ellipse id="planeWing" class="plane-wing" cx="55" cy="40" rx="20" ry="35"/>
-                    <!-- Nose -->
-                    <path id="planeNose" class="plane-nose" d="M95,40 Q115,40 105,30 Q95,35 95,40 Q95,45 105,50 Q115,40 95,40"/>
-                    <!-- Windows -->
-                    <circle class="plane-window" cx="45" cy="37" r="5"/>
-                    <circle class="plane-window" cx="60" cy="37" r="5"/>
-                    <circle class="plane-window" cx="75" cy="37" r="5"/>
-                </svg>
-
-                <!-- Flight result label -->
-                <div id="flightLabel" class="flight-label"></div>
-            </div>
-            <!-- Generic result visual for non-plane topics -->
-            <div id="genericResultVisual" class="feedback-box" style="display: none; font-size: 60px; padding: 40px; text-align: center;">
-                <div id="resultEmoji">🎯</div>
-            </div>
-            <div class="feedback-box" id="flightFeedback"></div>
-            <button class="btn btn-primary" onclick="showScreen('mission1-improve')">Let's Make It Better!</button>
-            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
-        </div>
-
-        <div id="mission1-improve" class="screen">
-            <div class="progress-indicator">Step 3 of 3: Improve Your Design</div>
-            <h2 id="mission1ImproveTitle">What could make it work better?</h2>
-            <p class="subtitle">Pick one thing to change.</p>
-
-            <div class="button-group" style="flex-direction: column; align-items: center;" id="improveButtons">
-                <button class="choice-btn" onclick="improveChoice('part1')">
-                    ✨ Change the first part
-                </button>
-                <button class="choice-btn" onclick="improveChoice('part2')">
-                    ✨ Change the second part
-                </button>
-                <button class="choice-btn" onclick="improveChoice('both')">
-                    ⭐ Change both parts
-                </button>
-            </div>
-            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
-        </div>
-
-        <div id="mission1-final" class="screen">
-            <div class="celebration">
-                <div class="celebration-emoji">🎉</div>
-                <h2>Amazing Work!</h2>
-                <div class="feedback-box" id="improvementFeedback"></div>
-                <div class="plane-visual" id="improvedPlaneVisual" style="display: none;">
-                    <!-- Sky elements -->
-                    <div class="sun"></div>
-                    <div class="cloud" style="width: 80px; height: 40px; top: 30px; animation-delay: 0s;"></div>
-
-                    <!-- Distance markers -->
-                    <div class="distance-marker" style="left: 30%;">Short</div>
-                    <div class="distance-marker" style="left: 55%;">Medium</div>
-                    <div class="distance-marker" style="left: 80%;">Far!</div>
-
-                    <!-- Ground and runway -->
-                    <div class="ground"></div>
-                    <div class="runway"></div>
-                    <div class="runway-line"></div>
-
-                    <!-- The improved plane (SVG) -->
-                    <svg id="improvedPlaneAnimation" class="plane-svg" viewBox="0 0 120 80">
-                        <!-- Tail -->
-                        <polygon class="plane-tail" points="10,35 25,25 25,45"/>
-                        <!-- Body -->
-                        <ellipse class="plane-body" cx="60" cy="40" rx="45" ry="15"/>
-                        <!-- Medium Wing (optimal) -->
-                        <ellipse class="plane-wing" cx="55" cy="40" rx="20" ry="35"/>
-                        <!-- Pointy Nose (optimal) -->
-                        <polygon class="plane-nose" points="95,40 120,40 95,30 95,50"/>
-                        <!-- Windows -->
-                        <circle class="plane-window" cx="45" cy="37" r="5"/>
-                        <circle class="plane-window" cx="60" cy="37" r="5"/>
-                        <circle class="plane-window" cx="75" cy="37" r="5"/>
-                    </svg>
-
-                    <!-- Success label -->
-                    <div class="flight-label label-great" style="opacity: 0; animation: fadeInLabel 0.5s ease-out 2s forwards;">Super Flight!</div>
-                </div>
-                <p class="subtitle">You earned a badge!</p>
-                <div class="badge-container" id="mission1BadgeDisplay">
-                    <div class="badge">✈️ Plane Builder</div>
-                </div>
-                <button class="btn btn-success" onclick="completeMission(1)">Continue</button>
-                <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
-            </div>
-        </div>
-
         <!-- Mission 2: Spot the Mistake -->
         <div id="mission2-intro" class="screen">
             <h2>Spot the Mistake</h2>
-            <p class="subtitle">Even smart computers can get facts wrong!<br>Can you find which fact is a mistake?</p>
-            <button class="btn btn-primary" onclick="showScreen('mission2-facts')">Let's Look!</button>
-            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+            <p class="subtitle">Even smart computers can get facts wrong!<br>Can you find 5 wrong facts?</p>
+            <button class="btn btn-primary" onclick="startMission2Questions()">Let's Look!</button>
+            <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
         </div>
 
         <div id="mission2-facts" class="screen">
-            <div class="progress-indicator">Step 1 of 2: Find the Wrong Fact</div>
+            <div class="progress-indicator" id="mission2Progress">Question 1 of 5</div>
             <h2>Which fact seems wrong?</h2>
             <div class="question-mark">❓</div>
 
@@ -1172,7 +1013,19 @@
                     🚗 Planes drive on roads to take off
                 </button>
             </div>
-            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
+            <button class="btn back-btn" onclick="showScreen('missionSelect')" style="margin-top: 20px;">🏠 Back</button>
+        </div>
+
+        <div id="mission2-correct" class="screen">
+            <div class="celebration">
+                <div class="celebration-emoji">✅</div>
+                <h2>Correct!</h2>
+                <div class="feedback-box" id="mission2CorrectFeedback">
+                    That's right!
+                </div>
+                <p class="subtitle" id="mission2CorrectProgress">1 down, 4 to go!</p>
+                <button class="btn btn-primary" onclick="nextMission2Question()">Next Question</button>
+            </div>
         </div>
 
         <div id="mission2-hint" class="screen">
@@ -1183,25 +1036,24 @@
                 What do you already know?
             </div>
             <button class="btn btn-primary" onclick="showScreen('mission2-facts')">Try Again!</button>
-            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+            <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
         </div>
 
         <div id="mission2-success" class="screen">
             <div class="celebration">
                 <div class="celebration-emoji">🎯</div>
-                <h2>You Found It!</h2>
+                <h2>Amazing! You Found All 5!</h2>
                 <div class="feedback-box">
-                    That's right!<br><br>
-                    Great thinking!<br><br>
-                    Sometimes computers or people get facts wrong.<br>
-                    It's good to check if something feels strange!
+                    Wow! You spotted 5 wrong facts!<br><br>
+                    You're a great fact checker!<br><br>
+                    Always remember to question things that seem strange!
                 </div>
                 <p class="subtitle">You earned a badge!</p>
                 <div class="badge-container" id="mission2BadgeDisplay">
                     <div class="badge">🔍 Truth Checker</div>
                 </div>
                 <button class="btn btn-success" onclick="completeMission(2)">Continue</button>
-                <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
+                <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
             </div>
         </div>
 
@@ -1853,6 +1705,7 @@
         // Topic Selection
         function selectTopic(topic) {
             document.getElementById('topicInput').value = topic;
+            startExploring();
         }
 
         function startExploring() {
@@ -1916,10 +1769,6 @@
             document.getElementById('missionSelectTitle').textContent = `Explore ${gameState.currentTopic}!`;
 
             missionGrid.innerHTML = `
-                <div class="mission-card" onclick="startMission1()">
-                    <h3>${topicData.mission1.icon} ${topicData.mission1.title}</h3>
-                    <p>${topicData.mission1.description}</p>
-                </div>
                 <div class="mission-card" onclick="startMission2()">
                     <h3>${topicData.mission2.icon} ${topicData.mission2.title}</h3>
                     <p>${topicData.mission2.description}</p>
@@ -2030,7 +1879,7 @@
                 <div class="recap-card">
                     <div class="recap-card-icon">🎯</div>
                     <div class="recap-card-title">Missions Completed</div>
-                    <div class="recap-card-content">${gameState.completedMissions.length} out of 3</div>
+                    <div class="recap-card-content">${gameState.completedMissions.length} out of 2</div>
                 </div>
                 <div class="recap-card">
                     <div class="recap-card-icon">💡</div>
@@ -2700,6 +2549,8 @@
 
         // Store the current fact for Mission 2
         let currentMission2Fact = null;
+        let mission2QuestionCount = 0;
+        let mission2ConceptsLearned = [];
 
         // Get a random fact that hasn't been used recently
         function getRandomFact(facts, topicKey) {
@@ -2730,17 +2581,36 @@
         // Mission 2: Spot the Mistake (Dynamic)
         function startMission2() {
             const m2 = gameState.currentTopicData.mission2;
+
+            // Update the intro screen
+            document.querySelector('#mission2-intro h2').textContent = m2.title;
+            document.querySelector('#mission2-intro .subtitle').innerHTML = `Even smart computers can get facts wrong!<br>Can you find 5 wrong facts?`;
+
+            // Reset question count
+            mission2QuestionCount = 0;
+            mission2ConceptsLearned = [];
+
+            // Track the question
+            gameState.questionsAsked.push(`Which facts about ${gameState.currentTopic} are wrong?`);
+
+            showScreen('mission2-intro');
+        }
+
+        function startMission2Questions() {
+            mission2QuestionCount = 0;
+            mission2ConceptsLearned = [];
+            loadMission2Question();
+        }
+
+        function loadMission2Question() {
+            const m2 = gameState.currentTopicData.mission2;
             const topicKey = gameState.currentTopic.toLowerCase();
 
             // Get a random fact from the facts array
             currentMission2Fact = getRandomFact(m2.facts, topicKey);
 
-            // Update the intro screen
-            document.querySelector('#mission2-intro h2').textContent = m2.title;
-            document.querySelector('#mission2-intro .subtitle').innerHTML = `Even smart computers can get facts wrong!<br>Can you find which fact is a mistake?`;
-
-            // Update the facts screen
-            document.querySelector('#mission2-facts h2').textContent = 'Which fact seems wrong?';
+            // Update progress indicator
+            document.getElementById('mission2Progress').textContent = `Question ${mission2QuestionCount + 1} of 5`;
 
             // Randomize the order of correct and wrong facts
             const choiceButtons = document.querySelectorAll('#mission2-facts .choice-btn');
@@ -2764,34 +2634,56 @@
             hintText.innerHTML = `Think about ${gameState.currentTopic.toLowerCase()}.<br>What do you know about them?`;
             hintBox.innerHTML = `Let's think more carefully.<br>What have you learned about ${gameState.currentTopic.toLowerCase()}?`;
 
-            // Track the question
-            gameState.questionsAsked.push(`Which fact about ${gameState.currentTopic} is wrong?`);
+            showScreen('mission2-facts');
+        }
 
-            showScreen('mission2-intro');
+        function nextMission2Question() {
+            if (mission2QuestionCount >= 5) {
+                // All 5 questions answered - show success
+                showMission2Success();
+            } else {
+                loadMission2Question();
+            }
+        }
+
+        function showMission2Success() {
+            const topicData = gameState.currentTopicData;
+
+            // Add all learned concepts to gameState
+            mission2ConceptsLearned.forEach(concept => {
+                gameState.conceptsLearned.push(concept);
+            });
+
+            // Update badge display dynamically
+            const badgeDisplay = document.getElementById('mission2BadgeDisplay');
+            const badgeName = `🔍 ${topicData.name} Checker`;
+            badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
+
+            showScreen('mission2-success');
         }
 
         function checkFact(choice) {
             gameState.ideasTested.push(choice === 'wrong' ? 'Found the wrong fact' : 'Tested a fact');
 
             if (choice === 'wrong') {
-                const topicData = gameState.currentTopicData;
+                mission2QuestionCount++;
+                mission2ConceptsLearned.push(currentMission2Fact.concept);
 
-                // Update success message using the current fact's concept
-                document.querySelector('#mission2-success .feedback-box').innerHTML = `
-                    That's right!<br><br>
-                    ${currentMission2Fact.concept}<br><br>
-                    Great thinking! Sometimes computers or people get facts wrong.<br>
-                    It's good to check if something feels strange!
-                `;
-
-                gameState.conceptsLearned.push(currentMission2Fact.concept);
-
-                // Update badge display dynamically
-                const badgeDisplay = document.getElementById('mission2BadgeDisplay');
-                const badgeName = `🔍 ${topicData.name} Checker`;
-                badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
-
-                showScreen('mission2-success');
+                if (mission2QuestionCount >= 5) {
+                    // All 5 done - go to success
+                    showMission2Success();
+                } else {
+                    // Show correct feedback and prepare for next question
+                    document.getElementById('mission2CorrectFeedback').innerHTML = `
+                        That's right!<br><br>
+                        ${currentMission2Fact.concept}
+                    `;
+                    const remaining = 5 - mission2QuestionCount;
+                    document.getElementById('mission2CorrectProgress').textContent =
+                        remaining === 1 ? `${mission2QuestionCount} down, 1 more to go!` :
+                        `${mission2QuestionCount} down, ${remaining} to go!`;
+                    showScreen('mission2-correct');
+                }
             } else {
                 showScreen('mission2-hint');
             }
@@ -2982,7 +2874,7 @@
                     .map(badge => `<div class="badge">${badge.name}</div>`)
                     .join('');
 
-                if (gameState.completedMissions.length === 3) {
+                if (gameState.completedMissions.length === 2) {
                     badgeContainer.innerHTML += `
                         <div style="width: 100%; text-align: center; margin-top: 30px;">
                             <div class="celebration-emoji">🎉</div>
