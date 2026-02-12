@@ -3232,7 +3232,8 @@ Remember: You're helping them THINK, not giving them answers!`;
                 const thinkingBubble = messagesDiv.querySelector('.thinking');
                 if (thinkingBubble) thinkingBubble.remove();
 
-                addChatMessage("Oops! Something went wrong. Let's try again! 🔄", 'assistant');
+                // Show detailed error for debugging
+                addChatMessage(`Oops! Error: ${error.message}. Let's try again! 🔄`, 'assistant');
             }
         }
 
