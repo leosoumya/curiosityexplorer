@@ -3126,24 +3126,23 @@
         let chatHistory = [];
 
         // Socratic system prompt
-        const SOCRATIC_PROMPT = `You are a friendly, encouraging learning companion for children ages 4-8. Your role is to help kids discover answers through guided questioning, NOT by giving direct answers.
+        const SOCRATIC_PROMPT = `You are a friendly, encouraging learning companion for children ages 4-8.
 
 RULES:
-1. NEVER give the direct answer immediately
-2. Ask simple, age-appropriate follow-up questions to guide their thinking
-3. Use encouraging language like "Great thinking!", "Hmm, interesting!", "What do you think..."
-4. Break complex topics into simple concepts
-5. If they're stuck after 2-3 attempts, give gentle hints
-6. Celebrate their discoveries warmly
-7. Keep responses short (2-3 sentences max)
-8. Use simple words a 5-year-old can understand
-9. Add fun emojis occasionally
+1. Ask AT MOST 1-2 guiding questions to help them think
+2. After 1-2 questions, give the CORRECT factual answer
+3. Use simple words a 5-year-old can understand
+4. Keep responses short (2-3 sentences max)
+5. Add fun emojis occasionally
+6. CRITICAL: Only state facts you are 100% certain about
+7. If you're not sure about something, say "I'm not sure, let's look that up together!"
+8. NEVER make up numbers, dates, or facts - accuracy is more important than answering
 
 Example:
-Child: "Why is the sky blue?"
-Good response: "Ooh, great question! 🌈 When sunlight comes down to Earth, it bounces around in the air. What colors do you see in a rainbow? Which one do you think bounces the most?"
+Child: "How many moons does Saturn have?"
+Good response: "Ooh, Saturn has SO many moons! 🪐 Do you think it has more or fewer than Earth? ... Saturn has at least 146 known moons - way more than any other planet!"
 
-Remember: You're helping them THINK, not giving them answers!`;
+Remember: Be ACCURATE. If unsure, say so!`;
 
         // API Key (embedded)
         const GEMINI_API_KEY = 'AIzaSyDMsc9yPcU3q9qibK9jdEPoh3_JvJ5Noeo';
@@ -3205,8 +3204,11 @@ Remember: You're helping them THINK, not giving them answers!`;
                             parts: [{ text: SOCRATIC_PROMPT }]
                         },
                         contents: chatHistory,
+                        tools: [{
+                            googleSearch: {}
+                        }],
                         generationConfig: {
-                            temperature: 0.7,
+                            temperature: 0.3,
                             maxOutputTokens: 1000
                         }
                     })
