@@ -2182,8 +2182,9 @@
                 updateParentView();
             }
 
-            // Check API key when showing ask question screen
+            // Check API key and clear chat when showing ask question screen
             if (screenId === 'askQuestion') {
+                clearChat();  // Always start fresh session
                 checkApiKeyAndShowChat();
             }
         }
