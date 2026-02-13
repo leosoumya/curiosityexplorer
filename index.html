@@ -3237,10 +3237,12 @@ IMPORTANT:
                 const timeoutId = setTimeout(() => controller.abort(), 45000);
 
                 // Build conversation context for Responses API
-                const conversationContext = chatHistory.map(m => `${m.role}: ${m.content}`).join('\n');
-                const fullInput = conversationContext ?
-                    `Previous conversation:\n${conversationContext}\n\nNow answer this new message from the child.` :
-                    question;
+                // Only include user messages in context (ignore previous assistant responses to avoid stale data)
+                const userMessages = chatHistory.filter(m => m.role === 'user').map(m => m.content);
+                const turnNumber = userMessages.length;
+                const fullInput = `Turn ${turnNumber} - Child asks: "${question}"
+
+IMPORTANT: This is turn ${turnNumber}. ${turnNumber >= 3 ? 'Give the direct answer now. SEARCH THE WEB for current facts - do NOT use any numbers from memory.' : 'Ask a guiding question only, no facts yet.'}`;
 
                 // Use Responses API with web search for accurate facts
                 const response = await fetch('https://api.openai.com/v1/responses', {
