@@ -3292,10 +3292,16 @@ Remember: You're helping them THINK, not giving them answers!`;
                 return;
             }
 
-            isListening = true;
-            document.getElementById('voiceBtn').classList.add('listening');
-            document.getElementById('voiceBtn').innerHTML = '🔴';
-            recognition.start();
+            try {
+                isListening = true;
+                document.getElementById('voiceBtn').classList.add('listening');
+                document.getElementById('voiceBtn').innerHTML = '🔴';
+                recognition.start();
+            } catch (error) {
+                console.error('Voice start error:', error);
+                alert('Could not start voice input. Please allow microphone access.');
+                stopVoiceInput();
+            }
         }
 
         function stopVoiceInput() {
