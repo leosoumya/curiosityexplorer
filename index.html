@@ -492,7 +492,7 @@
             background: #f8f9fa;
             border-radius: 20px;
             padding: 20px;
-            max-height: 400px;
+            max-height: 500px;
             display: flex;
             flex-direction: column;
         }
@@ -502,17 +502,18 @@
             overflow-y: auto;
             padding: 10px;
             min-height: 200px;
-            max-height: 280px;
+            max-height: 380px;
         }
 
         .chat-bubble {
             padding: 12px 18px;
             border-radius: 18px;
             margin-bottom: 12px;
-            max-width: 85%;
+            max-width: 95%;
             line-height: 1.5;
             font-size: 16px;
             animation: slideIn 0.3s ease;
+            word-wrap: break-word;
         }
 
         @keyframes slideIn {
@@ -3206,7 +3207,7 @@ Remember: You're helping them THINK, not giving them answers!`;
                         contents: chatHistory,
                         generationConfig: {
                             temperature: 0.7,
-                            maxOutputTokens: 500
+                            maxOutputTokens: 1000
                         }
                     })
                 });
