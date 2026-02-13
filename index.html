@@ -3199,12 +3199,22 @@ IMPORTANT:
             }
         }
 
+        // Convert markdown links to clickable HTML links
+        function convertMarkdownLinks(text) {
+            // Convert [text](url) to clickable links
+            return text.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+                '<a href="$2" target="_blank" style="color: #667eea; text-decoration: underline;">$1</a>');
+        }
+
         // Add message to chat
         function addChatMessage(text, role) {
             const messagesDiv = document.getElementById('chatMessages');
             const bubble = document.createElement('div');
             bubble.className = `chat-bubble ${role}`;
-            bubble.innerHTML = text;
+            // Convert markdown links and bold text to HTML
+            let formattedText = convertMarkdownLinks(text);
+            formattedText = formattedText.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            bubble.innerHTML = formattedText;
             messagesDiv.appendChild(bubble);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
