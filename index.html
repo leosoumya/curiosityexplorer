@@ -3406,38 +3406,83 @@ IMPORTANT: Answer this question DIRECTLY first, then ask a follow-up. Do NOT jus
         let isListening = false;
 
         function initVoiceRecognition() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = 'en-US';
+            // Check for Speech Recognition support
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-                recognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    document.getElementById('questionInput').value = transcript;
-                    stopVoiceInput();
-                };
-
-                recognition.onerror = function(event) {
-                    console.error('Speech recognition error:', event.error);
-                    stopVoiceInput();
-                };
-
-                recognition.onend = function() {
-                    stopVoiceInput();
-                };
+            if (!SpeechRecognition) {
+                console.log('Speech Recognition not supported');
+                return false;
             }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true; // Show partial results on mobile
+            recognition.lang = 'en-US';
+            recognition.maxAlternatives = 1;
+
+            recognition.onresult = function(event) {
+                const result = event.results[event.results.length - 1];
+                const transcript = result[0].transcript;
+                document.getElementById('questionInput').value = transcript;
+
+                // Auto-stop when we get a final result
+                if (result.isFinal) {
+                    stopVoiceInput();
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                let errorMsg = 'Voice input error. ';
+
+                switch(event.error) {
+                    case 'not-allowed':
+                        errorMsg = 'Microphone access denied. Please allow microphone in browser settings.';
+                        break;
+                    case 'no-speech':
+                        errorMsg = 'No speech detected. Please try again.';
+                        break;
+                    case 'network':
+                        errorMsg = 'Network error. Please check your internet connection.';
+                        break;
+                    case 'audio-capture':
+                        errorMsg = 'No microphone found. Please check your device.';
+                        break;
+                    default:
+                        errorMsg = 'Voice input error: ' + event.error;
+                }
+
+                if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    alert(errorMsg);
+                }
+                stopVoiceInput();
+            };
+
+            recognition.onend = function() {
+                stopVoiceInput();
+            };
+
+            return true;
         }
 
-        function startVoiceInput() {
-            if (!recognition) {
-                initVoiceRecognition();
+        async function startVoiceInput() {
+            // First, try to get microphone permission on mobile
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    stream.getTracks().forEach(track => track.stop()); // Release immediately
+                } catch (err) {
+                    alert('Please allow microphone access to use voice input.');
+                    return;
+                }
             }
 
             if (!recognition) {
-                alert('Voice input is not supported in this browser. Try Chrome!');
-                return;
+                const supported = initVoiceRecognition();
+                if (!supported) {
+                    alert('Voice input is not supported on this device. Please type your question instead.');
+                    return;
+                }
             }
 
             if (isListening) {
@@ -3447,22 +3492,35 @@ IMPORTANT: Answer this question DIRECTLY first, then ask a follow-up. Do NOT jus
 
             try {
                 isListening = true;
-                document.getElementById('voiceBtn').classList.add('listening');
-                document.getElementById('voiceBtn').innerHTML = '🔴';
+                const voiceBtn = document.getElementById('voiceBtn');
+                voiceBtn.classList.add('listening');
+                voiceBtn.innerHTML = '🔴';
                 recognition.start();
             } catch (error) {
                 console.error('Voice start error:', error);
-                alert('Could not start voice input. Please allow microphone access.');
-                stopVoiceInput();
+                if (error.message.includes('already started')) {
+                    recognition.stop();
+                    setTimeout(() => startVoiceInput(), 100);
+                } else {
+                    alert('Could not start voice input. Please try again.');
+                    stopVoiceInput();
+                }
             }
         }
 
         function stopVoiceInput() {
             isListening = false;
-            document.getElementById('voiceBtn').classList.remove('listening');
-            document.getElementById('voiceBtn').innerHTML = '🎤';
+            const voiceBtn = document.getElementById('voiceBtn');
+            if (voiceBtn) {
+                voiceBtn.classList.remove('listening');
+                voiceBtn.innerHTML = '🎤';
+            }
             if (recognition) {
-                recognition.stop();
+                try {
+                    recognition.stop();
+                } catch (e) {
+                    // Ignore stop errors
+                }
             }
         }
 
