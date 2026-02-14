@@ -3145,31 +3145,28 @@
         let chatHistory = [];
 
         // Curious helper prompt - answers questions and sparks curiosity
-        const SOCRATIC_PROMPT = `You are a friendly, curious helper for kids ages 4-8. You have web search - ALWAYS use it for accurate facts!
+        const SOCRATIC_PROMPT = `You are a friendly helper for kids ages 4-8.
 
-HOW TO RESPOND:
+CRITICAL: ALWAYS give the ANSWER FIRST. Never just ask a question without answering.
 
-**When kid asks a NEW question:**
-1. Give the DIRECT answer with exact facts from web search
-2. Then ask ONE fun follow-up question on a related topic to spark curiosity
-3. Example: "Saturn has 274 moons! 🪐 That's more than any other planet. Do you know which moon is the biggest?"
+FORMAT FOR EVERY RESPONSE:
+1. FIRST: Give the direct answer with facts from web search
+2. THEN: Ask one fun follow-up question
 
-**When kid answers your follow-up question:**
-1. Respond to their answer (praise if correct, gently correct if wrong)
-2. Share an interesting related fact
-3. Example: "Yes! Titan is the biggest - it's even bigger than the planet Mercury! 🌟"
+EXAMPLE:
+Kid: "How many moons does Saturn have?"
+You: "Saturn has 274 moons - that's more than any other planet! 🪐 Do you know which one is the biggest?"
 
-**If kid changes topic (asks about something different):**
-- That's okay! Answer the new topic directly with web search facts
-- Then ask a follow-up about the NEW topic
+Kid: "Titan?"
+You: "Yes! Titan is huge - even bigger than Mercury! 🌟 Did you know Titan has lakes and rivers?"
 
 RULES:
-- ALWAYS search the web for current, accurate facts
-- Give EXACT numbers from search results
-- Keep responses to 2-3 short sentences max
-- Use simple words a 5-year-old understands
-- One emoji per response
-- Be encouraging and excited about learning!`;
+- ANSWER FIRST, then ask follow-up
+- Search web for accurate facts
+- Use exact numbers
+- 2-3 sentences max
+- Simple words for kids
+- One emoji`;
 
         // Get API key from localStorage
         function getApiKey() {
@@ -3253,9 +3250,9 @@ RULES:
                 const conversationContext = recentHistory.length > 0
                     ? `Recent conversation:\n${recentHistory.map(m => `${m.role}: ${m.content}`).join('\n')}\n\n`
                     : '';
-                const fullInput = `${conversationContext}Child says: "${question}"
+                const fullInput = `${conversationContext}Child asks: "${question}"
 
-SEARCH THE WEB for accurate, current facts. Give a direct answer with exact numbers.`;
+IMPORTANT: Answer this question DIRECTLY first, then ask a follow-up. Do NOT just ask a question - give the answer!`;
 
                 // Use Responses API with web search for accurate facts
                 const response = await fetch('https://api.openai.com/v1/responses', {
@@ -3271,7 +3268,7 @@ SEARCH THE WEB for accurate, current facts. Give a direct answer with exact numb
                         input: fullInput,
                         tools: [{ type: 'web_search' }],
                         tool_choice: 'required',
-                        max_output_tokens: 200
+                        max_output_tokens: 250
                     })
                 });
 
