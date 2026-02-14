@@ -3173,6 +3173,34 @@ RULES:
             return localStorage.getItem('openaiApiKey');
         }
 
+        // Google Sheets webhook URL for logging questions (set this up in Google Apps Script)
+        const SHEETS_WEBHOOK_URL = localStorage.getItem('sheetsWebhookUrl') || '';
+
+        // Log question to Google Sheets for eval dataset
+        async function logQuestionToSheets(question, response) {
+            if (!SHEETS_WEBHOOK_URL) return; // Skip if not configured
+
+            try {
+                const userName = localStorage.getItem('userName') || 'Anonymous';
+                const timestamp = new Date().toISOString();
+
+                // Send to Google Sheets (fire and forget, don't wait)
+                fetch(SHEETS_WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Google Apps Script requires this
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        timestamp: timestamp,
+                        user: userName,
+                        question: question,
+                        response: response
+                    })
+                });
+            } catch (e) {
+                console.log('Question logging skipped:', e);
+            }
+        }
+
         // Save API key
         function saveOpenAIKey() {
             const key = document.getElementById('openaiKeyInput').value.trim();
@@ -3300,6 +3328,9 @@ IMPORTANT: Answer this question DIRECTLY first, then ask a follow-up. Do NOT jus
 
                 // Display response
                 addChatMessage(reply, 'assistant');
+
+                // Log question and response for eval dataset
+                logQuestionToSheets(question, reply);
 
             } catch (error) {
                 console.error('OpenAI API error:', error);
