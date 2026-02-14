@@ -1471,6 +1471,17 @@
                     </p>
                 </div>
 
+                <div style="background: #fff3e0; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: center;">
+                    <h3 style="font-size: 18px; color: #e65100; margin-bottom: 10px;">📊 Question Log (Eval Dataset)</h3>
+                    <p style="color: #555; line-height: 1.6; margin-bottom: 10px;">
+                        Download all questions asked by kids to build an evaluation dataset.
+                    </p>
+                    <p id="questionCount" style="color: #888; font-size: 14px; margin-bottom: 10px;">Loading...</p>
+                    <button onclick="exportQuestionsCSV()" style="display: inline-block; background: #ff9800; color: white; padding: 10px 20px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer;">
+                        Download CSV
+                    </button>
+                </div>
+
                 <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: center;">
                     <h3 style="font-size: 18px; color: #1976d2; margin-bottom: 10px;">💬 We'd Love Your Feedback!</h3>
                     <p style="color: #555; line-height: 1.6; margin-bottom: 10px;">
@@ -2191,6 +2202,13 @@
 
         // Populate parent view with topics and facts learned
         function updateParentView() {
+            // Update question count for eval dataset
+            const questionCountEl = document.getElementById('questionCount');
+            if (questionCountEl) {
+                const count = getQuestionCount();
+                questionCountEl.textContent = `${count} question${count !== 1 ? 's' : ''} logged`;
+            }
+
             const parentTopicsList = document.getElementById('parentTopicsList');
             const explorations = getAllExplorations();
             const topics = Object.values(explorations);
@@ -3173,32 +3191,51 @@ RULES:
             return localStorage.getItem('openaiApiKey');
         }
 
-        // Google Sheets webhook URL for logging questions (set this up in Google Apps Script)
-        const SHEETS_WEBHOOK_URL = localStorage.getItem('sheetsWebhookUrl') || '';
-
-        // Log question to Google Sheets for eval dataset
-        async function logQuestionToSheets(question, response) {
-            if (!SHEETS_WEBHOOK_URL) return; // Skip if not configured
-
+        // Log questions locally for eval dataset
+        function logQuestion(question, response) {
             try {
-                const userName = localStorage.getItem('userName') || 'Anonymous';
-                const timestamp = new Date().toISOString();
-
-                // Send to Google Sheets (fire and forget, don't wait)
-                fetch(SHEETS_WEBHOOK_URL, {
-                    method: 'POST',
-                    mode: 'no-cors', // Google Apps Script requires this
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        timestamp: timestamp,
-                        user: userName,
-                        question: question,
-                        response: response
-                    })
+                const logs = JSON.parse(localStorage.getItem('questionLogs') || '[]');
+                logs.push({
+                    timestamp: new Date().toISOString(),
+                    user: localStorage.getItem('userName') || 'Anonymous',
+                    question: question,
+                    response: response
                 });
+                localStorage.setItem('questionLogs', JSON.stringify(logs));
             } catch (e) {
-                console.log('Question logging skipped:', e);
+                console.log('Question logging error:', e);
             }
+        }
+
+        // Export questions as CSV file
+        function exportQuestionsCSV() {
+            const logs = JSON.parse(localStorage.getItem('questionLogs') || '[]');
+            if (logs.length === 0) {
+                alert('No questions logged yet!');
+                return;
+            }
+
+            // Create CSV content
+            const headers = 'Timestamp,User,Question,Response\n';
+            const rows = logs.map(log =>
+                `"${log.timestamp}","${log.user}","${log.question.replace(/"/g, '""')}","${log.response.replace(/"/g, '""')}"`
+            ).join('\n');
+            const csv = headers + rows;
+
+            // Download file
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `curiosity-questions-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Get question count for display
+        function getQuestionCount() {
+            const logs = JSON.parse(localStorage.getItem('questionLogs') || '[]');
+            return logs.length;
         }
 
         // Save API key
@@ -3330,7 +3367,7 @@ IMPORTANT: Answer this question DIRECTLY first, then ask a follow-up. Do NOT jus
                 addChatMessage(reply, 'assistant');
 
                 // Log question and response for eval dataset
-                logQuestionToSheets(question, reply);
+                logQuestion(question, reply);
 
             } catch (error) {
                 console.error('OpenAI API error:', error);
