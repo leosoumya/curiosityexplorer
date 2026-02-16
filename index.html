@@ -1685,12 +1685,12 @@
             if (!cleanText) return;
 
             const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.rate = 1.0; // Natural pace, not too slow
-            utterance.pitch = 1.4; // Higher pitch - more playful and kid-friendly
+            utterance.rate = 1.05; // Slightly upbeat pace
+            utterance.pitch = 1.5; // High pitch - playful cartoon-like voice
             utterance.volume = 1.0;
 
-            // Try to find the most kid-friendly voice
-            const voices = window.speechSynthesis.getVoices();
+            // Use cached voices (loaded asynchronously)
+            const voices = cachedVoices.length > 0 ? cachedVoices : window.speechSynthesis.getVoices();
 
             // Priority order: young/friendly female voices work best for kids
             const preferredVoice = voices.find(v =>
@@ -1704,12 +1704,17 @@
             ) || voices.find(v =>
                 v.name.includes('Victoria') // Apple
             ) || voices.find(v =>
+                v.name.includes('Karen') // Apple Australian
+            ) || voices.find(v =>
                 v.name.includes('Female') && v.lang.startsWith('en')
             ) || voices.find(v =>
                 v.lang.startsWith('en')
             );
 
-            if (preferredVoice) utterance.voice = preferredVoice;
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+                console.log('Using voice:', preferredVoice.name);
+            }
 
             window.speechSynthesis.speak(utterance);
         }
@@ -1735,9 +1740,17 @@
             }
         }
 
-        // Load voices when available
+        // Cache voices when they load (they load asynchronously)
+        let cachedVoices = [];
+
+        function loadVoices() {
+            cachedVoices = window.speechSynthesis.getVoices();
+            console.log('Loaded voices:', cachedVoices.map(v => v.name));
+        }
+
         if (window.speechSynthesis) {
-            window.speechSynthesis.onvoiceschanged = () => {};
+            loadVoices(); // Try immediately
+            window.speechSynthesis.onvoiceschanged = loadVoices; // And when ready
         }
 
         // ========== CONFETTI ANIMATION ==========
