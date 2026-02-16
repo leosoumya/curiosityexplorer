@@ -1311,7 +1311,10 @@
                         placeholder="Type your question..."
                         maxlength="200"
                     />
-                    <button id="voiceBtn" class="voice-btn" onclick="startVoiceInput()">
+                    <button id="clearBtn" class="voice-btn" onclick="clearQuestionInput()" style="background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);" title="Clear">
+                        ✕
+                    </button>
+                    <button id="voiceBtn" class="voice-btn" onclick="startVoiceInput()" title="Speak">
                         🎤
                     </button>
                     <button class="send-btn" onclick="sendQuestion()">
@@ -3723,6 +3726,12 @@ IMPORTANT: Give a simple answer. Do NOT end with a question. No "Can you...?" or
             `;
         }
 
+        // Clear question input
+        function clearQuestionInput() {
+            document.getElementById('questionInput').value = '';
+            document.getElementById('questionInput').focus();
+        }
+
         // Voice input using Web Speech API
         let recognition = null;
         let isListening = false;
@@ -3747,9 +3756,15 @@ IMPORTANT: Give a simple answer. Do NOT end with a question. No "Can you...?" or
                 const transcript = result[0].transcript;
                 document.getElementById('questionInput').value = transcript;
 
-                // Auto-stop when we get a final result
+                // Auto-send when we get a final result
                 if (result.isFinal) {
                     stopVoiceInput();
+                    // Small delay to show the text, then auto-send
+                    setTimeout(() => {
+                        if (transcript.trim()) {
+                            sendQuestion();
+                        }
+                    }, 300);
                 }
             };
 
