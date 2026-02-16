@@ -1671,11 +1671,16 @@
             // Cancel any ongoing speech
             window.speechSynthesis.cancel();
 
-            // Clean text: remove emojis, markdown links, and URLs
+            // Clean text: remove emojis, links, URLs, and citations
             let cleanText = text
                 .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](url) to just text
-                .replace(/https?:\/\/[^\s]+/g, '') // Remove plain URLs
+                .replace(/<a[^>]*>([^<]*)<\/a>/gi, '$1') // Remove HTML links, keep text
+                .replace(/https?:\/\/[^\s\])]+/g, '') // Remove plain URLs
+                .replace(/www\.[^\s\])]+/g, '') // Remove www links
+                .replace(/\[\d+\]/g, '') // Remove citation numbers like [1]
+                .replace(/Source:.*$/gm, '') // Remove "Source:" lines
                 .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '') // Remove emojis
+                .replace(/\s+/g, ' ') // Clean up extra spaces
                 .trim();
             if (!cleanText) return;
 
