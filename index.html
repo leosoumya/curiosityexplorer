@@ -1003,6 +1003,111 @@
             font-size: 14px;
             line-height: 1.5;
         }
+
+        /* Floating Home Button */
+        .floating-home-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+            z-index: 999;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-home-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+        }
+
+        .floating-home-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Mute Button */
+        .mute-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 999;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mute-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .mute-btn.muted {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        /* Confetti Animation */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        .confetti.square {
+            border-radius: 2px;
+        }
+
+        .confetti.circle {
+            border-radius: 50%;
+        }
+
+        .confetti.triangle {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 10px solid currentColor;
+            background: none !important;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
     </style>
     <!-- GoatCounter Analytics -->
     <script data-goatcounter="https://curiosityexplorer.goatcounter.com/count"
@@ -1016,6 +1121,16 @@
         <span></span>
     </button>
 
+    <!-- Floating Home Button -->
+    <button class="floating-home-btn" onclick="goHome()" title="Go Home">
+        🏠
+    </button>
+
+    <!-- Mute Button for Speech -->
+    <button class="mute-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">
+        🔊
+    </button>
+
     <!-- About Modal -->
     <div class="about-modal" id="aboutModal" onclick="closeAboutModalOutside(event)">
         <div class="about-content" onclick="event.stopPropagation()">
@@ -1024,29 +1139,29 @@
 
             <div class="about-section">
                 <h4>🎯 What is this app?</h4>
-                <p>Curiosity Explorer is an educational app designed for children ages 4-8 that teaches critical thinking through playful exploration of topics they're curious about.</p>
+                <p>A fun app for kids ages 4-8! Kids explore topics they love. They learn smart thinking through play.</p>
             </div>
 
             <div class="about-section">
                 <h4>🧠 How does it help kids learn?</h4>
-                <p>Instead of giving answers directly, this app guides children to think through problems, test ideas, spot mistakes, and make thoughtful choices. There are no scores or grades—just exploration and growth!</p>
+                <p>Kids think through problems. They test ideas and find mistakes. No scores or grades here. Just fun exploring!</p>
             </div>
 
             <div class="about-section">
                 <h4>📚 Three Types of Missions</h4>
-                <p><strong>1. Build & Test:</strong> Design something and see how it works<br>
-                <strong>2. Spot the Mistake:</strong> Find facts that don't make sense<br>
-                <strong>3. Make a Choice:</strong> Think through tradeoffs and decisions</p>
+                <p><strong>1. Build & Test:</strong> Make something and see how it works<br>
+                <strong>2. Spot the Mistake:</strong> Find facts that seem wrong<br>
+                <strong>3. Make a Choice:</strong> Think about what matters most</p>
             </div>
 
             <div class="about-section">
                 <h4>👨‍👩‍👧 For Parents</h4>
-                <p>Click "Parent View" on the home screen to see a summary of what your child has learned, including topics explored and key facts they discovered.</p>
+                <p>Click "Parent View" to see what your child learned. You can see topics and facts they found.</p>
             </div>
 
             <div class="about-section">
                 <h4>💾 Progress is Saved</h4>
-                <p>All progress is saved automatically in your browser. Kids can return anytime to continue exploring or try new topics!</p>
+                <p>Progress saves on its own. Kids can come back anytime!</p>
             </div>
 
             <!-- Contact/Feedback Section -->
@@ -1240,7 +1355,7 @@
         <!-- Mission 2: Spot the Mistake -->
         <div id="mission2-intro" class="screen">
             <h2>Spot the Mistake</h2>
-            <p class="subtitle">Even smart computers can get facts wrong!<br>Can you find 5 wrong facts?</p>
+            <p class="subtitle">Some facts are wrong!<br>Can you find 5 wrong facts?</p>
             <button class="btn btn-primary" onclick="startMission2Questions()">Let's Look!</button>
             <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
         </div>
@@ -1274,11 +1389,11 @@
         </div>
 
         <div id="mission2-hint" class="screen">
-            <h2>Hmm, let's think about this...</h2>
-            <p id="mission2HintText" class="subtitle">Think about this carefully.<br>What do you know about this?</p>
+            <h2>Hmm, let's think...</h2>
+            <p id="mission2HintText" class="subtitle">Think about this.<br>What do you know?</p>
             <div class="feedback-box" id="mission2HintBox">
-                Let's think more carefully.<br>
-                What do you already know?
+                Let's think again.<br>
+                What do you know?
             </div>
             <button class="btn btn-primary" onclick="showScreen('mission2-facts')">Try Again!</button>
             <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
@@ -1287,15 +1402,15 @@
         <div id="mission2-success" class="screen">
             <div class="celebration">
                 <div class="celebration-emoji">🎯</div>
-                <h2>Amazing! You Found All 5!</h2>
+                <h2>Wow! You Found All 5!</h2>
                 <div class="feedback-box">
-                    Wow! You spotted 5 wrong facts!<br><br>
-                    You're a great fact checker!<br><br>
-                    Always remember to question things that seem strange!
+                    Yay! You found 5 wrong facts!<br><br>
+                    You are a great fact checker!<br><br>
+                    Always ask if things seem strange!
                 </div>
                 <p class="subtitle">You earned a badge!</p>
                 <div class="badge-container" id="mission2BadgeDisplay">
-                    <div class="badge">🔍 Truth Checker</div>
+                    <div class="badge">🔍 Fact Finder</div>
                 </div>
                 <button class="btn btn-success" onclick="completeMission(2)">Continue</button>
                 <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
@@ -1362,12 +1477,11 @@
         <div id="mission3-success" class="screen">
             <div class="celebration">
                 <div class="celebration-emoji">🌟</div>
-                <h2>Awesome Thinking!</h2>
+                <h2>Great Thinking!</h2>
                 <div class="feedback-box" id="mission3FinalFeedback">
-                    Awesome thinking!<br><br>
-                    You thought carefully about the challenge!<br><br>
-                    Sometimes you have to think about<br>
-                    what matters most for the job.
+                    Great job!<br><br>
+                    You thought about the problem!<br><br>
+                    You picked what mattered most!
                 </div>
                 <div class="plane-visual" id="mission3Visual" style="display: none;">
                     <div class="plane" style="left: 70%; top: 45%; font-size: 50px; animation: bounce 2s infinite;">✈️</div>
@@ -1411,12 +1525,12 @@
         <!-- Hangar (Badge Collection) -->
         <div id="hangar" class="screen">
             <h2>🏆 Your Badges 🏆</h2>
-            <p class="subtitle" id="hangarSubtitle">Look at all the badges you've earned!</p>
+            <p class="subtitle" id="hangarSubtitle">Look at your badges!</p>
             <div class="badge-container" id="badgeDisplay"></div>
             <div class="feedback-box" style="margin-top: 30px;">
-                Keep exploring to earn more badges!
+                Keep playing to earn more badges!
             </div>
-            <button class="btn btn-primary" onclick="showScreen('missionSelect')">Choose Another Mission</button>
+            <button class="btn btn-primary" onclick="showScreen('missionSelect')">Pick Another Mission</button>
             <button class="btn back-btn" onclick="showScreen('welcome')">Back to Home</button>
         </div>
 
@@ -1434,40 +1548,38 @@
                     </div>
                 </div>
 
-                <h3>🧠 Skills Being Developed</h3>
+                <h3>🧠 Skills Kids Learn</h3>
                 <p style="color: #6c757d; margin-bottom: 20px;">
-                    This app helps children develop critical thinking skills through playful exploration.
+                    This app helps kids learn smart thinking through play.
                 </p>
 
                 <ul class="skill-list">
                     <li>
                         <strong>Testing Ideas</strong><br>
-                        Building and testing designs to see what works
+                        Make things and see what works
                     </li>
                     <li>
                         <strong>Asking Questions</strong><br>
-                        Thinking about "why" and "what if" instead of just accepting answers
+                        Ask "why" and "what if"
                     </li>
                     <li>
                         <strong>Fixing Mistakes</strong><br>
-                        Learning that mistakes help us improve our ideas
+                        Mistakes help us get better
                     </li>
                     <li>
                         <strong>Making Choices</strong><br>
-                        Thinking through tradeoffs and what matters most
+                        Think about what matters most
                     </li>
                     <li>
                         <strong>Checking Facts</strong><br>
-                        Understanding that even computers can make mistakes
+                        Even computers make mistakes
                     </li>
                 </ul>
 
                 <div style="background: #fff; padding: 20px; border-radius: 10px; margin-top: 20px;">
-                    <h3 style="font-size: 20px; color: #495057; margin-bottom: 10px;">📖 Design Philosophy</h3>
+                    <h3 style="font-size: 20px; color: #495057; margin-bottom: 10px;">📖 How It Works</h3>
                     <p style="color: #6c757d; line-height: 1.6;">
-                        This prototype encourages curiosity over correctness. There are no scores or grades—just exploration,
-                        reflection, and growth. The missions guide children to think through problems step by step,
-                        building confidence in their reasoning abilities.
+                        This app makes kids curious. No scores or grades here. Just exploring and growing! Kids think through problems step by step.
                     </p>
                 </div>
 
@@ -1511,6 +1623,129 @@
             questionsAsked: [],
             ideasTested: []
         };
+
+        // ========== SOUND EFFECTS ==========
+        // Base64 encoded sounds (short chimes)
+        // Correct answer: cheerful chime
+        const correctSoundData = 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJOtrrKwn4x/d3yJoLW4tKaVhHlzdH6RpbC0s6qYiHpwcnZ+jaGvtrWvooNzZ2Zsdo6grLSzsqiZjH9zdXeBkZ+qsrKvqJuLfHR0dXyIl6OsrrCqopuMfXZ2enmEkpymsLCso5iJfHZ2dXmDkJukq66qpJyOgXd4eHqCjpifqKypp5+Sg3t4eHl/iZOdpKippqGXin96eXl7gIuSmKGlpqOfl5GLgHx7e32CiY+Xn6OjoZ2YkYuDf316fICFi5GYnJ6dnJmUjoiEgX9+f4GEiY2SmJqamJaTj4qGhIKAf4CDhYiLj5OVlpWTkY6LiIaDgoGBgoSGiIqNj5GSkZCOjIqIhoWDgoKDhIaHiYuMjo6NjIuKiIeGhYSEhISFhoaIiYqLi4uKiomIh4aGhYWFhYWGhoeIiImJiYmIiIeHhoaGhYaGhoaGh4eHiIiIiIeHh4aGhoaGhoaGhoaGh4eHh4eHh4eHhoaGhoaGhoaGhoaGhoaGh4eHh4eHh4eGhoaGhoaGhoaGhoaGhoaGhoaGh4eHh4eHhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaGhoaG';
+
+        // Wrong answer: gentle "try again" tone
+        const wrongSoundData = 'data:audio/wav;base64,UklGRlwDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTgDAACAf39/gIGCgoKBgH9/f4CAgYGBgYGAgH9/f39/gICAgICAgH9/f39/f4CAgICAgIB/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAgH9/f39/f4CAgICAgH9/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAgH9/f39/f4CAgICAgH9/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAgH9/f39/f4CAgICAgH9/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICAgICAf39/f39/f4CAgICAgH9/f39/f3+AgICAgIB/f39/f39/gICA';
+
+        let correctSound = null;
+        let wrongSound = null;
+
+        function initSounds() {
+            correctSound = new Audio(correctSoundData);
+            correctSound.volume = 0.5;
+            wrongSound = new Audio(wrongSoundData);
+            wrongSound.volume = 0.3;
+        }
+
+        function playCorrectSound() {
+            if (correctSound && !isMuted) {
+                correctSound.currentTime = 0;
+                correctSound.play().catch(e => console.log('Sound play error:', e));
+            }
+        }
+
+        function playWrongSound() {
+            if (wrongSound && !isMuted) {
+                wrongSound.currentTime = 0;
+                wrongSound.play().catch(e => console.log('Sound play error:', e));
+            }
+        }
+
+        // Initialize sounds on first user interaction
+        document.addEventListener('click', function initOnClick() {
+            initSounds();
+            document.removeEventListener('click', initOnClick);
+        }, { once: true });
+
+        // ========== TEXT-TO-SPEECH ==========
+        let isMuted = localStorage.getItem('curiosityMuted') === 'true';
+
+        function speakText(text) {
+            if (isMuted || !window.speechSynthesis) return;
+
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+
+            // Clean text (remove emojis for cleaner speech)
+            const cleanText = text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+            if (!cleanText) return;
+
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 0.85; // Slower for kids
+            utterance.pitch = 1.1; // Slightly higher pitch
+            utterance.volume = 0.9;
+
+            // Try to use a friendly voice
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find(v =>
+                v.name.includes('Samantha') ||
+                v.name.includes('Karen') ||
+                v.name.includes('Google') ||
+                v.lang.startsWith('en')
+            );
+            if (preferredVoice) utterance.voice = preferredVoice;
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            localStorage.setItem('curiosityMuted', isMuted);
+            const muteBtn = document.getElementById('muteBtn');
+            muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            muteBtn.classList.toggle('muted', isMuted);
+
+            if (isMuted) {
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        // Initialize mute button state
+        function initMuteButton() {
+            const muteBtn = document.getElementById('muteBtn');
+            if (muteBtn) {
+                muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                muteBtn.classList.toggle('muted', isMuted);
+            }
+        }
+
+        // Load voices when available
+        if (window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = () => {};
+        }
+
+        // ========== CONFETTI ANIMATION ==========
+        function triggerConfetti() {
+            const container = document.createElement('div');
+            container.className = 'confetti-container';
+            document.body.appendChild(container);
+
+            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da', '#fcbad3'];
+            const shapes = ['square', 'circle', 'triangle'];
+
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = `confetti ${shapes[Math.floor(Math.random() * shapes.length)]}`;
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(confetti);
+            }
+
+            // Clean up after animation
+            setTimeout(() => container.remove(), 5000);
+        }
+
+        // ========== NAVIGATION ==========
+        function goHome() {
+            showScreen('welcome');
+        }
 
         // Topic content database - defines missions for each topic
         const topicDatabase = {
@@ -2197,6 +2432,15 @@
             if (screenId === 'askQuestion') {
                 clearChat();  // Always start fresh session
                 checkApiKeyAndShowChat();
+                speakText('Hi! What do you want to know?');
+            }
+
+            // Auto-read key screens
+            if (screenId === 'mission2-facts') {
+                speakText('Which fact seems wrong? Pick one!');
+            }
+            if (screenId === 'missionSelect') {
+                speakText(`Let's explore ${gameState.currentTopic}! Pick a mission!`);
             }
         }
 
@@ -2929,12 +3173,18 @@
             badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
 
             showScreen('mission2-success');
+
+            // Celebrate!
+            triggerConfetti();
+            playCorrectSound();
+            speakText('Wow! You found all 5! You are a great fact finder!');
         }
 
         function checkFact(choice) {
             gameState.ideasTested.push(choice === 'wrong' ? 'Found the wrong fact' : 'Tested a fact');
 
             if (choice === 'wrong') {
+                playCorrectSound(); // Play happy sound
                 mission2QuestionCount++;
                 mission2ConceptsLearned.push(currentMission2Fact.concept);
 
@@ -2944,17 +3194,20 @@
                 } else {
                     // Show correct feedback and prepare for next question
                     document.getElementById('mission2CorrectFeedback').innerHTML = `
-                        That's right!<br><br>
+                        Yes! You got it!<br><br>
                         ${currentMission2Fact.concept}
                     `;
                     const remaining = 5 - mission2QuestionCount;
                     document.getElementById('mission2CorrectProgress').textContent =
-                        remaining === 1 ? `${mission2QuestionCount} down, 1 more to go!` :
-                        `${mission2QuestionCount} down, ${remaining} to go!`;
+                        remaining === 1 ? `${mission2QuestionCount} done, 1 more to go!` :
+                        `${mission2QuestionCount} done, ${remaining} to go!`;
                     showScreen('mission2-correct');
+                    speakText(`Yes! You got it! ${currentMission2Fact.concept}`);
                 }
             } else {
+                playWrongSound(); // Play gentle "try again" sound
                 showScreen('mission2-hint');
+                speakText('Hmm, let us think about this more.');
             }
         }
 
@@ -3083,10 +3336,9 @@
 
             // All answers lead to learning - we celebrate thinking!
             feedbackEl.innerHTML = `
-                Awesome thinking!<br><br>
+                Great job!<br><br>
                 ${currentMission3Challenge.concept}<br><br>
-                You thought carefully about<br>
-                what matters most! Great job!
+                You picked what mattered most!
             `;
 
             gameState.conceptsLearned.push(currentMission3Challenge.concept);
@@ -3095,6 +3347,10 @@
             const badgeDisplay = document.getElementById('mission3BadgeDisplay');
             const badgeName = `${topicData.mission3.icon} ${topicData.name} Planner`;
             badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
+
+            // Play sound and speak
+            playCorrectSound();
+            speakText(`Great job! ${currentMission3Challenge.concept}`);
 
             showScreen('mission3-success');
         }
@@ -3115,6 +3371,10 @@
                 const badge = badges[missionNum - 1];
                 if (badge && !gameState.badges.find(b => b.id === badge.id)) {
                     gameState.badges.push(badge);
+                    // Trigger confetti for new badge!
+                    triggerConfetti();
+                    playCorrectSound();
+                    speakText(`Yay! You earned a new badge!`);
                 }
             }
 
@@ -3167,33 +3427,32 @@
 
 CRITICAL: ALWAYS give the ANSWER FIRST. Never just ask a question without answering.
 
-HOW TO EXPLAIN (like talking to a 5-year-old):
-- Use tiny, simple words (say "big" not "enormous", "fast" not "velocity")
-- Compare to things kids know (as big as a school bus, as many as fingers on 5 hands)
-- Make it fun and exciting with wonder ("Wow!" "Guess what?" "So cool!")
-- Short sentences only
-- No big science words - if you must use one, explain it simply
+HOW TO TALK (like talking to a 5-year-old):
+- Use tiny, simple words (say "big" not "large", "fast" not "quick")
+- Compare to things kids know (big as a bus, tall as a tree)
+- Make it fun! Say "Wow!" or "Cool!" or "Guess what?"
+- Short sentences only (5-7 words max)
+- No big words - keep it simple
 
 FORMAT:
-1. Give the answer in a fun, simple way
-2. Ask one easy follow-up question they can answer
+1. Give the answer in a fun way
+2. Ask one easy question back
 
 EXAMPLES:
 Kid: "How many moons does Saturn have?"
-You: "Wow, Saturn has 274 moons! That's like having 274 night-lights floating around you! 🪐 Can you guess which moon is the biggest?"
+You: "Wow, Saturn has 274 moons! That is a lot! 🪐 Can you count that high?"
 
 Kid: "Why is the sky blue?"
-You: "The sun's light bounces around in the air, and blue bounces the most - so we see blue everywhere! 💙 What's YOUR favorite color?"
+You: "Light from the sun bounces in the air. Blue bounces the most! 💙 What is your favorite color?"
 
 Kid: "How fast do cheetahs run?"
-You: "Cheetahs are super speedy - they run as fast as a car on the highway! About 70 miles per hour! 🐆 Do you think you could outrun a cheetah?"
+You: "Cheetahs run super fast! As fast as a car! 🐆 Do you think you are fast?"
 
 RULES:
-- ANSWER FIRST with fun comparisons
-- Search web for accurate facts
+- ANSWER FIRST
 - Keep it SHORT (2 sentences max)
 - Words a 5-year-old knows
-- Sound excited and warm!
+- Sound happy and warm!
 - One emoji`;
 
         // Get API key from localStorage
@@ -3289,6 +3548,11 @@ RULES:
             bubble.innerHTML = formattedText;
             messagesDiv.appendChild(bubble);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // Auto-read assistant messages aloud
+            if (role === 'assistant' && !text.includes('🤔')) {
+                speakText(text);
+            }
         }
 
         // Send question to Gemini
@@ -3635,6 +3899,7 @@ IMPORTANT: Answer this question DIRECTLY first, then ask a follow-up. Do NOT jus
 
             updateBadgeDisplay();
             updateDashboard();
+            initMuteButton();
         }
 
         // Allow Enter key to submit name
