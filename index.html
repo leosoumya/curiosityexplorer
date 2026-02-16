@@ -1685,18 +1685,30 @@
             if (!cleanText) return;
 
             const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.rate = 0.85; // Slower for kids
-            utterance.pitch = 1.1; // Slightly higher pitch
-            utterance.volume = 0.9;
+            utterance.rate = 1.0; // Natural pace, not too slow
+            utterance.pitch = 1.4; // Higher pitch - more playful and kid-friendly
+            utterance.volume = 1.0;
 
-            // Try to use a friendly voice
+            // Try to find the most kid-friendly voice
             const voices = window.speechSynthesis.getVoices();
+
+            // Priority order: young/friendly female voices work best for kids
             const preferredVoice = voices.find(v =>
-                v.name.includes('Samantha') ||
-                v.name.includes('Karen') ||
-                v.name.includes('Google') ||
+                v.name.includes('Samantha') // Apple - friendly female
+            ) || voices.find(v =>
+                v.name.includes('Google UK English Female')
+            ) || voices.find(v =>
+                v.name.includes('Google US English')
+            ) || voices.find(v =>
+                v.name.includes('Zira') // Microsoft - clear female
+            ) || voices.find(v =>
+                v.name.includes('Victoria') // Apple
+            ) || voices.find(v =>
+                v.name.includes('Female') && v.lang.startsWith('en')
+            ) || voices.find(v =>
                 v.lang.startsWith('en')
             );
+
             if (preferredVoice) utterance.voice = preferredVoice;
 
             window.speechSynthesis.speak(utterance);
