@@ -1,0 +1,14 @@
+# Curiosity Agent - Python Dependencies
+
+# Required
+openai>=1.0.0
+
+# Optional - for voice input
+SpeechRecognition>=3.10.0
+PyAudio>=0.2.13
+
+# Optional - for audio playback
+playsound>=1.3.0
+
+# Alternative audio playback (if playsound doesn't work)
+# pygame>=2.5.0
