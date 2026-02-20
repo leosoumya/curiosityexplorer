@@ -3124,31 +3124,84 @@
         let currentMission2Fact = null;
         let mission2QuestionCount = 0;
         let mission2ConceptsLearned = [];
+        let mission2GeneratedFacts = []; // Cache generated facts for this session
 
-        // Get a random fact that hasn't been used recently
-        function getRandomFact(facts, topicKey) {
-            if (!usedFactIndices[topicKey]) {
-                usedFactIndices[topicKey] = [];
+        // Generate a fact-checking question using LLM
+        async function generateMission2Question(topic, questionNumber) {
+            const apiKey = localStorage.getItem('openaiApiKey');
+
+            if (!apiKey) {
+                // Fallback to template if no API key
+                return getFallbackFact(topic);
             }
 
-            // If all facts have been used, reset the tracking
-            if (usedFactIndices[topicKey].length >= facts.length) {
-                usedFactIndices[topicKey] = [];
-            }
+            const previousFacts = mission2GeneratedFacts.map(f => f.wrong).join(', ');
 
-            // Find an unused fact index
-            let availableIndices = [];
-            for (let i = 0; i < facts.length; i++) {
-                if (!usedFactIndices[topicKey].includes(i)) {
-                    availableIndices.push(i);
+            const prompt = `Generate a fact-checking question for a 5-7 year old child about "${topic}".
+
+Create ONE pair of facts:
+1. A TRUE fact about ${topic} (simple, interesting, age-appropriate)
+2. A FALSE fact about ${topic} (sounds believable but is wrong - make it obviously silly for a kid)
+
+The false fact should be clearly wrong but fun/silly (like "planes are made of chocolate" or "dinosaurs could fly to the moon").
+
+${previousFacts ? `Do NOT repeat these wrong facts already used: ${previousFacts}` : ''}
+
+Respond in this exact JSON format only:
+{
+  "correct": "The true fact here (short, simple words)",
+  "wrong": "The false fact here (short, silly, clearly wrong)",
+  "correctIcon": "one emoji for the true fact",
+  "wrongIcon": "one emoji for the false fact",
+  "concept": "Why the wrong fact is false (1 simple sentence for kids)"
+}`;
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 200,
+                        temperature: 0.9
+                    })
+                });
+
+                if (!response.ok) throw new Error('API request failed');
+
+                const data = await response.json();
+                const content = data.choices[0].message.content.trim();
+
+                // Parse JSON from response (handle markdown code blocks)
+                let jsonStr = content;
+                if (content.includes('```')) {
+                    jsonStr = content.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
                 }
+
+                const fact = JSON.parse(jsonStr);
+                mission2GeneratedFacts.push(fact);
+                return fact;
+
+            } catch (error) {
+                console.error('Error generating question:', error);
+                return getFallbackFact(topic);
             }
+        }
 
-            // Pick a random available index
-            const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-            usedFactIndices[topicKey].push(randomIndex);
-
-            return facts[randomIndex];
+        // Fallback facts for when LLM is unavailable
+        function getFallbackFact(topic) {
+            const fallbacks = [
+                { correct: `You can learn about ${topic} from books`, wrong: `${topic} is just make-believe`, correctIcon: '📚', wrongIcon: '🦄', concept: `${topic} is real and we can learn about it!` },
+                { correct: `Scientists study ${topic}`, wrong: `Nobody knows anything about ${topic}`, correctIcon: '🔬', wrongIcon: '🤷', concept: 'Scientists have learned a lot!' },
+                { correct: `There are many facts about ${topic}`, wrong: `${topic} is too boring to learn about`, correctIcon: '✨', wrongIcon: '😴', concept: 'Every topic has cool things to discover!' },
+                { correct: `We can ask questions about ${topic}`, wrong: `Questions about ${topic} have no answers`, correctIcon: '❓', wrongIcon: '🚫', concept: 'Questions help us learn!' },
+                { correct: `${topic} can be explored and understood`, wrong: `${topic} is impossible to understand`, correctIcon: '🧠', wrongIcon: '❌', concept: 'We can understand anything with curiosity!' }
+            ];
+            return fallbacks[mission2QuestionCount % fallbacks.length];
         }
 
         // Mission 2: Spot the Mistake (Dynamic)
@@ -3172,21 +3225,29 @@
         function startMission2Questions() {
             mission2QuestionCount = 0;
             mission2ConceptsLearned = [];
+            mission2GeneratedFacts = []; // Reset generated facts for new session
             loadMission2Question();
         }
 
-        function loadMission2Question() {
-            const m2 = gameState.currentTopicData.mission2;
-            const topicKey = gameState.currentTopic.toLowerCase();
-
-            // Get a random fact from the facts array
-            currentMission2Fact = getRandomFact(m2.facts, topicKey);
+        async function loadMission2Question() {
+            const topic = gameState.currentTopic;
 
             // Update progress indicator
             document.getElementById('mission2Progress').textContent = `Question ${mission2QuestionCount + 1} of 5`;
 
-            // Randomize the order of correct and wrong facts
+            // Show loading state
             const choiceButtons = document.querySelectorAll('#mission2-facts .choice-btn');
+            choiceButtons[0].innerHTML = '⏳ Loading...';
+            choiceButtons[0].setAttribute('onclick', '');
+            choiceButtons[1].innerHTML = '⏳ Loading...';
+            choiceButtons[1].setAttribute('onclick', '');
+
+            showScreen('mission2-facts');
+
+            // Generate question using LLM
+            currentMission2Fact = await generateMission2Question(topic, mission2QuestionCount + 1);
+
+            // Randomize the order of correct and wrong facts
             const showCorrectFirst = Math.random() < 0.5;
 
             if (showCorrectFirst) {
@@ -3204,10 +3265,11 @@
             // Update hint screen with topic-appropriate hints
             const hintText = document.getElementById('mission2HintText');
             const hintBox = document.getElementById('mission2HintBox');
-            hintText.innerHTML = `Think about ${gameState.currentTopic.toLowerCase()}.<br>What do you know about them?`;
-            hintBox.innerHTML = `Let's think more carefully.<br>What have you learned about ${gameState.currentTopic.toLowerCase()}?`;
+            hintText.innerHTML = `Think about ${topic.toLowerCase()}.<br>What do you know?`;
+            hintBox.innerHTML = `Let's think again.<br>What is true about ${topic.toLowerCase()}?`;
 
-            showScreen('mission2-facts');
+            // Read the question aloud
+            speakText(`Which fact about ${topic} is wrong?`);
         }
 
         function nextMission2Question() {
