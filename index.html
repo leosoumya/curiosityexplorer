@@ -890,6 +890,29 @@
             50% { transform: scale(1.05); }
         }
 
+        .ask-anything-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .ask-anything-btn:hover, .ask-anything-btn:active {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+        }
+
         /* Dashboard Styles */
         .dashboard-grid {
             display: grid;
@@ -1507,6 +1530,12 @@
                 <span>Say Something Else!</span>
             </button>
             <p id="sayTopicStatus" style="color: #888; font-size: 14px; margin-top: 10px; display: none;"></p>
+
+            <!-- Ask Me Anything -->
+            <button class="ask-anything-btn" onclick="showScreen('askQuestion')">
+                <span style="font-size: 32px;">💬</span>
+                <span>Ask Me Anything!</span>
+            </button>
         </div>
 
         <!-- Ask a Question Screen -->
