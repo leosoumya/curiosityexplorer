@@ -1510,86 +1510,6 @@
             </div>
         </div>
 
-        <!-- Mission 3: Make a Choice -->
-        <div id="mission3-intro" class="screen">
-            <h2 id="mission3IntroTitle">Make a Choice</h2>
-            <p class="subtitle" id="mission3IntroSubtitle">You have a challenge!<br>Which option is better?</p>
-            <button class="btn btn-primary" onclick="showScreen('mission3-choice')">Let's Think!</button>
-            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
-        </div>
-
-        <div id="mission3-choice" class="screen">
-            <div class="progress-indicator">Step 1 of 3: Make Your Choice</div>
-            <h2 id="mission3ChoiceTitle">Which should you choose?</h2>
-            <p class="subtitle" id="mission3Challenge">Think about this carefully.</p>
-
-            <div class="button-group" style="flex-direction: column; align-items: center;" id="mission3Options">
-                <button class="choice-btn" id="mission3Option1" onclick="selectPlaneType('small')">
-                    Option 1
-                </button>
-                <button class="choice-btn" id="mission3Option2" onclick="selectPlaneType('big')">
-                    Option 2
-                </button>
-            </div>
-            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
-        </div>
-
-        <div id="mission3-option-feedback" class="screen">
-            <div class="progress-indicator">Step 2 of 3: Think About It</div>
-            <h2 id="mission3FeedbackTitle">Interesting choice!</h2>
-            <div class="feedback-box" id="mission3OptionFeedback">
-                Let's think about this together.<br>
-                Why might this be a good choice?
-            </div>
-            <button class="btn btn-primary" onclick="showScreen('mission3-rethink')">Let's Think Deeper!</button>
-            <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
-        </div>
-
-        <div id="mission3-rethink" class="screen">
-            <div class="progress-indicator">Step 3 of 3: Think It Through</div>
-            <h2 id="mission3RethinkTitle">What matters most?</h2>
-            <p class="subtitle" id="mission3RethinkSubtitle">Think about your challenge.</p>
-
-            <div class="button-group" style="flex-direction: column; align-items: center;" id="mission3RethinkOptions">
-                <button class="choice-btn" onclick="finalAnswer('option1')">
-                    🎯 The first thing matters most
-                </button>
-                <button class="choice-btn" onclick="finalAnswer('option2')">
-                    🎯 The second thing matters most
-                </button>
-                <button class="choice-btn" onclick="finalAnswer('option3')">
-                    🎯 The third thing matters most
-                </button>
-                <button class="choice-btn" onclick="finalAnswer('all')">
-                    🤔 All of these matter together
-                </button>
-            </div>
-            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Home</button>
-        </div>
-
-        <div id="mission3-success" class="screen">
-            <div class="celebration">
-                <div class="celebration-emoji">🌟</div>
-                <h2>Great Thinking!</h2>
-                <div class="feedback-box" id="mission3FinalFeedback">
-                    Great job!<br><br>
-                    You thought about the problem!<br><br>
-                    You picked what mattered most!
-                </div>
-                <div class="plane-visual" id="mission3Visual" style="display: none;">
-                    <div class="plane" style="left: 70%; top: 45%; font-size: 50px; animation: bounce 2s infinite;">✈️</div>
-                    <div style="position: absolute; right: 30px; top: 50%; font-size: 50px;">🏝️</div>
-                    <div style="position: absolute; left: 60%; top: 60%; font-size: 30px;">📦📦📦</div>
-                </div>
-                <p class="subtitle">You earned a badge!</p>
-                <div class="badge-container" id="mission3BadgeDisplay">
-                    <div class="badge">🗺️ Smart Planner</div>
-                </div>
-                <button class="btn btn-success" onclick="completeMission(3)">Continue</button>
-                <button class="btn back-btn" onclick="showScreen('welcome')">🏠 Home</button>
-            </div>
-        </div>
-
         <!-- Interactive Recap Screen -->
         <div id="recap" class="screen">
             <div class="celebration">
@@ -2414,10 +2334,6 @@
                 <div class="mission-card" onclick="startMission2()">
                     <h3>${topicData.mission2.icon} ${topicData.mission2.title}</h3>
                     <p>${topicData.mission2.description}</p>
-                </div>
-                <div class="mission-card" onclick="startMission3()">
-                    <h3>${topicData.mission3.icon} ${topicData.mission3.title}</h3>
-                    <p>${topicData.mission3.description}</p>
                 </div>
             `;
 
@@ -3424,9 +3340,6 @@ Respond in this exact JSON format only:
             }
         }
 
-        // Store the current challenge for Mission 3
-        let currentMission3Challenge = null;
-
         // Get a random challenge that hasn't been used recently
         function getRandomChallenge(challenges, topicKey) {
             if (!usedChallengeIndices[topicKey]) {
@@ -3453,121 +3366,6 @@ Respond in this exact JSON format only:
             return challenges[randomIndex];
         }
 
-        // Mission 3: Plan/Choose (Dynamic)
-        function startMission3() {
-            const m3 = gameState.currentTopicData.mission3;
-            const topicData = gameState.currentTopicData;
-            const topicKey = gameState.currentTopic.toLowerCase();
-
-            // Get a random challenge from the challenges array
-            currentMission3Challenge = getRandomChallenge(m3.challenges, topicKey);
-
-            // Update intro screen
-            document.getElementById('mission3IntroTitle').textContent = m3.title;
-            document.getElementById('mission3IntroSubtitle').innerHTML = `${currentMission3Challenge.challenge}<br>Which choice is better?`;
-
-            // Update choice screen
-            document.getElementById('mission3ChoiceTitle').textContent = 'Which should you choose?';
-            document.getElementById('mission3Challenge').textContent = currentMission3Challenge.challenge;
-
-            // Update choice buttons
-            document.getElementById('mission3Option1').innerHTML = `
-                ${currentMission3Challenge.option1.icon} ${currentMission3Challenge.option1.name}<br>
-                <span style="font-size: 16px;">${currentMission3Challenge.option1.traits.map(t => `• ${t}`).join('<br>')}</span>
-            `;
-            document.getElementById('mission3Option2').innerHTML = `
-                ${currentMission3Challenge.option2.icon} ${currentMission3Challenge.option2.name}<br>
-                <span style="font-size: 16px;">${currentMission3Challenge.option2.traits.map(t => `• ${t}`).join('<br>')}</span>
-            `;
-
-            // Update rethink screen with actual options
-            document.getElementById('mission3RethinkTitle').textContent = 'What matters most for this job?';
-            document.getElementById('mission3RethinkSubtitle').textContent = currentMission3Challenge.challenge;
-
-            // Dynamically populate the rethink options with actual choice names
-            const rethinkOptionsEl = document.getElementById('mission3RethinkOptions');
-            const opt1 = currentMission3Challenge.option1;
-            const opt2 = currentMission3Challenge.option2;
-
-            // Extract key traits for each option
-            const opt1KeyTrait = opt1.traits[0] || 'First option';
-            const opt2KeyTrait = opt2.traits[0] || 'Second option';
-
-            rethinkOptionsEl.innerHTML = `
-                <button class="choice-btn" onclick="finalAnswer('option1')" style="text-align: left; padding: 15px 20px;">
-                    ${opt1.icon} <strong>${opt1.name}</strong><br>
-                    <span style="font-size: 14px; opacity: 0.9;">${opt1KeyTrait}</span>
-                </button>
-                <button class="choice-btn" onclick="finalAnswer('option2')" style="text-align: left; padding: 15px 20px;">
-                    ${opt2.icon} <strong>${opt2.name}</strong><br>
-                    <span style="font-size: 14px; opacity: 0.9;">${opt2KeyTrait}</span>
-                </button>
-                <button class="choice-btn" onclick="finalAnswer('both')" style="text-align: left; padding: 15px 20px;">
-                    🤔 <strong>Both matter!</strong><br>
-                    <span style="font-size: 14px; opacity: 0.9;">It depends on the situation</span>
-                </button>
-            `;
-
-            // Show/hide plane visual based on topic (only show for planes)
-            const mission3Visual = document.getElementById('mission3Visual');
-            if (gameState.currentTopic.toLowerCase() === 'planes') {
-                mission3Visual.style.display = 'block';
-            } else {
-                mission3Visual.style.display = 'none';
-            }
-
-            // Track the question
-            gameState.questionsAsked.push(`What's the best choice for: ${currentMission3Challenge.challenge}`);
-
-            showScreen('mission3-intro');
-        }
-
-        function selectPlaneType(type) {
-            gameState.ideasTested.push(`Chose ${type} option`);
-
-            // Show feedback based on which option was chosen
-            const chosenOption = type === 'small' ? currentMission3Challenge.option1 : currentMission3Challenge.option2;
-            const feedbackTitle = document.getElementById('mission3FeedbackTitle');
-            const feedbackBox = document.getElementById('mission3OptionFeedback');
-
-            feedbackTitle.textContent = `You chose: ${chosenOption.name}!`;
-            feedbackBox.innerHTML = `
-                Interesting choice! Let's think about this.<br><br>
-                ${currentMission3Challenge.challenge}<br><br>
-                You picked <strong>${chosenOption.icon} ${chosenOption.name}</strong>.<br>
-                Now let's think about what matters most!
-            `;
-
-            showScreen('mission3-option-feedback');
-        }
-
-        function finalAnswer(answer) {
-            const feedbackEl = document.getElementById('mission3FinalFeedback');
-            const topicData = gameState.currentTopicData;
-
-            gameState.ideasTested.push(`Final answer: ${answer}`);
-
-            // All answers lead to learning - we celebrate thinking!
-            feedbackEl.innerHTML = `
-                Great job!<br><br>
-                ${currentMission3Challenge.concept}<br><br>
-                You picked what mattered most!
-            `;
-
-            gameState.conceptsLearned.push(currentMission3Challenge.concept);
-
-            // Update badge display dynamically
-            const badgeDisplay = document.getElementById('mission3BadgeDisplay');
-            const badgeName = `${topicData.mission3.icon} ${topicData.name} Planner`;
-            badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
-
-            // Play sound and speak
-            playCorrectSound();
-            speakText(`Great job! ${currentMission3Challenge.concept}`);
-
-            showScreen('mission3-success');
-        }
-
         // Mission completion
         function completeMission(missionNum) {
             if (!gameState.completedMissions.includes(missionNum)) {
@@ -3576,9 +3374,8 @@ Respond in this exact JSON format only:
                 // Add badge based on topic and mission
                 const topicData = gameState.currentTopicData;
                 const badges = [
-                    { id: `${gameState.currentTopic}-1`, name: `${topicData.mission1.icon} ${topicData.name} Builder` },
-                    { id: `${gameState.currentTopic}-2`, name: `🔍 ${topicData.name} Checker` },
-                    { id: `${gameState.currentTopic}-3`, name: `${topicData.mission3.icon} ${topicData.name} Planner` }
+                    null, // No mission 1
+                    { id: `${gameState.currentTopic}-2`, name: `🔍 ${topicData.name} Checker` }
                 ];
 
                 const badge = badges[missionNum - 1];
