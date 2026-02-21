@@ -857,6 +857,39 @@
             color: #2c3e50;
         }
 
+        .say-topic-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .say-topic-btn:hover, .say-topic-btn:active {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .say-topic-btn.listening {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
         /* Dashboard Styles */
         .dashboard-grid {
             display: grid;
@@ -1467,6 +1500,13 @@
                     <span class="topic-label">Stars</span>
                 </button>
             </div>
+
+            <!-- Say your own topic -->
+            <button class="say-topic-btn" onclick="sayMyTopic()" id="sayTopicBtn">
+                <span style="font-size: 32px;">🎤</span>
+                <span>Say Something Else!</span>
+            </button>
+            <p id="sayTopicStatus" style="color: #888; font-size: 14px; margin-top: 10px; display: none;"></p>
         </div>
 
         <!-- Ask a Question Screen -->
@@ -2414,6 +2454,61 @@
                 return;
             }
             selectTopicAndStart(topicInput.value.trim());
+        }
+
+        // Voice input for custom topic
+        function sayMyTopic() {
+            const btn = document.getElementById('sayTopicBtn');
+            const status = document.getElementById('sayTopicStatus');
+
+            // Check for speech recognition support
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                status.textContent = 'Voice not supported on this device';
+                status.style.display = 'block';
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            // Update UI for listening
+            btn.classList.add('listening');
+            btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Listening...</span>';
+            status.textContent = 'Say a topic like "cars" or "butterflies"';
+            status.style.display = 'block';
+            speakText('What do you want to learn about?');
+
+            recognition.onresult = (event) => {
+                const topic = event.results[0][0].transcript.trim();
+                btn.classList.remove('listening');
+                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+
+                if (topic) {
+                    status.textContent = `Great! Let's explore ${topic}!`;
+                    speakText(`Great! Let's explore ${topic}!`);
+                    setTimeout(() => {
+                        status.style.display = 'none';
+                        selectTopicAndStart(topic);
+                    }, 1500);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                btn.classList.remove('listening');
+                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+                status.textContent = 'Try again!';
+                speakText('I didn\'t hear that. Tap to try again!');
+            };
+
+            recognition.onend = () => {
+                btn.classList.remove('listening');
+                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+            };
+
+            recognition.start();
         }
 
         function showWelcomeBackBanner(topicData) {
