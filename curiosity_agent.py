@@ -17,6 +17,24 @@ import tempfile
 import threading
 from pathlib import Path
 
+# Config file path (shared with web app)
+CONFIG_FILE = Path(__file__).parent / "config.json"
+
+
+def load_api_key_from_config():
+    """Load API key from shared config.json file."""
+    if CONFIG_FILE.exists():
+        try:
+            with open(CONFIG_FILE) as f:
+                config = json.load(f)
+                key = config.get("openai_api_key", "").strip()
+                if key:
+                    return key
+        except Exception as e:
+            print(f"Warning: Could not read config.json: {e}")
+    return None
+
+
 # Check for required packages
 try:
     import openai
@@ -76,12 +94,13 @@ REMEMBER: Answer only. No questions. End with a period or exclamation mark."""
 
     def __init__(self, api_key: str = None):
         """Initialize the agent with OpenAI API key."""
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        # Priority: passed key > config.json > environment variable
+        self.api_key = api_key or load_api_key_from_config() or os.getenv("OPENAI_API_KEY")
 
         if not self.api_key:
             raise ValueError(
-                "OpenAI API key required. Set OPENAI_API_KEY environment variable "
-                "or pass api_key parameter."
+                "OpenAI API key required. Add it to config.json, "
+                "set OPENAI_API_KEY environment variable, or pass api_key parameter."
             )
 
         self.client = OpenAI(api_key=self.api_key)
@@ -313,18 +332,27 @@ REMEMBER: Answer only. No questions. End with a period or exclamation mark."""
 
 def main():
     """Main entry point."""
-    # Check for API key
-    api_key = os.getenv("OPENAI_API_KEY")
+    # Check for API key: config.json > environment variable > prompt
+    api_key = load_api_key_from_config() or os.getenv("OPENAI_API_KEY")
 
     if not api_key:
         print("\n⚠️  OpenAI API key not found!")
-        print("\nTo use this agent, set your API key:")
+        print(f"\nTo use this agent, add your API key to: {CONFIG_FILE}")
+        print('  {"openai_api_key": "sk-your-key-here"}')
+        print("\nOr set environment variable:")
         print("  export OPENAI_API_KEY='your-key-here'")
-        print("\nOr enter it now:")
+        print("\nOr enter it now (will be saved to config.json):")
         api_key = input("API Key (or press Enter to quit): ").strip()
         if not api_key:
             print("Bye!")
             return
+        # Save to config.json for future use
+        try:
+            with open(CONFIG_FILE, 'w') as f:
+                json.dump({"openai_api_key": api_key}, f, indent=2)
+            print(f"✅ API key saved to {CONFIG_FILE}")
+        except Exception as e:
+            print(f"Warning: Could not save to config.json: {e}")
 
     try:
         agent = CuriosityAgent(api_key=api_key)
