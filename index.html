@@ -629,6 +629,20 @@
             50% { transform: translateY(-20px); }
         }
 
+        @keyframes wobble {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .bounce-animation {
+            animation: bounce 0.5s ease 2;
+        }
+
+        .wobble-animation {
+            animation: wobble 0.5s ease 2;
+        }
+
         .parent-view {
             background: #f8f9fa;
             padding: 30px;
@@ -670,9 +684,19 @@
 
         .progress-indicator {
             text-align: center;
-            color: #95a5a6;
-            font-size: 18px;
+            font-size: 32px;
             margin-bottom: 20px;
+            letter-spacing: 8px;
+        }
+
+        .progress-indicator .star {
+            color: #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .progress-indicator .star.filled {
+            color: #f1c40f;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
         }
 
         .cloud {
@@ -736,31 +760,101 @@
             transform: scale(1.05);
         }
 
-        .topic-suggestions {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin: 30px 0;
+        .topic-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+            max-width: 500px;
         }
 
-        .topic-chip {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            border: 3px solid #4ecdc4;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 20px;
+        .topic-card-big {
+            background: white;
+            border: 4px solid #4ecdc4;
+            border-radius: 20px;
+            padding: 15px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: inherit;
-            color: #2c3e50;
-            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 140px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        .topic-chip:hover {
+        .topic-card-big:hover, .topic-card-big:active {
+            transform: scale(1.05);
+            border-color: #ff6b6b;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .topic-card-big .topic-icon {
+            font-size: 60px;
+            margin-bottom: 8px;
+        }
+
+        .topic-card-big .topic-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .parent-corner-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.9);
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .parent-corner-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+            max-width: 350px;
+        }
+
+        .avatar-btn {
+            background: white;
+            border: 4px solid #4ecdc4;
+            border-radius: 20px;
+            padding: 15px 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .avatar-btn:hover, .avatar-btn:active {
             transform: scale(1.1);
             border-color: #ff6b6b;
-            box-shadow: 0 6px 20px rgba(78, 206, 196, 0.4);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .avatar-icon {
+            font-size: 50px;
+            margin-bottom: 5px;
+        }
+
+        .avatar-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
         }
 
         /* Dashboard Styles */
@@ -1301,66 +1395,77 @@
     </div>
 
     <div class="container">
-        <!-- Name Entry Screen (shown only on first visit) -->
+        <!-- Name Entry Screen - Avatar Selection -->
         <div id="nameEntry" class="screen">
             <h1>🌟 Curiosity Explorer 🌟</h1>
             <div class="celebration-emoji">👋</div>
-            <h2>Hi there, explorer!</h2>
-            <p class="subtitle">What's your name?</p>
+            <h2>Who are you today?</h2>
+            <p class="subtitle">Tap to pick!</p>
 
-            <input
-                type="text"
-                class="topic-input"
-                id="nameInput"
-                placeholder="Type your name..."
-                maxlength="20"
-                style="text-align: center; font-size: 28px;"
-            />
-
-            <button class="btn btn-large btn-primary" onclick="saveName()" style="margin-top: 20px;">
-                Start Exploring!
-            </button>
-        </div>
-
-        <!-- Welcome Screen with Topic Input -->
-        <div id="welcome" class="screen">
-            <h1>🌟 Curiosity Explorer 🌟</h1>
-            <p class="subtitle">Hi <span id="userName">Explorer</span>! What do you want to explore today?</p>
-
-            <div class="topic-input-container">
-                <input
-                    type="text"
-                    class="topic-input"
-                    id="topicInput"
-                    placeholder="Type anything!"
-                    maxlength="20"
-                />
-
-                <p style="font-size: 18px; color: #95a5a6; margin: 15px 0;">Or pick one of these:</p>
-
-                <div class="topic-suggestions">
-                    <button class="topic-chip" onclick="selectTopic('planes')">✈️ Planes</button>
-                    <button class="topic-chip" onclick="selectTopic('stars')">⭐ Stars</button>
-                    <button class="topic-chip" onclick="selectTopic('dinosaurs')">🦕 Dinosaurs</button>
-                    <button class="topic-chip" onclick="selectTopic('ocean')">🌊 Ocean</button>
-                    <button class="topic-chip" onclick="selectTopic('robots')">🤖 Robots</button>
-                    <button class="topic-chip" onclick="selectTopic('space')">🚀 Space</button>
-                </div>
-
-                <button class="btn btn-large btn-primary" onclick="startExploring()">Let's Explore!</button>
-            </div>
-
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #ddd;">
-                <p style="font-size: 18px; color: #95a5a6; margin-bottom: 15px;">Or ask me anything!</p>
-                <button class="btn btn-large btn-success" onclick="showScreen('askQuestion')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    🤔 Ask a Question
+            <div class="avatar-grid">
+                <button class="avatar-btn" onclick="selectAvatar('🦁', 'Lion')">
+                    <span class="avatar-icon">🦁</span>
+                    <span class="avatar-name">Lion</span>
+                </button>
+                <button class="avatar-btn" onclick="selectAvatar('🚀', 'Rocket')">
+                    <span class="avatar-icon">🚀</span>
+                    <span class="avatar-name">Rocket</span>
+                </button>
+                <button class="avatar-btn" onclick="selectAvatar('🦕', 'Dino')">
+                    <span class="avatar-icon">🦕</span>
+                    <span class="avatar-name">Dino</span>
+                </button>
+                <button class="avatar-btn" onclick="selectAvatar('⭐', 'Star')">
+                    <span class="avatar-icon">⭐</span>
+                    <span class="avatar-name">Star</span>
+                </button>
+                <button class="avatar-btn" onclick="selectAvatar('🐬', 'Dolphin')">
+                    <span class="avatar-icon">🐬</span>
+                    <span class="avatar-name">Dolphin</span>
+                </button>
+                <button class="avatar-btn" onclick="selectAvatar('🤖', 'Robot')">
+                    <span class="avatar-icon">🤖</span>
+                    <span class="avatar-name">Robot</span>
                 </button>
             </div>
 
-            <div style="margin-top: 30px;">
-                <p style="font-size: 14px; color: #999; margin-bottom: 10px;">First time? Ask a parent to set up the app!</p>
-                <button class="btn back-btn" onclick="showScreen('dashboard')">My Curiosity Dashboard</button>
-                <button class="btn back-btn" onclick="showScreen('parentView')">Parent Setup</button>
+            <!-- Hidden input for compatibility -->
+            <input type="hidden" id="nameInput" value="Explorer" />
+        </div>
+
+        <!-- Welcome Screen - Big Visual Topic Cards -->
+        <div id="welcome" class="screen">
+            <!-- Parent settings button in corner -->
+            <button class="parent-corner-btn" onclick="showScreen('parentView')" title="Parent Settings">⚙️</button>
+
+            <h1>🌟 Pick a Topic! 🌟</h1>
+            <p class="subtitle">Hi <span id="userName">Explorer</span>! Tap one to start!</p>
+
+            <div class="topic-grid">
+                <button class="topic-card-big" onclick="selectTopicAndStart('planes')">
+                    <span class="topic-icon">✈️</span>
+                    <span class="topic-label">Planes</span>
+                </button>
+                <button class="topic-card-big" onclick="selectTopicAndStart('dinosaurs')">
+                    <span class="topic-icon">🦕</span>
+                    <span class="topic-label">Dinosaurs</span>
+                </button>
+                <button class="topic-card-big" onclick="selectTopicAndStart('space')">
+                    <span class="topic-icon">🚀</span>
+                    <span class="topic-label">Space</span>
+                </button>
+                <button class="topic-card-big" onclick="selectTopicAndStart('ocean')">
+                    <span class="topic-icon">🌊</span>
+                    <span class="topic-label">Ocean</span>
+                </button>
+                <button class="topic-card-big" onclick="selectTopicAndStart('robots')">
+                    <span class="topic-icon">🤖</span>
+                    <span class="topic-label">Robots</span>
+                </button>
+                <button class="topic-card-big" onclick="selectTopicAndStart('stars')">
+                    <span class="topic-icon">⭐</span>
+                    <span class="topic-label">Stars</span>
+                </button>
             </div>
         </div>
 
@@ -1448,16 +1553,19 @@
 
         <!-- Mission 2: Spot the Mistake -->
         <div id="mission2-intro" class="screen">
-            <h2>Spot the Mistake</h2>
-            <p class="subtitle">Some facts are wrong!<br>Can you find 5 wrong facts?</p>
-            <button class="btn btn-primary" onclick="startMission2Questions()">Let's Look!</button>
-            <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
+            <div class="celebration-emoji" style="font-size: 80px;">🔍</div>
+            <h2>Find the Silly One!</h2>
+            <p class="subtitle">Which one sounds wrong?</p>
+            <button class="btn btn-large btn-primary" onclick="startMission2Questions()" style="font-size: 24px; padding: 20px 50px;">
+                Let's Go!
+            </button>
         </div>
 
         <div id="mission2-facts" class="screen">
-            <div class="progress-indicator" id="mission2Progress">Question 1 of 5</div>
-            <h2>Which fact seems wrong?</h2>
-            <div class="question-mark">❓</div>
+            <div class="progress-indicator" id="mission2Progress">
+                <span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span>
+            </div>
+            <h2>Which sounds silly?</h2>
 
             <div class="button-group" style="flex-direction: column; align-items: center; margin-top: 30px;">
                 <button class="choice-btn" onclick="checkFact('correct')">
@@ -1472,42 +1580,36 @@
 
         <div id="mission2-correct" class="screen">
             <div class="celebration">
-                <div class="celebration-emoji">✅</div>
-                <h2>Correct!</h2>
-                <div class="feedback-box" id="mission2CorrectFeedback">
-                    That's right!
-                </div>
-                <p class="subtitle" id="mission2CorrectProgress">1 down, 4 to go!</p>
-                <button class="btn btn-primary" onclick="nextMission2Question()">Next Question</button>
+                <div class="celebration-emoji bounce-animation">🎉</div>
+                <h2>Yes!</h2>
+                <p class="subtitle" id="mission2CorrectFeedback"></p>
+                <div id="mission2CorrectProgress" class="progress-indicator" style="margin: 20px 0;"></div>
+                <button class="btn btn-large btn-primary" onclick="nextMission2Question()" style="font-size: 22px;">
+                    Next!
+                </button>
             </div>
         </div>
 
         <div id="mission2-hint" class="screen">
-            <h2>Hmm, let's think...</h2>
-            <p id="mission2HintText" class="subtitle">Think about this.<br>What do you know?</p>
-            <div class="feedback-box" id="mission2HintBox">
-                Let's think again.<br>
-                What do you know?
-            </div>
-            <button class="btn btn-primary" onclick="showScreen('mission2-facts')">Try Again!</button>
-            <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
+            <div class="celebration-emoji wobble-animation">🤔</div>
+            <h2>Try Again!</h2>
+            <p class="subtitle" id="mission2HintBox">That one was true!</p>
+            <button class="btn btn-large btn-primary" onclick="showScreen('mission2-facts')" style="font-size: 22px; margin-top: 20px;">
+                Let's Try!
+            </button>
         </div>
 
         <div id="mission2-success" class="screen">
             <div class="celebration">
-                <div class="celebration-emoji">🎯</div>
-                <h2>Wow! You Found All 5!</h2>
-                <div class="feedback-box">
-                    Yay! You found 5 wrong facts!<br><br>
-                    You are a great fact checker!<br><br>
-                    Always ask if things seem strange!
-                </div>
-                <p class="subtitle">You earned a badge!</p>
+                <div class="celebration-emoji bounce-animation">🏆</div>
+                <h2>Amazing!</h2>
+                <p class="subtitle">You found all 5!</p>
                 <div class="badge-container" id="mission2BadgeDisplay">
                     <div class="badge">🔍 Fact Finder</div>
                 </div>
-                <button class="btn btn-success" onclick="completeMission(2)">Continue</button>
-                <button class="btn back-btn" onclick="showScreen('missionSelect')">🏠 Back</button>
+                <button class="btn btn-large btn-success" onclick="completeMission(2)" style="font-size: 22px; margin-top: 20px;">
+                    Yay!
+                </button>
             </div>
         </div>
 
@@ -1550,73 +1652,75 @@
 
         <!-- Parent View -->
         <div id="parentView" class="screen">
-            <h2>👨‍👩‍👧 Parent Summary</h2>
+            <h2>👨‍👩‍👧 Parent Dashboard</h2>
             <div class="parent-view">
 
-                <!-- Topics and Facts Learned Section -->
-                <div id="parentTopicsLearned" style="background: #e8f5e9; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #4caf50;">
-                    <h3 style="color: #2e7d32; margin-bottom: 15px;">📚 Topics Your Child Explored</h3>
-                    <div id="parentTopicsList">
-                        <!-- Will be populated dynamically -->
-                        <p style="color: #666; font-style: italic;">No topics explored yet. Start exploring to see progress here!</p>
+                <!-- Quick Summary Card -->
+                <div id="parentSummaryCard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 20px; margin-bottom: 25px; color: white; text-align: center;">
+                    <h3 style="margin-bottom: 15px; font-size: 18px;">This Week</h3>
+                    <div style="display: flex; justify-content: space-around; gap: 15px;">
+                        <div>
+                            <div id="summaryTopics" style="font-size: 36px; font-weight: bold;">0</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Topics</div>
+                        </div>
+                        <div>
+                            <div id="summaryBadges" style="font-size: 36px; font-weight: bold;">0</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Badges</div>
+                        </div>
+                        <div>
+                            <div id="summaryMissions" style="font-size: 36px; font-weight: bold;">0</div>
+                            <div style="font-size: 14px; opacity: 0.9;">Games</div>
+                        </div>
                     </div>
                 </div>
 
-                <h3>🧠 Skills Kids Learn</h3>
-                <p style="color: #6c757d; margin-bottom: 20px;">
-                    This app helps kids learn smart thinking through play.
-                </p>
-
-                <ul class="skill-list">
-                    <li>
-                        <strong>Testing Ideas</strong><br>
-                        Make things and see what works
-                    </li>
-                    <li>
-                        <strong>Asking Questions</strong><br>
-                        Ask "why" and "what if"
-                    </li>
-                    <li>
-                        <strong>Fixing Mistakes</strong><br>
-                        Mistakes help us get better
-                    </li>
-                    <li>
-                        <strong>Making Choices</strong><br>
-                        Think about what matters most
-                    </li>
-                    <li>
-                        <strong>Checking Facts</strong><br>
-                        Even computers make mistakes
-                    </li>
-                </ul>
-
-                <div style="background: #fff; padding: 20px; border-radius: 10px; margin-top: 20px;">
-                    <h3 style="font-size: 20px; color: #495057; margin-bottom: 10px;">📖 How It Works</h3>
-                    <p style="color: #6c757d; line-height: 1.6;">
-                        This app makes kids curious. No scores or grades here. Just exploring and growing! Kids think through problems step by step.
-                    </p>
+                <!-- Topics Explored with Details -->
+                <div id="parentTopicsLearned" style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                    <h3 style="color: #495057; margin-bottom: 15px;">📚 Recent Activity</h3>
+                    <div id="parentTopicsList">
+                        <p style="color: #888; font-style: italic;">No activity yet. Play a game to see progress!</p>
+                    </div>
                 </div>
 
-                <div style="background: #fff3e0; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: center;">
-                    <h3 style="font-size: 18px; color: #e65100; margin-bottom: 10px;">📊 Question Log (Eval Dataset)</h3>
-                    <p style="color: #555; line-height: 1.6; margin-bottom: 10px;">
-                        Download all questions asked by kids to build an evaluation dataset.
-                    </p>
-                    <p id="questionCount" style="color: #888; font-size: 14px; margin-bottom: 10px;">Loading...</p>
-                    <button onclick="exportQuestionsCSV()" style="display: inline-block; background: #ff9800; color: white; padding: 10px 20px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer;">
-                        Download CSV
-                    </button>
+                <!-- Skills as Visual Icons -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                    <h3 style="color: #495057; margin-bottom: 15px;">🧠 Skills Practiced</h3>
+                    <div class="skills-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+                        <div class="skill-tile" id="skillChecking" style="background: #e8f5e9; padding: 15px 10px; border-radius: 12px;">
+                            <div style="font-size: 28px;">🔍</div>
+                            <div style="font-size: 12px; color: #2e7d32; margin-top: 5px;">Fact Checking</div>
+                        </div>
+                        <div class="skill-tile" style="background: #e3f2fd; padding: 15px 10px; border-radius: 12px; opacity: 0.5;">
+                            <div style="font-size: 28px;">❓</div>
+                            <div style="font-size: 12px; color: #1976d2; margin-top: 5px;">Asking Why</div>
+                        </div>
+                        <div class="skill-tile" style="background: #fff3e0; padding: 15px 10px; border-radius: 12px; opacity: 0.5;">
+                            <div style="font-size: 28px;">🔧</div>
+                            <div style="font-size: 12px; color: #e65100; margin-top: 5px;">Problem Solving</div>
+                        </div>
+                    </div>
+                    <p style="color: #999; font-size: 12px; margin-top: 12px; text-align: center;">Faded = not practiced yet</p>
                 </div>
 
-                <div style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: center;">
-                    <h3 style="font-size: 18px; color: #1976d2; margin-bottom: 10px;">💬 We'd Love Your Feedback!</h3>
-                    <p style="color: #555; line-height: 1.6; margin-bottom: 10px;">
-                        How is your child enjoying Curiosity Explorer? We'd love to hear what's working and what could be better.
+                <!-- API Key Setup -->
+                <div style="background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #ddd;">
+                    <h3 style="color: #495057; margin-bottom: 10px;">🔑 Setup</h3>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                        Enter your OpenAI API key to enable the Q&A feature.
+                        <a href="https://platform.openai.com/api-keys" target="_blank" style="color: #667eea;">Get one here</a>
                     </p>
-                    <a href="mailto:curiosityexplorer.feedback@gmail.com" style="display: inline-block; background: #2196f3; color: white; padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold;">
-                        Send Feedback
+                    <input type="password" id="parentApiKeyInput" placeholder="sk-..."
+                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 14px; margin-bottom: 10px;"
+                           onchange="saveParentApiKey(this.value)">
+                    <p id="apiKeyStatus" style="color: #27ae60; font-size: 12px;"></p>
+                </div>
+
+                <!-- Feedback link (low-key) -->
+                <p style="text-align: center; margin-top: 20px;">
+                    <a href="mailto:curiosityexplorer.feedback@gmail.com" style="color: #999; font-size: 14px;">
+                        Share feedback →
                     </a>
-                </div>
+                </p>
             </div>
             <button class="btn back-btn" onclick="showScreen('welcome')">Back to Home</button>
         </div>
@@ -2225,6 +2329,19 @@
             });
         }
 
+        // Get relative time string
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 14) return 'Last week';
+            return date.toLocaleDateString();
+        }
+
         // localStorage Functions
         function saveToLocalStorage() {
             const explorationsData = JSON.parse(localStorage.getItem('curiosityExplorations')) || {};
@@ -2265,21 +2382,9 @@
             return JSON.parse(localStorage.getItem('curiosityExplorations')) || {};
         }
 
-        // Topic Selection
-        function selectTopic(topic) {
-            document.getElementById('topicInput').value = topic;
-            startExploring();
-        }
-
-        function startExploring() {
-            const topicInput = document.getElementById('topicInput').value.trim();
-
-            if (!topicInput) {
-                alert('Please type a topic or pick one from the suggestions!');
-                return;
-            }
-
-            gameState.currentTopic = topicInput.charAt(0).toUpperCase() + topicInput.slice(1).toLowerCase();
+        // Topic Selection - Go directly to the game (skip mission selection)
+        function selectTopicAndStart(topic) {
+            gameState.currentTopic = topic.charAt(0).toUpperCase() + topic.slice(1).toLowerCase();
             gameState.completedMissions = [];
             gameState.badges = [];
             gameState.conceptsLearned = [];
@@ -2289,26 +2394,26 @@
             // Load topic data from database or generate custom content
             const topicKey = gameState.currentTopic.toLowerCase();
             if (topicDatabase[topicKey]) {
-                // Use preset topic data
                 gameState.currentTopicData = topicDatabase[topicKey];
             } else {
-                // Generate dynamic content for custom topic
                 gameState.currentTopicData = generateCustomTopicData(gameState.currentTopic);
             }
 
-            // Check if returning user
-            const existingData = loadTopicData(gameState.currentTopic);
+            // Go directly to Spot the Mistake (skip mission selection)
+            startMission2();
+        }
 
-            // Show welcome back banner if returning
-            if (existingData && existingData.lastExplored) {
-                showWelcomeBackBanner(existingData);
-            } else {
-                document.getElementById('welcomeBackBanner').innerHTML = '';
+        // Legacy function for compatibility
+        function selectTopic(topic) {
+            selectTopicAndStart(topic);
+        }
+
+        function startExploring() {
+            const topicInput = document.getElementById('topicInput');
+            if (!topicInput || !topicInput.value.trim()) {
+                return;
             }
-
-            // Populate missions
-            populateMissions();
-            showScreen('missionSelect');
+            selectTopicAndStart(topicInput.value.trim());
         }
 
         function showWelcomeBackBanner(topicData) {
@@ -2503,30 +2608,55 @@
                 speakText('Hi! What do you want to know?');
             }
 
-            // Auto-read key screens
-            if (screenId === 'mission2-facts') {
-                speakText('Which fact seems wrong? Pick one!');
+            // Auto-read instructions for each screen
+            const screenAudio = {
+                'welcome': 'Pick a topic! Tap one to start!',
+                'mission2-intro': 'Find the silly fact! Tap Let\'s Look!',
+                'mission2-facts': 'Which one sounds wrong? Tap it!',
+                'mission2-correct': 'Yes! You got it!',
+                'mission2-hint': 'Hmm, try again!',
+                'mission2-success': 'Amazing! You found them all!',
+                'missionSelect': `Let's explore ${gameState.currentTopic}!`,
+                'askQuestion': 'Hi! What do you want to know?'
+            };
+
+            if (screenAudio[screenId]) {
+                setTimeout(() => speakText(screenAudio[screenId]), 300);
             }
-            if (screenId === 'missionSelect') {
-                speakText(`Let's explore ${gameState.currentTopic}! Pick a mission!`);
+        }
+
+        // Save API key from parent view
+        function saveParentApiKey(key) {
+            if (key && key.trim()) {
+                localStorage.setItem('openaiApiKey', key.trim());
+                document.getElementById('apiKeyStatus').textContent = '✓ API key saved';
             }
         }
 
         // Populate parent view with topics and facts learned
         function updateParentView() {
-            // Update question count for eval dataset
-            const questionCountEl = document.getElementById('questionCount');
-            if (questionCountEl) {
-                const count = getQuestionCount();
-                questionCountEl.textContent = `${count} question${count !== 1 ? 's' : ''} logged`;
+            // Show existing API key status
+            const existingKey = localStorage.getItem('openaiApiKey');
+            const apiKeyInput = document.getElementById('parentApiKeyInput');
+            const apiKeyStatus = document.getElementById('apiKeyStatus');
+            if (existingKey && apiKeyInput) {
+                apiKeyInput.value = existingKey.substring(0, 7) + '...' + existingKey.slice(-4);
+                apiKeyStatus.textContent = '✓ API key configured';
             }
 
             const parentTopicsList = document.getElementById('parentTopicsList');
             const explorations = getAllExplorations();
             const topics = Object.values(explorations);
 
+            // Update summary card
+            const totalBadges = topics.reduce((sum, t) => sum + deduplicateBadges(t.badges || []).length, 0);
+            const totalMissions = topics.reduce((sum, t) => sum + (t.completedMissions?.length || 0), 0);
+            document.getElementById('summaryTopics').textContent = topics.length;
+            document.getElementById('summaryBadges').textContent = totalBadges;
+            document.getElementById('summaryMissions').textContent = totalMissions || topics.length;
+
             if (topics.length === 0) {
-                parentTopicsList.innerHTML = '<p style="color: #666; font-style: italic;">No topics explored yet. Start exploring to see progress here!</p>';
+                parentTopicsList.innerHTML = '<p style="color: #888; font-style: italic;">No activity yet. Play a game to see progress!</p>';
                 return;
             }
 
@@ -2538,18 +2668,18 @@
             topics.forEach(topicData => {
                 const topicKey = topicData.topic.toLowerCase();
                 const emoji = topicDatabase[topicKey]?.emoji || '🔬';
-                const lastDate = new Date(topicData.lastExplored).toLocaleDateString();
+                const timeAgo = getTimeAgo(new Date(topicData.lastExplored));
                 const uniqueConcepts = deduplicateArray(topicData.concepts || []);
                 const uniqueBadges = deduplicateBadges(topicData.badges || []);
 
                 html += `
-                    <div style="background: white; border-radius: 10px; padding: 15px; margin-bottom: 15px; border-left: 4px solid #4caf50;">
-                        <h4 style="color: #2c3e50; margin: 0 0 10px 0; font-size: 18px;">
-                            ${emoji} ${topicData.topic}
-                            <span style="font-size: 12px; color: #888; font-weight: normal; margin-left: 10px;">
-                                Last: ${lastDate}
-                            </span>
-                        </h4>
+                    <div style="background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h4 style="color: #2c3e50; margin: 0; font-size: 18px;">
+                                ${emoji} ${topicData.topic}
+                            </h4>
+                            <span style="font-size: 12px; color: #888;">${timeAgo}</span>
+                        </div>
                 `;
 
                 // Show badges earned
@@ -2579,21 +2709,6 @@
 
                 html += '</div>';
             });
-
-            // Add summary stats
-            const totalBadges = topics.reduce((sum, t) => sum + (t.badges?.length || 0), 0);
-            const totalConcepts = topics.reduce((sum, t) => sum + (t.concepts?.length || 0), 0);
-
-            html += `
-                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center;">
-                    <strong style="color: #1976d2;">📊 Total Progress</strong><br>
-                    <span style="color: #555;">
-                        ${topics.length} topic${topics.length !== 1 ? 's' : ''} explored •
-                        ${totalBadges} badge${totalBadges !== 1 ? 's' : ''} earned •
-                        ${totalConcepts} fact${totalConcepts !== 1 ? 's' : ''} learned
-                    </span>
-                </div>
-            `;
 
             parentTopicsList.innerHTML = html;
         }
@@ -3237,11 +3352,25 @@ Respond in this exact JSON format only:
             loadMission2Question();
         }
 
+        // Update progress stars visually
+        function updateProgressStars(completed) {
+            const progressEl = document.getElementById('mission2Progress');
+            let stars = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < completed) {
+                    stars += '<span class="star filled">★</span>';
+                } else {
+                    stars += '<span class="star">☆</span>';
+                }
+            }
+            progressEl.innerHTML = stars;
+        }
+
         async function loadMission2Question() {
             const topic = gameState.currentTopic;
 
-            // Update progress indicator
-            document.getElementById('mission2Progress').textContent = `Question ${mission2QuestionCount + 1} of 5`;
+            // Update progress indicator with stars
+            updateProgressStars(mission2QuestionCount);
 
             // Show loading state
             const choiceButtons = document.querySelectorAll('#mission2-facts .choice-btn');
@@ -3323,21 +3452,19 @@ Respond in this exact JSON format only:
                     showMission2Success();
                 } else {
                     // Show correct feedback and prepare for next question
-                    document.getElementById('mission2CorrectFeedback').innerHTML = `
-                        Yes! You got it!<br><br>
-                        ${currentMission2Fact.concept}
-                    `;
-                    const remaining = 5 - mission2QuestionCount;
-                    document.getElementById('mission2CorrectProgress').textContent =
-                        remaining === 1 ? `${mission2QuestionCount} done, 1 more to go!` :
-                        `${mission2QuestionCount} done, ${remaining} to go!`;
+                    document.getElementById('mission2CorrectFeedback').textContent = currentMission2Fact.concept;
+                    // Show progress as stars
+                    updateProgressStars(mission2QuestionCount);
+                    document.getElementById('mission2CorrectProgress').innerHTML =
+                        document.getElementById('mission2Progress').innerHTML;
                     showScreen('mission2-correct');
-                    speakText(`Yes! You got it! ${currentMission2Fact.concept}`);
+                    speakText(`Yes! ${currentMission2Fact.concept}`);
                 }
             } else {
                 playWrongSound(); // Play gentle "try again" sound
+                document.getElementById('mission2HintBox').textContent = 'That one was true!';
                 showScreen('mission2-hint');
-                speakText('Hmm, let us think about this more.');
+                speakText('Oops! Try again!');
             }
         }
 
@@ -3963,6 +4090,15 @@ IMPORTANT: Give a simple answer. Do NOT end with a question. No "Can you...?" or
 
             localStorage.setItem('curiosityExplorerName', nameInput);
             displayUserName(nameInput);
+            showScreen('welcome');
+        }
+
+        // Avatar selection (replaces typing name)
+        function selectAvatar(emoji, name) {
+            const fullName = `${emoji} ${name}`;
+            localStorage.setItem('curiosityExplorerName', fullName);
+            displayUserName(fullName);
+            speakText(`Hi ${name}! Let's explore!`);
             showScreen('welcome');
         }
 
