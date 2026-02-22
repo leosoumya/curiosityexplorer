@@ -1524,12 +1524,19 @@
                 </button>
             </div>
 
-            <!-- Say your own topic -->
+            <!-- Say or type your own topic -->
             <button class="say-topic-btn" onclick="sayMyTopic()" id="sayTopicBtn">
                 <span style="font-size: 32px;">🎤</span>
                 <span>Say Something Else!</span>
             </button>
             <p id="sayTopicStatus" style="color: #888; font-size: 14px; margin-top: 10px; display: none;"></p>
+
+            <!-- Fallback text input for custom topic -->
+            <div id="customTopicInput" style="display: none; margin-top: 15px;">
+                <input type="text" id="customTopicText" placeholder="Type a topic..."
+                       style="padding: 12px 20px; font-size: 18px; border: 3px solid #4ecdc4; border-radius: 25px; width: 200px; text-align: center; font-family: inherit;">
+                <button onclick="startCustomTopic()" style="background: #4ecdc4; color: white; border: none; border-radius: 25px; padding: 12px 20px; font-size: 18px; font-weight: bold; cursor: pointer; margin-left: 10px;">Go!</button>
+            </div>
 
             <!-- Ask Me Anything -->
             <button class="ask-anything-btn" onclick="showScreen('askQuestion')">
@@ -2489,56 +2496,99 @@
         function sayMyTopic() {
             const btn = document.getElementById('sayTopicBtn');
             const status = document.getElementById('sayTopicStatus');
+            const fallbackInput = document.getElementById('customTopicInput');
 
             // Check for speech recognition support
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                status.textContent = 'Voice not supported on this device';
+                // Show fallback text input
+                status.textContent = 'Voice not available - type instead!';
                 status.style.display = 'block';
+                fallbackInput.style.display = 'block';
+                document.getElementById('customTopicText').focus();
                 return;
             }
 
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
+            try {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
 
-            // Update UI for listening
-            btn.classList.add('listening');
-            btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Listening...</span>';
-            status.textContent = 'Say a topic like "cars" or "butterflies"';
-            status.style.display = 'block';
-            speakText('What do you want to learn about?');
+                // Update UI for listening
+                btn.classList.add('listening');
+                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Listening...</span>';
+                status.textContent = 'Say a topic like "cars" or "butterflies"';
+                status.style.display = 'block';
 
-            recognition.onresult = (event) => {
-                const topic = event.results[0][0].transcript.trim();
-                btn.classList.remove('listening');
-                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+                recognition.onresult = (event) => {
+                    const topic = event.results[0][0].transcript.trim();
+                    btn.classList.remove('listening');
+                    btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
 
-                if (topic) {
-                    status.textContent = `Great! Let's explore ${topic}!`;
-                    speakText(`Great! Let's explore ${topic}!`);
-                    setTimeout(() => {
-                        status.style.display = 'none';
-                        selectTopicAndStart(topic);
-                    }, 1500);
-                }
-            };
+                    if (topic) {
+                        status.textContent = `Great! Let's explore ${topic}!`;
+                        speakText(`Great! Let's explore ${topic}!`);
+                        setTimeout(() => {
+                            status.style.display = 'none';
+                            selectTopicAndStart(topic);
+                        }, 1500);
+                    }
+                };
 
-            recognition.onerror = (event) => {
-                btn.classList.remove('listening');
-                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
-                status.textContent = 'Try again!';
-                speakText('I didn\'t hear that. Tap to try again!');
-            };
+                recognition.onerror = (event) => {
+                    console.log('Speech recognition error:', event.error);
+                    btn.classList.remove('listening');
+                    btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
 
-            recognition.onend = () => {
-                btn.classList.remove('listening');
-                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
-            };
+                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                        status.textContent = 'Microphone blocked - type instead!';
+                        fallbackInput.style.display = 'block';
+                        document.getElementById('customTopicText').focus();
+                    } else {
+                        status.textContent = 'Tap to try again, or type below';
+                        fallbackInput.style.display = 'block';
+                    }
+                };
 
-            recognition.start();
+                recognition.onend = () => {
+                    btn.classList.remove('listening');
+                    btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+                };
+
+                recognition.start();
+            } catch (e) {
+                console.log('Speech recognition failed:', e);
+                status.textContent = 'Voice not working - type instead!';
+                status.style.display = 'block';
+                fallbackInput.style.display = 'block';
+                document.getElementById('customTopicText').focus();
+            }
         }
+
+        // Start game with typed custom topic
+        function startCustomTopic() {
+            const input = document.getElementById('customTopicText');
+            const topic = input.value.trim();
+            if (topic) {
+                document.getElementById('customTopicInput').style.display = 'none';
+                document.getElementById('sayTopicStatus').style.display = 'none';
+                input.value = '';
+                selectTopicAndStart(topic);
+            }
+        }
+
+        // Allow Enter key to submit custom topic
+        document.addEventListener('DOMContentLoaded', function() {
+            const customInput = document.getElementById('customTopicText');
+            if (customInput) {
+                customInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        startCustomTopic();
+                    }
+                });
+            }
+        });
 
         function showWelcomeBackBanner(topicData) {
             const banner = document.getElementById('welcomeBackBanner');
