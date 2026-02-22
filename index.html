@@ -3850,16 +3850,38 @@ REMEMBER: Answer only. No questions. Laugh at silly questions!`;
             sendToRemoteLog(logData);
         }
 
-        // AUTOMATIC remote logging via GoatCounter (already integrated)
-        // View questions at: https://curiosityexplorer.goatcounter.com
-        function sendToRemoteLog(data) {
-            // Log to GoatCounter as custom event
-            if (window.goatcounter && window.goatcounter.count) {
-                window.goatcounter.count({
-                    path: 'question',
-                    title: data.question.substring(0, 100),
-                    event: true
+        // AUTOMATIC remote logging - questions + answers stored in JSONBlob (free)
+        // View at: https://jsonblob.com/019c8724-983a-7dc5-8ed6-a0f15a3d0406
+        const JSONBLOB_ID = '019c8724-983a-7dc5-8ed6-a0f15a3d0406';
+
+        async function sendToRemoteLog(data) {
+            if (!JSONBLOB_ID) return;
+
+            try {
+                // Get existing logs
+                const response = await fetch(`https://jsonblob.com/api/jsonBlob/${JSONBLOB_ID}`);
+                const existing = await response.json();
+                const logs = existing.questions || [];
+
+                // Add new entry
+                logs.push({
+                    time: data.timestamp,
+                    user: data.user,
+                    q: data.question,
+                    a: data.response
                 });
+
+                // Keep last 200 entries to stay within limits
+                const trimmed = logs.slice(-200);
+
+                // Save back
+                await fetch(`https://jsonblob.com/api/jsonBlob/${JSONBLOB_ID}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ questions: trimmed })
+                });
+            } catch (e) {
+                console.log('Remote log error:', e);
             }
         }
 
