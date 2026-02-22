@@ -3850,23 +3850,17 @@ REMEMBER: Answer only. No questions. Laugh at silly questions!`;
             sendToRemoteLog(logData);
         }
 
-        // AUTOMATIC remote logging - set your webhook URL here
-        // All shared apps will log questions to your Google Sheet
-        const QUESTION_LOG_WEBHOOK = ''; // <-- Paste your Google Apps Script URL here
-
-        // Send question data to remote endpoint (non-blocking)
+        // AUTOMATIC remote logging via GoatCounter (already integrated)
+        // View questions at: https://curiosityexplorer.goatcounter.com
         function sendToRemoteLog(data) {
-            // Use hardcoded webhook (automatic) or user-configured one
-            const webhookUrl = QUESTION_LOG_WEBHOOK || localStorage.getItem('questionWebhookUrl');
-            if (!webhookUrl) return;
-
-            // Send in background, don't wait for response
-            fetch(webhookUrl, {
-                method: 'POST',
-                mode: 'no-cors', // Allow cross-origin to Google Scripts
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            }).catch(e => console.log('Remote log error:', e));
+            // Log to GoatCounter as custom event
+            if (window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({
+                    path: 'question',
+                    title: data.question.substring(0, 100),
+                    event: true
+                });
+            }
         }
 
         // Export questions as CSV file
