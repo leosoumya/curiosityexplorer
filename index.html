@@ -3741,7 +3741,13 @@ STRICT RULES:
 1. ONLY give the answer. NEVER ask a question back.
 2. NO follow-up questions. NO "Do you know...?" NO "Can you...?" NO "What do you think...?"
 3. End with a statement, NOT a question.
-4. Include a "Learn more:" link at the end from your web search.
+4. Include a "Learn more:" link at the end from your web search (for real questions only).
+
+SILLY OR NONSENSE QUESTIONS:
+If the question is a joke, impossible, or doesn't make sense (like "why did the cow go to space" or "can fish fly to the moon"), respond playfully:
+- "Ha ha, that's silly! Cows don't go to space! 😄"
+- "That's a funny idea! Fish can't fly to the moon! 🐟"
+Do NOT try to answer nonsense questions seriously. Do NOT include a Learn more link for silly questions.
 
 HOW TO TALK:
 - Simple words only (say "big" not "large")
@@ -3749,7 +3755,7 @@ HOW TO TALK:
 - Say "Wow!" or "Cool!" to be fun
 - Short sentences (5-7 words max)
 
-FORMAT:
+FORMAT FOR REAL QUESTIONS:
 1. Fun answer (2 sentences max)
 2. One emoji
 3. "Learn more:" with a markdown link [title](url)
@@ -3758,15 +3764,18 @@ GOOD EXAMPLES:
 Kid: "How many moons does Saturn have?"
 You: "Wow, Saturn has 146 moons! That is so many! 🪐 Learn more: [NASA Saturn](https://nasa.gov/saturn)"
 
-Kid: "Why is the sky blue?"
-You: "Light from the sun bounces in the air. Blue bounces the most! 💙 Learn more: [Sky Colors](https://example.com)"
+Kid: "Why did the cow jump over the moon?"
+You: "Ha ha, that's from a fun story! Cows can't really jump that high! 🐄"
+
+Kid: "Can dinosaurs eat pizza?"
+You: "That's silly! Dinosaurs lived long ago, before pizza was invented! 🦕"
 
 BAD (never do this):
 "Can you guess?" ❌
 "Do you know what else?" ❌
-"What do you think?" ❌
+Answering nonsense questions seriously ❌
 
-REMEMBER: Answer only. No questions. Always include a Learn more link at the end.`;
+REMEMBER: Answer only. No questions. Laugh at silly questions!`;
 
         // Get API key from localStorage
         function getApiKey() {
@@ -3879,22 +3888,32 @@ REMEMBER: Answer only. No questions. Always include a Learn more link at the end
             }
         }
 
-        // Extract image search keywords from question
-        function getImageKeywords(question) {
-            // Topics that benefit from images
+        // Extract image search keywords from text (question or answer)
+        function getImageKeywords(text) {
+            // Topics that benefit from images (ordered by specificity)
             const visualTopics = [
-                'animal', 'animals', 'dog', 'cat', 'lion', 'tiger', 'elephant', 'giraffe',
-                'cheetah', 'bird', 'fish', 'whale', 'dolphin', 'shark', 'dinosaur', 'bug',
-                'planet', 'moon', 'sun', 'star', 'earth', 'mars', 'jupiter', 'saturn',
-                'rocket', 'space', 'astronaut', 'spaceship',
-                'plane', 'airplane', 'jet', 'helicopter', 'car', 'train', 'boat', 'ship',
-                'flower', 'tree', 'forest', 'ocean', 'mountain', 'volcano', 'rainbow',
-                'castle', 'robot', 'dragon', 'unicorn'
+                // Specific animals first
+                'cheetah', 'giraffe', 'elephant', 'dolphin', 'whale', 'shark', 'dinosaur',
+                'butterfly', 'penguin', 'kangaroo', 'koala', 'panda', 'zebra', 'gorilla',
+                'lion', 'tiger', 'bear', 'wolf', 'fox', 'rabbit', 'horse', 'cow', 'pig',
+                'dog', 'cat', 'bird', 'fish', 'frog', 'snake', 'spider', 'bee', 'ant',
+                // Space
+                'saturn', 'jupiter', 'mars', 'neptune', 'uranus', 'mercury', 'venus',
+                'astronaut', 'rocket', 'spaceship', 'galaxy', 'comet', 'asteroid',
+                'planet', 'moon', 'sun', 'star', 'earth', 'space',
+                // Vehicles
+                'airplane', 'helicopter', 'submarine', 'motorcycle',
+                'plane', 'jet', 'car', 'train', 'boat', 'ship', 'truck', 'bus',
+                // Nature
+                'volcano', 'waterfall', 'rainbow', 'lightning', 'tornado', 'hurricane',
+                'flower', 'tree', 'forest', 'ocean', 'mountain', 'desert', 'river', 'lake',
+                // Other
+                'castle', 'pyramid', 'robot', 'dragon', 'unicorn', 'mermaid'
             ];
 
-            const lowerQ = question.toLowerCase();
+            const lowerText = text.toLowerCase();
             for (const topic of visualTopics) {
-                if (lowerQ.includes(topic)) {
+                if (lowerText.includes(topic)) {
                     return topic;
                 }
             }
@@ -4008,11 +4027,16 @@ IMPORTANT: Give a simple answer. Do NOT end with a question. No "Can you...?" or
                 // Add to history (OpenAI format)
                 chatHistory.push({ role: 'assistant', content: reply });
 
-                // Check if topic could benefit from an image
-                const imageKeyword = getImageKeywords(question);
+                // Check if this is a silly/joke response (no image needed)
+                const isSillyResponse = /silly|funny|ha ha|can't really|doesn't really|don't really|that's a joke/i.test(reply);
+
+                // Get image based on the ANSWER, not the question (smarter matching)
                 let imageUrl = null;
-                if (imageKeyword) {
-                    imageUrl = await fetchImageForTopic(imageKeyword);
+                if (!isSillyResponse) {
+                    const imageKeyword = getImageKeywords(reply);
+                    if (imageKeyword) {
+                        imageUrl = await fetchImageForTopic(imageKeyword);
+                    }
                 }
 
                 // Display response with optional image
