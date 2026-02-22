@@ -890,27 +890,68 @@
             50% { transform: scale(1.05); }
         }
 
-        .ask-anything-btn {
+        .ask-anything-card {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 15px 30px;
-            font-size: 18px;
+            border: 4px solid #5a67d8;
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-top: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .ask-anything-card:hover, .ask-anything-card:active {
+            transform: scale(1.03);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .ask-icon {
+            font-size: 50px;
+            margin-bottom: 5px;
+        }
+
+        .ask-label {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .ask-hint {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .say-topic-btn-small {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2c3e50;
+            border: 3px solid #4ecdc4;
+            border-radius: 25px;
+            padding: 12px 20px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
             transition: all 0.3s ease;
             font-family: inherit;
         }
 
-        .ask-anything-btn:hover, .ask-anything-btn:active {
+        .say-topic-btn-small:hover, .say-topic-btn-small:active {
             transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+            border-color: #ff6b6b;
+        }
+
+        .say-topic-btn-small.listening {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
         }
 
         /* Dashboard Styles */
@@ -1524,11 +1565,19 @@
                 </button>
             </div>
 
-            <!-- Say or type your own topic -->
-            <button class="say-topic-btn" onclick="sayMyTopic()" id="sayTopicBtn">
-                <span style="font-size: 32px;">🎤</span>
-                <span>Say Something Else!</span>
+            <!-- Ask Me Anything - PROMINENT -->
+            <button class="ask-anything-card" onclick="showScreen('askQuestion')">
+                <span class="ask-icon">💬</span>
+                <span class="ask-label">Ask Me Anything!</span>
+                <span class="ask-hint">I can answer any question!</span>
             </button>
+
+            <!-- Say or type your own topic -->
+            <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                <button class="say-topic-btn-small" onclick="sayMyTopic()" id="sayTopicBtn">
+                    🎤 Say a Topic
+                </button>
+            </div>
             <p id="sayTopicStatus" style="color: #888; font-size: 14px; margin-top: 10px; display: none;"></p>
 
             <!-- Fallback text input for custom topic -->
@@ -1537,12 +1586,6 @@
                        style="padding: 12px 20px; font-size: 18px; border: 3px solid #4ecdc4; border-radius: 25px; width: 200px; text-align: center; font-family: inherit;">
                 <button onclick="startCustomTopic()" style="background: #4ecdc4; color: white; border: none; border-radius: 25px; padding: 12px 20px; font-size: 18px; font-weight: bold; cursor: pointer; margin-left: 10px;">Go!</button>
             </div>
-
-            <!-- Ask Me Anything -->
-            <button class="ask-anything-btn" onclick="showScreen('askQuestion')">
-                <span style="font-size: 32px;">💬</span>
-                <span>Ask Me Anything!</span>
-            </button>
         </div>
 
         <!-- Ask a Question Screen -->
@@ -1790,6 +1833,7 @@
                            onchange="saveParentApiKey(this.value)">
                     <p id="apiKeyStatus" style="color: #27ae60; font-size: 12px;"></p>
                 </div>
+
 
                 <!-- Feedback link (low-key) -->
                 <p style="text-align: center; margin-top: 20px;">
@@ -2517,14 +2561,14 @@
 
                 // Update UI for listening
                 btn.classList.add('listening');
-                btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Listening...</span>';
+                btn.textContent = '🎤 Listening...';
                 status.textContent = 'Say a topic like "cars" or "butterflies"';
                 status.style.display = 'block';
 
                 recognition.onresult = (event) => {
                     const topic = event.results[0][0].transcript.trim();
                     btn.classList.remove('listening');
-                    btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+                    btn.textContent = '🎤 Say a Topic';
 
                     if (topic) {
                         status.textContent = `Great! Let's explore ${topic}!`;
@@ -2539,7 +2583,7 @@
                 recognition.onerror = (event) => {
                     console.log('Speech recognition error:', event.error);
                     btn.classList.remove('listening');
-                    btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+                    btn.textContent = '🎤 Say a Topic';
 
                     if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
                         status.textContent = 'Microphone blocked - type instead!';
@@ -2553,7 +2597,7 @@
 
                 recognition.onend = () => {
                     btn.classList.remove('listening');
-                    btn.innerHTML = '<span style="font-size: 32px;">🎤</span><span>Say Something Else!</span>';
+                    btn.textContent = '🎤 Say a Topic';
                 };
 
                 recognition.start();
@@ -2807,6 +2851,7 @@
             }
         }
 
+
         // Populate parent view with topics and facts learned
         function updateParentView() {
             // Show existing API key status
@@ -2817,6 +2862,7 @@
                 apiKeyInput.value = existingKey.substring(0, 7) + '...' + existingKey.slice(-4);
                 apiKeyStatus.textContent = '✓ API key configured';
             }
+
 
             const parentTopicsList = document.getElementById('parentTopicsList');
             const explorations = getAllExplorations();
@@ -3782,20 +3828,45 @@ REMEMBER: Answer only. No questions. Laugh at silly questions!`;
             return localStorage.getItem('openaiApiKey');
         }
 
-        // Log questions locally for eval dataset
+        // Log questions locally AND remotely for analysis
         function logQuestion(question, response) {
+            const logData = {
+                timestamp: new Date().toISOString(),
+                user: localStorage.getItem('curiosityExplorerName') || 'Anonymous',
+                question: question,
+                response: response
+            };
+
+            // Save locally
             try {
                 const logs = JSON.parse(localStorage.getItem('questionLogs') || '[]');
-                logs.push({
-                    timestamp: new Date().toISOString(),
-                    user: localStorage.getItem('userName') || 'Anonymous',
-                    question: question,
-                    response: response
-                });
+                logs.push(logData);
                 localStorage.setItem('questionLogs', JSON.stringify(logs));
             } catch (e) {
-                console.log('Question logging error:', e);
+                console.log('Local logging error:', e);
             }
+
+            // Send to remote webhook (Google Sheets, etc.)
+            sendToRemoteLog(logData);
+        }
+
+        // AUTOMATIC remote logging - set your webhook URL here
+        // All shared apps will log questions to your Google Sheet
+        const QUESTION_LOG_WEBHOOK = ''; // <-- Paste your Google Apps Script URL here
+
+        // Send question data to remote endpoint (non-blocking)
+        function sendToRemoteLog(data) {
+            // Use hardcoded webhook (automatic) or user-configured one
+            const webhookUrl = QUESTION_LOG_WEBHOOK || localStorage.getItem('questionWebhookUrl');
+            if (!webhookUrl) return;
+
+            // Send in background, don't wait for response
+            fetch(webhookUrl, {
+                method: 'POST',
+                mode: 'no-cors', // Allow cross-origin to Google Scripts
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).catch(e => console.log('Remote log error:', e));
         }
 
         // Export questions as CSV file
