@@ -7,3 +7,6 @@ gunicorn>=21.0.0
 
 # OpenAI API
 openai>=1.0.0
+
+# Database
+supabase>=2.0.0

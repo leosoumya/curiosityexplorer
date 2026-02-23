@@ -5,42 +5,19 @@ Handles Q&A with GPT-5.2 and TTS with shimmer voice
 
 import os
 import re
-import sqlite3
-from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import openai
+from supabase import create_client, Client
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
 
-# Database setup
-DATABASE = 'qa_logs.db'
+# Supabase setup
+SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://nyfpidtlkhwhgcrgaerf.supabase.co')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55ZnBpZHRsa2h3aGdjcmdhZXJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MDQwMzUsImV4cCI6MjA4NzM4MDAzNX0.6KUK1cwLUBMxGVkEd_i0jJgo7mqe-Gh8IIsMtcgPpwU')
 
-def get_db():
-    """Get database connection."""
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def init_db():
-    """Initialize the database with schema."""
-    conn = get_db()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS qa_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            user_name TEXT,
-            question TEXT NOT NULL,
-            answer TEXT NOT NULL,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
-    conn.close()
-
-# Initialize database on startup
-init_db()
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Socratic prompt for kid-friendly responses
 SOCRATIC_PROMPT = """You are a friendly helper for a 5-6 year old child.
@@ -160,14 +137,16 @@ def clean_text_for_speech(text):
 
 
 def log_qa(user_id, user_name, question, answer):
-    """Log question/answer pair to database."""
-    conn = get_db()
-    conn.execute(
-        'INSERT INTO qa_logs (user_id, user_name, question, answer) VALUES (?, ?, ?, ?)',
-        (user_id, user_name, question, answer)
-    )
-    conn.commit()
-    conn.close()
+    """Log question/answer pair to Supabase."""
+    try:
+        supabase.table('qa_logs').insert({
+            'user_id': user_id,
+            'user_name': user_name,
+            'question': question,
+            'answer': answer
+        }).execute()
+    except Exception as e:
+        print(f"Supabase logging error: {e}")
 
 
 @app.route('/')
@@ -224,7 +203,7 @@ def ask():
                     reply = item.content[0].text
                     break
 
-        # Log the Q&A
+        # Log the Q&A to Supabase
         log_qa(user_id, user_name, question, reply)
 
         # Extract image keyword for relevant images
@@ -282,18 +261,17 @@ def tts():
 
 @app.route('/admin/logs', methods=['GET'])
 def get_logs():
-    """Return all Q&A logs as JSON."""
-    conn = get_db()
-    cursor = conn.execute(
-        'SELECT id, user_id, user_name, question, answer, timestamp FROM qa_logs ORDER BY timestamp DESC'
-    )
-    logs = [dict(row) for row in cursor.fetchall()]
-    conn.close()
+    """Return all Q&A logs from Supabase as JSON."""
+    try:
+        response = supabase.table('qa_logs').select('*').order('timestamp', desc=True).execute()
+        logs = response.data
 
-    return jsonify({
-        'total': len(logs),
-        'logs': logs
-    })
+        return jsonify({
+            'total': len(logs),
+            'logs': logs
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'total': 0, 'logs': []}), 500
 
 
 if __name__ == '__main__':
