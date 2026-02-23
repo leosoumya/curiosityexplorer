@@ -1513,7 +1513,7 @@
 
     <div class="container">
         <!-- Name Entry Screen - Avatar Selection -->
-        <div id="nameEntry" class="screen active">
+        <div id="nameEntry" class="screen">
             <h1>🌟 Curiosity Explorer 🌟</h1>
             <div class="celebration-emoji">👋</div>
             <h2>Who are you today?</h2>
@@ -1551,7 +1551,7 @@
         </div>
 
         <!-- Welcome Screen - Big Visual Topic Cards -->
-        <div id="welcome" class="screen">
+        <div id="welcome" class="screen active">
             <!-- Parent settings button in corner -->
             <button class="parent-corner-btn" onclick="showScreen('parentView')" title="Parent Settings">⚙️</button>
 
@@ -4287,16 +4287,12 @@ Respond in this exact JSON format only:
         function initializeApp() {
             const savedName = getSavedName();
 
-            // Remove active from all screens first
+            // Always show welcome screen with topics + Ask Me Anything
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('welcome').classList.add('active');
 
             if (savedName) {
-                // Name exists - go to welcome screen
                 displayUserName(savedName);
-                document.getElementById('welcome').classList.add('active');
-            } else {
-                // No name - show name entry screen
-                document.getElementById('nameEntry').classList.add('active');
             }
 
             updateBadgeDisplay();
