@@ -1987,6 +1987,9 @@
             return userId;
         }
 
+        // Track current speech request to prevent overlapping
+        let currentSpeechId = 0;
+
         async function speakText(text) {
             if (isMuted) return;
 
@@ -1996,7 +1999,15 @@
                 currentAudio = null;
             }
 
+            // Cancel browser speech too
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+
             if (!text) return;
+
+            // Track this speech request
+            const speechId = ++currentSpeechId;
 
             // Use backend TTS API
             try {
@@ -2008,9 +2019,21 @@
                     body: JSON.stringify({ text: text })
                 });
 
+                // Check if this request is still current (not superseded by newer call)
+                if (speechId !== currentSpeechId) {
+                    return; // A newer speakText call happened, abort this one
+                }
+
                 if (response.ok) {
                     const audioBlob = await response.blob();
                     const audioUrl = URL.createObjectURL(audioBlob);
+
+                    // Double-check still current before playing
+                    if (speechId !== currentSpeechId) {
+                        URL.revokeObjectURL(audioUrl);
+                        return;
+                    }
+
                     currentAudio = new Audio(audioUrl);
                     currentAudio.play();
                     currentAudio.onended = () => URL.revokeObjectURL(audioUrl);
@@ -2019,6 +2042,9 @@
             } catch (error) {
                 console.log('Backend TTS error, falling back to browser:', error);
             }
+
+            // Check if still current before browser fallback
+            if (speechId !== currentSpeechId) return;
 
             // Fallback to browser speech synthesis
             if (window.speechSynthesis) {
@@ -2889,10 +2915,10 @@
             if (screenId === 'askQuestion') {
                 clearChat();  // Always start fresh session
                 checkApiKeyAndShowChat();
-                speakText('Hi! What do you want to know?');
+                // Don't speak here - let screenAudio handle it to avoid duplicates
             }
 
-            // Auto-read instructions for each screen
+            // Auto-read instructions for each screen (single source of truth)
             const screenAudio = {
                 'welcome': 'Pick a topic! Tap one to start!',
                 'mission2-intro': 'Find the silly fact! Tap Let\'s Look!',
