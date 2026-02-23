@@ -21,6 +21,47 @@
             padding: 20px;
         }
 
+        /* Name Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.3s ease;
+        }
+
+        .modal-content h2 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
         .container {
             background: white;
             border-radius: 30px;
@@ -1511,8 +1552,21 @@
         </div>
     </div>
 
+    <!-- Name Modal for First-Time Users -->
+    <div id="nameModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>👋 Hi there!</h2>
+            <p>What's your name?</p>
+            <input type="text" id="nameModalInput" placeholder="Type your name..."
+                   style="padding: 15px; font-size: 20px; border: 3px solid #4ecdc4; border-radius: 15px; width: 80%; text-align: center; margin: 15px 0;">
+            <button onclick="saveNameFromModal()" class="btn btn-primary" style="font-size: 20px; padding: 15px 40px;">
+                Let's Go! 🚀
+            </button>
+        </div>
+    </div>
+
     <div class="container">
-        <!-- Name Entry Screen - Avatar Selection -->
+        <!-- Name Entry Screen - Avatar Selection (legacy, kept for compatibility) -->
         <div id="nameEntry" class="screen">
             <h1>🌟 Curiosity Explorer 🌟</h1>
             <div class="celebration-emoji">👋</div>
@@ -4283,6 +4337,16 @@ Respond in this exact JSON format only:
             }
         }
 
+        // Save name from modal
+        function saveNameFromModal() {
+            const nameInput = document.getElementById('nameModalInput');
+            const name = nameInput.value.trim() || 'Explorer';
+            localStorage.setItem('curiosityExplorerName', name);
+            displayUserName(name);
+            document.getElementById('nameModal').style.display = 'none';
+            speakText(`Hi ${name}! Let's explore!`);
+        }
+
         // Initialize app
         function initializeApp() {
             const savedName = getSavedName();
@@ -4293,6 +4357,9 @@ Respond in this exact JSON format only:
 
             if (savedName) {
                 displayUserName(savedName);
+            } else {
+                // First-time user - show name modal
+                document.getElementById('nameModal').style.display = 'flex';
             }
 
             updateBadgeDisplay();
@@ -4304,6 +4371,13 @@ Respond in this exact JSON format only:
         document.getElementById('nameInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 saveName();
+            }
+        });
+
+        // Allow Enter key for name modal
+        document.getElementById('nameModalInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveNameFromModal();
             }
         });
 
