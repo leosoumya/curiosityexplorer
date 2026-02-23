@@ -2918,14 +2918,12 @@
                 // Don't speak here - let screenAudio handle it to avoid duplicates
             }
 
-            // Auto-read instructions for each screen (single source of truth)
+            // Auto-read instructions for each screen
+            // Note: mission2-correct, mission2-hint, mission2-success have custom messages in checkFact/showMission2Success
             const screenAudio = {
                 'welcome': 'Pick a topic! Tap one to start!',
                 'mission2-intro': 'Find the silly fact! Tap Let\'s Look!',
                 'mission2-facts': 'Which one sounds wrong? Tap it!',
-                'mission2-correct': 'Yes! You got it!',
-                'mission2-hint': 'Hmm, try again!',
-                'mission2-success': 'Amazing! You found them all!',
                 'missionSelect': `Let's explore ${gameState.currentTopic}!`,
                 'askQuestion': 'Hi! What do you want to know?'
             };
@@ -3726,12 +3724,13 @@ Respond in this exact JSON format only:
             const badgeName = `🔍 ${topicData.name} Checker`;
             badgeDisplay.innerHTML = `<div class="badge">${badgeName}</div>`;
 
+            // Start speech first (async), then show screen and celebrate
+            speakText('Wow! You found all 5! You are a great fact finder!');
             showScreen('mission2-success');
 
             // Celebrate!
             triggerConfetti();
             playCorrectSound();
-            speakText('Wow! You found all 5! You are a great fact finder!');
         }
 
         function checkFact(choice) {
@@ -3752,14 +3751,16 @@ Respond in this exact JSON format only:
                     updateProgressStars(mission2QuestionCount);
                     document.getElementById('mission2CorrectProgress').innerHTML =
                         document.getElementById('mission2Progress').innerHTML;
-                    showScreen('mission2-correct');
+                    // Start speech first (async), then show screen immediately
                     speakText(`Yes! ${currentMission2Fact.concept}`);
+                    showScreen('mission2-correct');
                 }
             } else {
                 playWrongSound(); // Play gentle "try again" sound
                 document.getElementById('mission2HintBox').textContent = 'That one was true!';
-                showScreen('mission2-hint');
+                // Start speech first (async), then show screen immediately
                 speakText('Oops! Try again!');
+                showScreen('mission2-hint');
             }
         }
 
