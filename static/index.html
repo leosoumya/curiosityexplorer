@@ -1478,33 +1478,39 @@
     <div class="about-modal" id="aboutModal" onclick="closeAboutModalOutside(event)">
         <div class="about-content" onclick="event.stopPropagation()">
             <button class="about-close" onclick="toggleAboutModal()">✕</button>
-            <h2>🌟 About Curiosity Explorer</h2>
+            <h2>🌟 Curiosity Explorer</h2>
 
-            <div class="about-section">
-                <h4>🎯 What is this app?</h4>
-                <p>A fun app for kids ages 4-8! Kids explore topics they love. They learn smart thinking through play.</p>
+            <!-- Quick Navigation -->
+            <div class="about-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center;">
+                <button onclick="toggleAboutModal(); showScreen('welcome');" style="background: white; color: #667eea; border: none; border-radius: 10px; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 5px;">
+                    🏠 Home
+                </button>
+                <button onclick="toggleAboutModal(); showScreen('askQuestion');" style="background: white; color: #667eea; border: none; border-radius: 10px; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 5px;">
+                    💬 Ask Me Anything
+                </button>
+                <button onclick="toggleAboutModal(); showScreen('parentView');" style="background: white; color: #667eea; border: none; border-radius: 10px; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 5px;">
+                    👨‍👩‍👧 Parent View
+                </button>
             </div>
 
             <div class="about-section">
-                <h4>🧠 How does it help kids learn?</h4>
-                <p>Kids think through problems. They test ideas and find mistakes. No scores or grades here. Just fun exploring!</p>
-            </div>
-
-            <div class="about-section">
-                <h4>📚 Three Types of Missions</h4>
-                <p><strong>1. Build & Test:</strong> Make something and see how it works<br>
-                <strong>2. Spot the Mistake:</strong> Find facts that seem wrong<br>
-                <strong>3. Make a Choice:</strong> Think about what matters most</p>
+                <h4>🎯 What can kids do?</h4>
+                <p><strong>Pick a Topic:</strong> Planes, Dinosaurs, Space, Ocean & more!<br>
+                <strong>Ask Me Anything:</strong> Get fun answers to any question<br>
+                <strong>Spot the Mistake:</strong> Find the silly fact that's wrong</p>
             </div>
 
             <div class="about-section">
                 <h4>👨‍👩‍👧 For Parents</h4>
-                <p>Click "Parent View" to see what your child learned. You can see topics and facts they found.</p>
+                <p>See what your child learned and questions they asked.</p>
+                <button onclick="toggleAboutModal(); showScreen('parentView');" style="background: #4ecdc4; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                    Open Parent View →
+                </button>
             </div>
 
             <div class="about-section">
                 <h4>💾 Progress is Saved</h4>
-                <p>Progress saves on its own. Kids can come back anytime!</p>
+                <p>Progress saves automatically. Kids can come back anytime!</p>
             </div>
 
             <!-- Contact/Feedback Section -->
