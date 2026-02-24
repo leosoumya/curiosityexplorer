@@ -2202,66 +2202,81 @@
             // Track this speech request
             const speechId = ++currentSpeechId;
 
-            // Use backend TTS API
+            // Clean text for TTS (remove markdown, URLs, emojis)
+            const cleanText = text
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/https?:\/\/[^\s\])]+/g, '')
+                .replace(/Learn more:.*$/gm, '')
+                .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+                .replace(/\*\*/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!cleanText) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            // Try backend TTS API first
             try {
                 const response = await fetch('/api/tts', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ text: text })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: cleanText })
                 });
 
-                // Check if this request is still current (not superseded by newer call)
-                if (speechId !== currentSpeechId) {
-                    return; // A newer speakText call happened, abort this one
-                }
+                // Check if this request is still current
+                if (speechId !== currentSpeechId) return;
 
                 if (response.ok) {
                     const audioBlob = await response.blob();
                     const audioUrl = URL.createObjectURL(audioBlob);
 
-                    // Double-check still current before playing
                     if (speechId !== currentSpeechId) {
                         URL.revokeObjectURL(audioUrl);
                         return;
                     }
 
                     currentAudio = new Audio(audioUrl);
-                    currentAudio.play();
                     currentAudio.onended = () => {
                         URL.revokeObjectURL(audioUrl);
                         if (onComplete) onComplete();
                     };
+                    currentAudio.onerror = () => {
+                        // If audio fails, try browser speech
+                        useBrowserSpeech(cleanText, onComplete);
+                    };
+                    currentAudio.play().catch(() => {
+                        // If play fails, try browser speech
+                        useBrowserSpeech(cleanText, onComplete);
+                    });
                     return;
                 }
             } catch (error) {
-                console.log('Backend TTS error, falling back to browser:', error);
+                console.log('TTS API error:', error);
             }
 
-            // Check if still current before browser fallback
-            if (speechId !== currentSpeechId) return;
-
-            // Fallback to browser speech synthesis
-            if (window.speechSynthesis) {
-                window.speechSynthesis.cancel();
-                // Clean text for browser TTS
-                const cleanText = text
-                    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-                    .replace(/https?:\/\/[^\s\])]+/g, '')
-                    .replace(/Learn more:.*$/gm, '')
-                    .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
-                    .replace(/\s+/g, ' ')
-                    .trim();
-                const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.rate = 1.05;
-                utterance.pitch = 1.5;
-                utterance.volume = 1.0;
-                utterance.onend = () => {
-                    if (onComplete) onComplete();
-                };
-                window.speechSynthesis.speak(utterance);
+            // Fallback to browser speech
+            if (speechId === currentSpeechId) {
+                useBrowserSpeech(cleanText, onComplete);
             }
+        }
+
+        // Browser speech synthesis fallback
+        function useBrowserSpeech(text, onComplete = null) {
+            if (!window.speechSynthesis || !text) {
+                if (onComplete) onComplete();
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.1;
+            utterance.volume = 1.0;
+            utterance.onend = () => {
+                if (onComplete) onComplete();
+            };
+            window.speechSynthesis.speak(utterance);
         }
 
         function toggleMute() {
