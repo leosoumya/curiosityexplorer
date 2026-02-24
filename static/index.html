@@ -2862,6 +2862,33 @@
             selectTopicAndStart(topic);
         }
 
+        // View topic progress from treasure map (shows badges, doesn't start game)
+        function viewTopicProgress(topic) {
+            const topicData = loadTopicData(topic);
+            if (!topicData) {
+                // No saved data, start fresh
+                selectTopicAndStart(topic);
+                return;
+            }
+
+            // Load topic into gameState for display
+            gameState.currentTopic = topic.charAt(0).toUpperCase() + topic.slice(1).toLowerCase();
+            gameState.badges = deduplicateBadges(topicData.badges || []);
+            gameState.conceptsLearned = topicData.concepts || [];
+
+            // Load topic database entry
+            const topicKey = gameState.currentTopic.toLowerCase();
+            if (topicDatabase[topicKey]) {
+                gameState.currentTopicData = topicDatabase[topicKey];
+            } else {
+                gameState.currentTopicData = generateCustomTopicData(gameState.currentTopic);
+            }
+
+            // Update badge display and show hangar
+            updateBadgeDisplay();
+            showScreen('hangar');
+        }
+
         function startExploring() {
             const topicInput = document.getElementById('topicInput');
             if (!topicInput || !topicInput.value.trim()) {
@@ -3229,7 +3256,7 @@
                 if (conceptCount > 0) stats.push(conceptCount + ' fact' + (conceptCount !== 1 ? 's' : ''));
 
                 return `
-                    <button class="journey-topic" onclick="selectTopicAndStart('${topicData.topic}')">
+                    <button class="journey-topic" onclick="viewTopicProgress('${topicData.topic}')">
                         <span class="journey-emoji">${emoji}</span>
                         <span class="journey-info">
                             <span class="journey-name">${topicData.topic}</span>
