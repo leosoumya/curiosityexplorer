@@ -4400,31 +4400,33 @@
 
                 if (!lastBubble) return;
 
-                // Add visual placeholder immediately (visual feedback)
+                // Add prominent visual placeholder
                 const placeholder = document.createElement('div');
                 placeholder.className = 'image-placeholder';
                 placeholder.style.cssText = `
-                    margin-top: 12px;
-                    background: linear-gradient(135deg, #e0e5ec 0%, #f5f7fa 50%, #e0e5ec 100%);
+                    margin-top: 15px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
                     background-size: 200% 200%;
-                    animation: shimmer 1.5s ease-in-out infinite;
-                    border-radius: 12px;
-                    padding: 40px 20px;
+                    animation: shimmer 2s ease-in-out infinite;
+                    border-radius: 16px;
+                    padding: 30px 20px;
                     text-align: center;
-                    min-height: 150px;
+                    min-height: 120px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
                 `;
                 placeholder.innerHTML = `
-                    <div style="font-size: 40px; margin-bottom: 10px;">🎨</div>
-                    <div style="color: #666; font-size: 16px;">Drawing a picture...</div>
+                    <div style="font-size: 50px; margin-bottom: 8px; animation: bounce 1s infinite;">🎨</div>
+                    <div style="color: white; font-size: 18px; font-weight: bold;">Drawing a picture for you!</div>
+                    <div style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px;">Just a moment...</div>
                 `;
                 lastBubble.appendChild(placeholder);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-                // Add shimmer animation if not already in page
+                // Add animations if not already in page
                 if (!document.getElementById('shimmer-style')) {
                     const style = document.createElement('style');
                     style.id = 'shimmer-style';
@@ -4432,6 +4434,10 @@
                         @keyframes shimmer {
                             0% { background-position: 200% 0; }
                             100% { background-position: -200% 0; }
+                        }
+                        @keyframes bounce {
+                            0%, 100% { transform: translateY(0); }
+                            50% { transform: translateY(-10px); }
                         }
                     `;
                     document.head.appendChild(style);
@@ -4537,48 +4543,12 @@
                 // Add to history (OpenAI format)
                 chatHistory.push({ role: 'assistant', content: reply });
 
-                // Check if we'll generate an image
-                const willGenerateImage = data.should_generate_image && data.question_for_image;
+                // Display response and speak it via TTS API
+                addChatMessage(reply, 'assistant', null, true);
 
-                // Display response
-                addChatMessage(reply, 'assistant', null, false); // Don't auto-speak, we handle it below
-
-                if (willGenerateImage) {
-                    // Use browser speech for INSTANT playback (TTS API is too slow)
-                    // 1. Speak answer immediately using browser speech
-                    // 2. Start image generation in parallel
-                    // 3. When answer finishes, say "drawing a picture"
-                    if (!isMuted && window.speechSynthesis) {
-                        window.speechSynthesis.cancel(); // Stop any previous speech
-
-                        // Clean text for browser TTS
-                        const cleanReply = reply
-                            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-                            .replace(/https?:\/\/[^\s\])]+/g, '')
-                            .replace(/Learn more:.*$/gm, '')
-                            .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
-                            .replace(/\s+/g, ' ')
-                            .trim();
-
-                        const answerUtterance = new SpeechSynthesisUtterance(cleanReply);
-                        answerUtterance.rate = 1.0;
-                        answerUtterance.pitch = 1.1;
-
-                        // When answer finishes, say "drawing a picture"
-                        answerUtterance.onend = () => {
-                            const drawingUtterance = new SpeechSynthesisUtterance("And I'm drawing a picture for you!");
-                            drawingUtterance.rate = 1.0;
-                            drawingUtterance.pitch = 1.2;
-                            window.speechSynthesis.speak(drawingUtterance);
-                        };
-
-                        window.speechSynthesis.speak(answerUtterance);
-                    }
-                    // Start image generation in parallel (don't wait for speech)
+                // Generate image if appropriate (prominent visual indicator, no voice)
+                if (data.should_generate_image && data.question_for_image) {
                     generateAndShowImage(data.question_for_image, data.answer_for_image);
-                } else {
-                    // No image - use TTS API for better voice quality
-                    speakText(reply);
                 }
 
             } catch (error) {
