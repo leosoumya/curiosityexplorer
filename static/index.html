@@ -1706,47 +1706,8 @@
                 <p>Progress saves automatically. Kids can come back anytime!</p>
             </div>
 
-            <!-- Contact/Feedback Section -->
-            <div class="about-section" style="background: #e3f2fd; border: 2px solid #2196f3;">
-                <h4>📬 Share Your Feedback</h4>
-                <div id="feedbackForm">
-                    <p style="margin-bottom: 10px;">We'd love to hear from you! Share suggestions, ideas, or tell us how your child is enjoying the app.</p>
-                    <textarea
-                        id="feedbackText"
-                        placeholder="Type your feedback here..."
-                        style="width: 100%; min-height: 100px; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 14px; font-family: inherit; resize: vertical; box-sizing: border-box;"
-                    ></textarea>
-                    <input
-                        type="email"
-                        id="feedbackEmail"
-                        placeholder="Your email (optional)"
-                        style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 10px; font-size: 14px; margin-top: 10px; box-sizing: border-box;"
-                    />
-                    <button
-                        onclick="submitFeedback()"
-                        style="width: 100%; padding: 12px; background: #2196f3; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: background 0.2s;"
-                        onmouseover="this.style.background='#1976d2'"
-                        onmouseout="this.style.background='#2196f3'"
-                    >
-                        Send Feedback 📤
-                    </button>
-                </div>
-                <div id="feedbackSuccess" style="display: none; text-align: center; padding: 20px;">
-                    <div style="font-size: 40px; margin-bottom: 10px;">✅</div>
-                    <p style="color: #2e7d32; font-weight: bold; margin: 0;">Thank you for your feedback!</p>
-                    <p style="color: #666; font-size: 13px; margin-top: 5px;">We appreciate you taking the time to share your thoughts.</p>
-                    <button
-                        onclick="resetFeedbackForm()"
-                        style="padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 10px;"
-                    >
-                        Send Another
-                    </button>
-                </div>
-            </div>
-
             <div style="text-align: center; margin-top: 20px; color: #888; font-size: 13px;">
-                Made with ❤️ to nurture curiosity<br>
-                <a href="mailto:curiosityexplorer.feedback@gmail.com" style="color: #2196f3; text-decoration: none;">curiosityexplorer.feedback@gmail.com</a>
+                Made with ❤️ to nurture curiosity
             </div>
         </div>
     </div>
@@ -4781,44 +4742,6 @@
             if (event.target.id === 'aboutModal') {
                 toggleAboutModal();
             }
-        }
-
-        // Feedback form functions
-        function submitFeedback() {
-            const feedbackText = document.getElementById('feedbackText').value.trim();
-            const feedbackEmail = document.getElementById('feedbackEmail').value.trim();
-
-            if (!feedbackText) {
-                alert('Please enter your feedback before sending!');
-                return;
-            }
-
-            // Store feedback in localStorage (for demo purposes)
-            const feedbackData = {
-                text: feedbackText,
-                email: feedbackEmail || 'Not provided',
-                timestamp: new Date().toISOString(),
-                userAgent: navigator.userAgent
-            };
-
-            // Get existing feedback array or create new one
-            const existingFeedback = JSON.parse(localStorage.getItem('curiosityExplorerFeedback')) || [];
-            existingFeedback.push(feedbackData);
-            localStorage.setItem('curiosityExplorerFeedback', JSON.stringify(existingFeedback));
-
-            // Show success message
-            document.getElementById('feedbackForm').style.display = 'none';
-            document.getElementById('feedbackSuccess').style.display = 'block';
-
-            // Log to console (useful if you want to see feedback during development)
-            console.log('Feedback submitted:', feedbackData);
-        }
-
-        function resetFeedbackForm() {
-            document.getElementById('feedbackText').value = '';
-            document.getElementById('feedbackEmail').value = '';
-            document.getElementById('feedbackForm').style.display = 'block';
-            document.getElementById('feedbackSuccess').style.display = 'none';
         }
 
         // Close modal with Escape key
