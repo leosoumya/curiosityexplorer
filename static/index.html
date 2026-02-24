@@ -4425,8 +4425,47 @@
                 const assistantBubbles = messagesDiv.querySelectorAll('.chat-bubble.assistant');
                 const lastBubble = assistantBubbles[assistantBubbles.length - 1];
 
-                // Say "drawing a picture" via voice (no visual indicator)
+                if (!lastBubble) return;
+
+                // Say "drawing a picture" via voice
                 speakText("And I'm drawing a picture for you!");
+
+                // Add visual placeholder while image loads
+                const placeholder = document.createElement('div');
+                placeholder.className = 'image-placeholder';
+                placeholder.style.cssText = `
+                    margin-top: 12px;
+                    background: linear-gradient(135deg, #e0e5ec 0%, #f5f7fa 50%, #e0e5ec 100%);
+                    background-size: 200% 200%;
+                    animation: shimmer 1.5s ease-in-out infinite;
+                    border-radius: 12px;
+                    padding: 40px 20px;
+                    text-align: center;
+                    min-height: 150px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                `;
+                placeholder.innerHTML = `
+                    <div style="font-size: 40px; margin-bottom: 10px;">🎨</div>
+                    <div style="color: #666; font-size: 16px;">Drawing a picture...</div>
+                `;
+                lastBubble.appendChild(placeholder);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // Add shimmer animation if not already in page
+                if (!document.getElementById('shimmer-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'shimmer-style';
+                    style.textContent = `
+                        @keyframes shimmer {
+                            0% { background-position: 200% 0; }
+                            100% { background-position: -200% 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
 
                 const response = await fetch('/api/image', {
                     method: 'POST',
@@ -4436,27 +4475,31 @@
 
                 if (!response.ok) {
                     console.log('Image generation skipped or failed');
+                    placeholder.remove();
                     return;
                 }
 
                 const data = await response.json();
 
-                if (data.image_url && lastBubble) {
-                    // Append image to the existing answer bubble
-                    const imageContainer = document.createElement('div');
-                    imageContainer.style.marginTop = '12px';
-                    imageContainer.innerHTML = `
+                if (data.image_url) {
+                    // Replace placeholder with actual image
+                    placeholder.innerHTML = `
                         <img src="${data.image_url}" alt="Educational illustration"
                              style="max-width: 100%; border-radius: 12px; cursor: pointer;"
                              onclick="window.open('${data.image_url}', '_blank')">
                         <p style="font-size: 12px; color: #888; margin-top: 5px;">Tap to see bigger!</p>
                     `;
-                    lastBubble.appendChild(imageContainer);
+                    placeholder.style.cssText = 'margin-top: 12px;';
+                    placeholder.className = '';
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                } else {
+                    placeholder.remove();
                 }
             } catch (error) {
                 console.log('Image generation error:', error);
-                // Silently fail - images are optional
+                // Remove placeholder on error
+                const placeholder = document.querySelector('.image-placeholder');
+                if (placeholder) placeholder.remove();
             }
         }
 
