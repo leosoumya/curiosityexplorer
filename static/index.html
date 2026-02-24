@@ -3283,18 +3283,10 @@
                 populateMissions();
             }
 
-            // Auto-read instructions for each screen
-            // Note: mission2-facts speech is handled in loadMission2Question after facts load
-            // Note: mission2-correct, mission2-hint, mission2-success have custom messages in checkFact/showMission2Success
-            const screenAudio = {
-                'welcome': 'What do you want to do? Pick one!',
-                'mission2-intro': 'Find the silly fact! Tap Let\'s Go!',
-                'askQuestion': 'Hi! What do you want to know?'
-            };
-
-            if (screenAudio[screenId]) {
-                setTimeout(() => speakText(screenAudio[screenId]), 300);
-            }
+            // Voice is handled contextually in specific functions, not on every screen transition
+            // - Spot the Mistake: voice in loadMission2Question, checkFact, showMission2Success
+            // - Ask a Question: voice in addChatMessage for answers
+            // - Name selection: voice in selectAvatar
         }
 
         // Populate parent view with topics and facts learned
