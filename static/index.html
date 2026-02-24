@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Curiosity Explorer</title>
     <style>
         * {
@@ -15,10 +18,17 @@
             font-family: 'Comic Sans MS', 'Trebuchet MS', sans-serif;
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             min-height: 100vh;
+            min-height: -webkit-fill-available; /* iOS fix */
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start;
+            padding: 10px;
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+            -webkit-touch-callout: none; /* Disable callout on long press */
+        }
+
+        html {
+            height: -webkit-fill-available; /* iOS fix for 100vh */
         }
 
         /* Name Modal */
@@ -1572,96 +1582,254 @@
             }
         }
 
+        /* Tablet Responsive Styles */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 30px;
+                margin: 15px;
+                border-radius: 20px;
+            }
+
+            .home-cards {
+                gap: 15px;
+            }
+
+            .home-card {
+                padding: 20px;
+            }
+        }
+
         /* Mobile Responsive Styles */
         @media (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+
             .container {
-                padding: 15px;
-                margin: 10px;
+                padding: 20px;
+                padding-bottom: 80px; /* Space for home button */
+                margin: 8px;
+                border-radius: 15px;
+                min-height: calc(100vh - 16px);
             }
 
             h1 {
-                font-size: 1.5em !important;
-                white-space: nowrap;
+                font-size: 1.4em !important;
+                white-space: normal !important;
+                line-height: 1.3;
             }
 
             h2 {
-                font-size: 1.4em !important;
+                font-size: 1.3em !important;
             }
 
-            .topic-btn, .mission-btn {
+            .subtitle {
+                font-size: 1.1em !important;
+                margin-bottom: 25px !important;
+            }
+
+            /* Home cards - stack vertically on mobile */
+            .home-cards {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .home-card {
+                padding: 18px 20px;
+                min-height: 70px;
+            }
+
+            .home-card-icon {
+                font-size: 2em;
+            }
+
+            .home-card-label {
+                font-size: 1.2em;
+            }
+
+            .home-card-hint {
+                font-size: 0.9em;
+            }
+
+            /* Topic picker grid */
+            .topic-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px !important;
+            }
+
+            .topic-card-big {
+                padding: 15px 10px !important;
+                min-height: 80px;
+            }
+
+            .topic-icon {
+                font-size: 2em !important;
+            }
+
+            .topic-label {
+                font-size: 0.9em !important;
+            }
+
+            /* Mission cards */
+            .mission-grid {
+                gap: 12px;
+            }
+
+            .mission-card {
+                padding: 18px !important;
+            }
+
+            .mission-card h3 {
+                font-size: 1.1em !important;
+            }
+
+            /* Choice buttons for Spot the Mistake */
+            .choice-btn {
                 padding: 18px 15px !important;
                 font-size: 1.1em !important;
                 min-height: 70px;
             }
 
-            .answer-btn {
-                padding: 20px !important;
-                font-size: 1.2em !important;
-                min-height: 80px;
-            }
-
+            /* Chat interface */
             .chat-container {
-                height: 50vh !important;
-                min-height: 300px;
+                height: 55vh !important;
+                min-height: 280px;
             }
 
             .chat-bubble {
                 max-width: 90% !important;
-                font-size: 1.1em !important;
-                padding: 12px 16px !important;
+                font-size: 1.05em !important;
+                padding: 12px 15px !important;
             }
 
             #questionInput {
-                font-size: 1.1em !important;
-                padding: 15px !important;
+                font-size: 16px !important; /* Prevents iOS zoom */
+                padding: 14px !important;
             }
 
-            .input-row button {
-                padding: 15px 20px !important;
-                font-size: 1em !important;
-            }
-
-            .home-btn {
-                width: 55px !important;
-                height: 55px !important;
-                font-size: 1.6em !important;
-            }
-
-            .mute-btn {
-                width: 50px !important;
-                height: 50px !important;
-            }
-
-            .badge {
-                font-size: 2.5em !important;
-                padding: 15px !important;
-            }
-
-            /* Stack buttons vertically on small screens */
             .input-row {
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: 10px;
             }
 
             .input-row input {
                 width: 100%;
+                flex: none;
+            }
+
+            .input-row button {
+                width: 100%;
+                padding: 14px !important;
+                font-size: 1.1em !important;
+            }
+
+            /* Floating buttons */
+            .floating-home-btn {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 1.4em !important;
+                bottom: 15px !important;
+                left: 15px !important;
+            }
+
+            .menu-btn {
+                width: 40px !important;
+                height: 40px !important;
+                top: 15px !important;
+                right: 15px !important;
+            }
+
+            .mute-btn {
+                width: 45px !important;
+                height: 45px !important;
+                bottom: 15px !important;
+                right: 15px !important;
+            }
+
+            /* Treasure map button */
+            .treasure-map-btn {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+
+            /* Parent view */
+            .parent-view {
+                padding: 10px;
+            }
+
+            /* Badges */
+            .badge {
+                font-size: 1.8em !important;
+                padding: 12px !important;
+            }
+
+            /* Back buttons */
+            .back-btn {
+                padding: 12px 20px !important;
+                font-size: 1em !important;
             }
         }
 
+        /* Small phone styles */
         @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+                padding-bottom: 75px;
+                margin: 5px;
+                border-radius: 12px;
+            }
+
             h1 {
                 font-size: 1.2em !important;
-                white-space: nowrap;
             }
 
-            .topic-btn, .mission-btn {
+            h2 {
+                font-size: 1.15em !important;
+            }
+
+            .subtitle {
                 font-size: 1em !important;
-                padding: 15px 12px !important;
             }
 
-            .home-btn {
-                bottom: 15px !important;
-                left: 15px !important;
+            .home-card {
+                padding: 15px;
+            }
+
+            .home-card-icon {
+                font-size: 1.8em;
+            }
+
+            .topic-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+            }
+
+            .topic-card-big {
+                padding: 12px 8px !important;
+                min-height: 70px;
+            }
+
+            .choice-btn {
+                padding: 15px 12px !important;
+                font-size: 1em !important;
+            }
+
+            .chat-container {
+                height: 50vh !important;
+                min-height: 250px;
+            }
+
+            /* Image placeholder */
+            .image-placeholder {
+                padding: 20px 15px !important;
+                min-height: 100px !important;
+            }
+        }
+
+        /* Ensure touch targets are at least 44px (accessibility) */
+        @media (pointer: coarse) {
+            button, .btn, .home-card, .topic-card-big, .choice-btn, .mission-card {
+                min-height: 44px;
             }
         }
     </style>
