@@ -4044,10 +4044,8 @@
             const hintBox = document.getElementById('mission2HintBox');
             hintBox.innerHTML = `That one is true! Try the other one.`;
 
-            // Read both options aloud (simple and clear)
-            setTimeout(() => {
-                speakText(`${option1Text}... or... ${option2Text}... Which one is silly?`);
-            }, 400);
+            // Read both options aloud immediately
+            speakText(`${option1Text}... or... ${option2Text}... Which one is silly?`);
         }
 
         function nextMission2Question() {
