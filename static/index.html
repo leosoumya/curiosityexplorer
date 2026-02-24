@@ -4785,6 +4785,9 @@
                 // Add to history (OpenAI format)
                 chatHistory.push({ role: 'assistant', content: reply });
 
+                // Log question locally for Parent View
+                logQuestion(question, reply);
+
                 // Display response and speak it via TTS API
                 addChatMessage(reply, 'assistant', null, true);
 
