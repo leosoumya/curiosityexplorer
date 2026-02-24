@@ -1966,15 +1966,13 @@
             <button class="btn btn-primary" onclick="showScreen('welcome')">Explore Something New</button>
         </div>
 
-        <!-- Mission Selection Screen -->
+        <!-- Mission Selection Screen (Post-game options) -->
         <div id="missionSelect" class="screen">
             <div id="welcomeBackBanner"></div>
-            <h2 id="missionSelectTitle">Choose Your Mission</h2>
+            <h2 id="missionSelectTitle">What's Next?</h2>
             <div class="mission-grid" id="missionGrid">
-                <!-- Missions will be dynamically inserted here -->
+                <!-- Options will be dynamically inserted here -->
             </div>
-            <button class="btn back-btn" onclick="showScreen('welcome')">Pick Different Topic</button>
-            <button class="btn back-btn" onclick="showScreen('hangar')">My Badges</button>
             <button class="btn btn-success" onclick="showRecap()" id="recapBtn" style="display: none;">See What I Learned!</button>
         </div>
 
@@ -2972,19 +2970,51 @@
 
         function populateMissions() {
             const missionGrid = document.getElementById('missionGrid');
-            const topicData = gameState.currentTopicData;
+            const currentTopic = gameState.currentTopic;
 
-            document.getElementById('missionSelectTitle').textContent = `Explore ${gameState.currentTopic}!`;
+            document.getElementById('missionSelectTitle').textContent = `Great job with ${currentTopic}!`;
 
             missionGrid.innerHTML = `
-                <div class="mission-card" onclick="startMission2()">
-                    <h3>${topicData.mission2.icon} ${topicData.mission2.title}</h3>
-                    <p>${topicData.mission2.description}</p>
+                <div class="mission-card" onclick="goToSpotTheMistakes()">
+                    <h3>🔄 Pick a Different Topic</h3>
+                    <p>Try a new topic to explore!</p>
+                </div>
+                <div class="mission-card" onclick="showScreen('askQuestion')">
+                    <h3>❓ Ask Me Anything</h3>
+                    <p>Ask any question you want!</p>
+                </div>
+                <div class="mission-card" onclick="continueAskingAboutTopic()">
+                    <h3>💬 Keep Asking About ${currentTopic}</h3>
+                    <p>I want to learn more about ${currentTopic}!</p>
                 </div>
             `;
 
             // Show recap button if any missions completed
             updateRecapButton();
+        }
+
+        function goToSpotTheMistakes() {
+            showScreen('welcome');
+            // Open the topic picker after a short delay
+            setTimeout(() => {
+                const picker = document.getElementById('topicPicker');
+                const card = document.getElementById('spotCard');
+                if (!picker.classList.contains('open')) {
+                    picker.classList.add('open');
+                    card.classList.add('open');
+                }
+            }, 100);
+        }
+
+        function continueAskingAboutTopic() {
+            showScreen('askQuestion');
+            // Pre-fill the input with a prompt about the current topic
+            setTimeout(() => {
+                const input = document.getElementById('questionInput');
+                if (input) {
+                    input.placeholder = `Ask me about ${gameState.currentTopic}...`;
+                }
+            }, 100);
         }
 
         function updateRecapButton() {
@@ -3263,7 +3293,6 @@
             const screenAudio = {
                 'welcome': 'What do you want to do? Pick one!',
                 'mission2-intro': 'Find the silly fact! Tap Let\'s Go!',
-                'missionSelect': `Let's explore ${gameState.currentTopic}!`,
                 'askQuestion': 'Hi! What do you want to know?'
             };
 
