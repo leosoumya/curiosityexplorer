@@ -3893,63 +3893,29 @@
 
         // Generate a fact-checking question using LLM
         async function generateMission2Question(topic, questionNumber) {
-            const apiKey = localStorage.getItem('openaiApiKey');
-
-            if (!apiKey) {
-                // Fallback to template if no API key
-                return getFallbackFact(topic);
-            }
-
-            const previousFacts = mission2GeneratedFacts.map(f => f.wrong).join(', ');
-
-            const prompt = `Generate a fact-checking question for a 5-7 year old child about "${topic}".
-
-Create ONE pair of facts:
-1. A TRUE fact about ${topic} (simple, interesting, age-appropriate)
-2. A FALSE fact about ${topic} (sounds believable but is wrong - make it obviously silly for a kid)
-
-The false fact should be clearly wrong but fun/silly (like "planes are made of chocolate" or "dinosaurs could fly to the moon").
-
-${previousFacts ? `Do NOT repeat these wrong facts already used: ${previousFacts}` : ''}
-
-Respond in this exact JSON format only:
-{
-  "correct": "The true fact here (short, simple words)",
-  "wrong": "The false fact here (short, silly, clearly wrong)",
-  "correctIcon": "one emoji for the true fact",
-  "wrongIcon": "one emoji for the false fact",
-  "concept": "Why the wrong fact is false (1 simple sentence for kids)"
-}`;
+            // Get previous facts to avoid repetition
+            const previousFacts = mission2GeneratedFacts.map(f => f.wrong);
 
             try {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                const response = await fetch('/api/generate-fact', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        model: 'gpt-4o-mini',
-                        messages: [{ role: 'user', content: prompt }],
-                        max_tokens: 200,
-                        temperature: 0.9
+                        topic: topic,
+                        previous_facts: previousFacts
                     })
                 });
 
                 if (!response.ok) throw new Error('API request failed');
 
                 const data = await response.json();
-                const content = data.choices[0].message.content.trim();
 
-                // Parse JSON from response (handle markdown code blocks)
-                let jsonStr = content;
-                if (content.includes('```')) {
-                    jsonStr = content.replace(/```json?\n?/g, '').replace(/```/g, '').trim();
+                if (data.fact) {
+                    mission2GeneratedFacts.push(data.fact);
+                    return data.fact;
                 }
 
-                const fact = JSON.parse(jsonStr);
-                mission2GeneratedFacts.push(fact);
-                return fact;
+                throw new Error('No fact returned');
 
             } catch (error) {
                 console.error('Error generating question:', error);

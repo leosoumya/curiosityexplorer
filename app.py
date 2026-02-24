@@ -288,6 +288,77 @@ def ask():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/generate-fact', methods=['POST'])
+def generate_fact():
+    """Generate a new spot-the-mistake fact using OpenAI."""
+    data = request.json
+    topic = data.get('topic', '')
+    previous_facts = data.get('previous_facts', [])
+
+    if not topic:
+        return jsonify({'error': 'No topic provided'}), 400
+
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return jsonify({'error': 'API key not configured'}), 500
+
+    try:
+        client = openai.OpenAI(api_key=api_key)
+
+        # Build prompt with previous facts to avoid repetition
+        previous_str = ""
+        if previous_facts:
+            previous_str = f"\n\nDO NOT use these facts (already used):\n- " + "\n- ".join(previous_facts[-5:])
+
+        response = client.chat.completions.create(
+            model='gpt-4.1-nano',
+            messages=[{
+                'role': 'user',
+                'content': f"""Create a spot-the-mistake fact about "{topic}" for a 5-6 year old child.
+
+Return JSON with exactly this format:
+{{"correct": "true fact", "wrong": "silly wrong fact", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "what they learn"}}
+
+Rules:
+- The CORRECT fact must be true and educational about {topic}
+- The WRONG fact must be obviously silly/funny (not scary)
+- Use simple words a 5 year old understands
+- Keep facts short (under 10 words each)
+- The concept should explain why the correct fact is true
+- Use fun emojis that match the facts{previous_str}
+
+Examples for dinosaurs:
+{{"correct": "T-Rex had tiny arms", "wrong": "T-Rex could do push-ups", "correctIcon": "🦖", "wrongIcon": "💪", "concept": "T-Rex arms were too small for push-ups!"}}
+
+Return ONLY the JSON, nothing else."""
+            }],
+            max_tokens=200,
+            temperature=0.9
+        )
+
+        result = response.choices[0].message.content.strip()
+
+        # Parse JSON from response
+        import json
+        # Clean up response if needed
+        if result.startswith('```'):
+            result = result.split('```')[1]
+            if result.startswith('json'):
+                result = result[4:]
+        result = result.strip()
+
+        fact = json.loads(result)
+
+        return jsonify({
+            'fact': fact,
+            'topic': topic
+        })
+
+    except Exception as e:
+        print(f"Fact generation error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/tts', methods=['POST'])
 def tts():
     """Generate text-to-speech audio using OpenAI TTS with shimmer voice."""
