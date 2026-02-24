@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>Curiosity Explorer</title>
+    <title>Whyzee</title>
     <style>
         * {
             margin: 0;
@@ -621,6 +621,8 @@
         .voice-btn {
             width: 50px;
             height: 50px;
+            min-width: 50px;
+            min-height: 50px;
             border-radius: 50%;
             border: none;
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
@@ -631,6 +633,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .voice-btn:hover {
@@ -657,6 +660,8 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .send-btn:hover {
@@ -1703,7 +1708,30 @@
 
             #questionInput {
                 font-size: 16px !important; /* Prevents iOS zoom */
-                padding: 14px !important;
+                padding: 12px !important;
+            }
+
+            /* Chat input area buttons */
+            .chat-input-area {
+                gap: 6px !important;
+            }
+
+            .voice-btn {
+                width: 44px !important;
+                height: 44px !important;
+                min-width: 44px !important;
+                min-height: 44px !important;
+                flex-shrink: 0 !important;
+                font-size: 18px !important;
+                border-radius: 50% !important;
+            }
+
+            .send-btn {
+                padding: 12px 16px !important;
+                font-size: 14px !important;
+                flex-shrink: 0 !important;
+                border-radius: 22px !important;
+                min-width: 60px !important;
             }
 
             .input-row {
@@ -1817,6 +1845,30 @@
                 min-height: 250px;
             }
 
+            /* Chat input buttons - smaller on tiny phones */
+            .chat-input-area {
+                gap: 4px !important;
+            }
+
+            .voice-btn {
+                width: 40px !important;
+                height: 40px !important;
+                min-width: 40px !important;
+                min-height: 40px !important;
+                font-size: 16px !important;
+            }
+
+            .send-btn {
+                padding: 10px 12px !important;
+                font-size: 13px !important;
+                min-width: 50px !important;
+            }
+
+            #questionInput {
+                padding: 10px !important;
+                font-size: 16px !important;
+            }
+
             /* Image placeholder */
             .image-placeholder {
                 padding: 20px 15px !important;
@@ -1845,7 +1897,7 @@
     <div class="about-modal" id="aboutModal" onclick="closeAboutModalOutside(event)">
         <div class="about-content" onclick="event.stopPropagation()">
             <button class="about-close" onclick="toggleAboutModal()">✕</button>
-            <h2>🌟 Curiosity Explorer</h2>
+            <h2>🌟 Whyzee</h2>
 
             <!-- Quick Navigation -->
             <div class="about-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center;">
@@ -1930,7 +1982,7 @@
 
         <!-- Name Entry Screen - Avatar Selection (legacy, kept for compatibility) -->
         <div id="nameEntry" class="screen">
-            <h1>🌟 Curiosity Explorer 🌟</h1>
+            <h1>🌟 Whyzee 🌟</h1>
             <div class="celebration-emoji">👋</div>
             <h2>Who are you today?</h2>
             <p class="subtitle">Tap to pick!</p>
@@ -2106,9 +2158,9 @@
             </div>
         </div>
 
-        <!-- My Curiosity Dashboard -->
+        <!-- My Whyzee Dashboard -->
         <div id="dashboard" class="screen">
-            <h2>🏆 My Curiosity Dashboard 🏆</h2>
+            <h2>🏆 My Whyzee Dashboard 🏆</h2>
             <p class="subtitle">All the amazing things you've explored!</p>
 
             <div id="dashboardContent" class="dashboard-grid"></div>
