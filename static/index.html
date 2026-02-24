@@ -64,14 +64,15 @@
 
         .container {
             background: white;
-            border-radius: 30px;
+            border-radius: 20px;
             padding: 40px;
-            max-width: 800px;
-            width: 100%;
+            width: calc(100% - 40px);
+            max-width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.2);
             position: relative;
-            max-height: 90vh;
+            min-height: calc(100vh - 40px);
             overflow-y: auto;
+            margin: 20px;
         }
 
         h1 {
@@ -1358,9 +1359,9 @@
 
         /* Menu button styles */
         .menu-btn {
-            position: fixed;
-            top: 15px;
-            right: 15px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
             width: 45px;
             height: 45px;
             background: white;
@@ -1468,7 +1469,7 @@
 
         /* Floating Home Button */
         .floating-home-btn {
-            position: fixed;
+            position: absolute;
             bottom: 20px;
             left: 20px;
             width: 60px;
@@ -1669,19 +1670,7 @@
             async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-    <!-- Menu Button -->
-    <button class="menu-btn" onclick="toggleAboutModal()">
-        <span></span>
-        <span></span>
-        <span></span>
-    </button>
-
-    <!-- Floating Home Button -->
-    <button class="floating-home-btn" onclick="goHome()" title="Go Home">
-        🏠
-    </button>
-
-    <!-- Mute Button for Speech -->
+    <!-- Mute Button for Speech (stays outside) -->
     <button class="mute-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">
         🔊
     </button>
@@ -1761,6 +1750,18 @@
     </div>
 
     <div class="container">
+        <!-- Menu Button (inside container) -->
+        <button class="menu-btn" onclick="toggleAboutModal()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Floating Home Button (inside container) -->
+        <button class="floating-home-btn" onclick="goHome()" title="Go Home">
+            🏠
+        </button>
+
         <!-- Name Entry Screen - Avatar Selection (legacy, kept for compatibility) -->
         <div id="nameEntry" class="screen">
             <h1>🌟 Curiosity Explorer 🌟</h1>
