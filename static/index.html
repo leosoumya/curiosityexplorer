@@ -2087,6 +2087,10 @@
                         <div id="summaryBadges" style="font-size: 32px; font-weight: bold; color: #1976d2;">0</div>
                         <div style="font-size: 14px; color: #666;">Badges</div>
                     </div>
+                    <div style="text-align: center; background: #fff3e0; padding: 20px; border-radius: 15px; flex: 1;">
+                        <div id="summaryQuestions" style="font-size: 32px; font-weight: bold; color: #e65100;">0</div>
+                        <div style="font-size: 14px; color: #666;">Questions</div>
+                    </div>
                 </div>
 
                 <!-- Recent Activity -->
@@ -4430,6 +4434,10 @@
             // Add user message
             addChatMessage(question, 'user');
             input.value = '';
+
+            // Track total questions asked
+            const totalQ = parseInt(localStorage.getItem('totalQuestionsAsked') || '0') + 1;
+            localStorage.setItem('totalQuestionsAsked', totalQ);
 
             // Add thinking indicator
             addChatMessage('Hmm, let me think... 🤔', 'thinking');
