@@ -4028,53 +4028,32 @@
             const showCorrectFirst = Math.random() < 0.5;
 
             // Store option texts for reading aloud
-            let option1Text, option2Text, option1Type, option2Type;
+            let option1Text, option2Text;
 
             if (showCorrectFirst) {
                 option1Text = currentMission2Fact.correct;
                 option2Text = currentMission2Fact.wrong;
-                option1Type = 'correct';
-                option2Type = 'wrong';
-                choiceButtons[0].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct} <span class="listen-hint">🔊</span>`;
-                choiceButtons[1].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong} <span class="listen-hint">🔊</span>`;
+                choiceButtons[0].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct}`;
+                choiceButtons[0].setAttribute('onclick', "checkFact('correct')");
+                choiceButtons[1].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong}`;
+                choiceButtons[1].setAttribute('onclick', "checkFact('wrong')");
             } else {
                 option1Text = currentMission2Fact.wrong;
                 option2Text = currentMission2Fact.correct;
-                option1Type = 'wrong';
-                option2Type = 'correct';
-                choiceButtons[0].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong} <span class="listen-hint">🔊</span>`;
-                choiceButtons[1].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct} <span class="listen-hint">🔊</span>`;
+                choiceButtons[0].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong}`;
+                choiceButtons[0].setAttribute('onclick', "checkFact('wrong')");
+                choiceButtons[1].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct}`;
+                choiceButtons[1].setAttribute('onclick', "checkFact('correct')");
             }
 
-            // Set onclick to read option then check answer
-            choiceButtons[0].setAttribute('onclick', `readAndCheck('${option1Text.replace(/'/g, "\\'")}', '${option1Type}')`);
-            choiceButtons[1].setAttribute('onclick', `readAndCheck('${option2Text.replace(/'/g, "\\'")}', '${option2Type}')`);
-
-            // Update hint screen with topic-appropriate hints
-            const hintText = document.getElementById('mission2HintText');
+            // Update hint screen
             const hintBox = document.getElementById('mission2HintBox');
-            hintText.innerHTML = `Think about ${topic.toLowerCase()}.<br>What do you know?`;
-            hintBox.innerHTML = `Let's think again.<br>What is true about ${topic.toLowerCase()}?`;
+            hintBox.innerHTML = `That one is true! Try the other one.`;
 
-            // Auto-read both options aloud
+            // Read both options aloud (simple and clear)
             setTimeout(() => {
-                readBothOptions(option1Text, option2Text);
-            }, 300);
-        }
-
-        // Read both options aloud for kids who can't read
-        async function readBothOptions(option1, option2) {
-            const fullText = `Hmm... ${option1}... or... ${option2}... Which one is silly? Tap to hear again!`;
-            speakText(fullText);
-        }
-
-        // Read option aloud then check the answer
-        function readAndCheck(optionText, answerType) {
-            speakText(optionText);
-            // Small delay so they hear the option, then check
-            setTimeout(() => {
-                checkFact(answerType);
-            }, 1500);
+                speakText(`${option1Text}... or... ${option2Text}... Which one is silly?`);
+            }, 400);
         }
 
         function nextMission2Question() {
