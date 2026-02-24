@@ -2079,83 +2079,48 @@
 
         <!-- Parent View -->
         <div id="parentView" class="screen">
-            <h2>👨‍👩‍👧 Parent Dashboard</h2>
+            <h2>👨‍👩‍👧 Parent View</h2>
             <div class="parent-view">
 
-                <!-- Quick Summary Card -->
-                <div id="parentSummaryCard" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 20px; margin-bottom: 25px; color: white; text-align: center;">
-                    <h3 style="margin-bottom: 15px; font-size: 18px;">This Week</h3>
-                    <div style="display: flex; justify-content: space-around; gap: 15px;">
-                        <div>
-                            <div id="summaryTopics" style="font-size: 36px; font-weight: bold;">0</div>
-                            <div style="font-size: 14px; opacity: 0.9;">Topics</div>
-                        </div>
-                        <div>
-                            <div id="summaryBadges" style="font-size: 36px; font-weight: bold;">0</div>
-                            <div style="font-size: 14px; opacity: 0.9;">Badges</div>
-                        </div>
-                        <div>
-                            <div id="summaryMissions" style="font-size: 36px; font-weight: bold;">0</div>
-                            <div style="font-size: 14px; opacity: 0.9;">Games</div>
-                        </div>
+                <!-- Summary Stats -->
+                <div style="display: flex; justify-content: space-around; gap: 15px; margin-bottom: 25px;">
+                    <div style="text-align: center; background: #e8f5e9; padding: 20px; border-radius: 15px; flex: 1;">
+                        <div id="summaryTopics" style="font-size: 32px; font-weight: bold; color: #2e7d32;">0</div>
+                        <div style="font-size: 14px; color: #666;">Topics</div>
+                    </div>
+                    <div style="text-align: center; background: #e3f2fd; padding: 20px; border-radius: 15px; flex: 1;">
+                        <div id="summaryBadges" style="font-size: 32px; font-weight: bold; color: #1976d2;">0</div>
+                        <div style="font-size: 14px; color: #666;">Badges</div>
+                    </div>
+                    <div style="text-align: center; background: #fff3e0; padding: 20px; border-radius: 15px; flex: 1;">
+                        <div id="summaryMissions" style="font-size: 32px; font-weight: bold; color: #e65100;">0</div>
+                        <div style="font-size: 14px; color: #666;">Games</div>
                     </div>
                 </div>
 
-                <!-- Topics Explored with Details -->
+                <!-- Recent Activity -->
                 <div id="parentTopicsLearned" style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <h3 style="color: #495057; margin-bottom: 15px;">📚 Recent Activity</h3>
+                    <h3 style="color: #495057; margin-bottom: 15px; font-size: 16px;">📚 Recent Activity</h3>
                     <div id="parentTopicsList">
-                        <p style="color: #888; font-style: italic;">No activity yet. Play a game to see progress!</p>
+                        <p style="color: #888; font-style: italic;">No activity yet</p>
                     </div>
                 </div>
 
-                <!-- Activities Overview -->
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <h3 style="color: #495057; margin-bottom: 15px;">🎯 Activities</h3>
-                    <div class="skills-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
-                        <div class="skill-tile" id="skillTopics" style="background: #e8f5e9; padding: 15px 10px; border-radius: 12px;">
-                            <div style="font-size: 28px;">🌟</div>
-                            <div style="font-size: 12px; color: #2e7d32; margin-top: 5px;">Topics Explored</div>
+                <!-- Settings -->
+                <details style="background: #f8f9fa; padding: 15px; border-radius: 15px;">
+                    <summary style="cursor: pointer; font-weight: bold; color: #495057;">⚙️ Settings</summary>
+                    <div style="margin-top: 15px;">
+                        <label style="font-size: 14px; color: #666;">Change PIN:</label>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+                            <input type="password" id="newPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+                                   placeholder="New PIN"
+                                   style="flex: 1; padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; text-align: center; letter-spacing: 8px;">
+                            <button onclick="changePin()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit;">Save</button>
                         </div>
-                        <div class="skill-tile" id="skillQuestions" style="background: #e3f2fd; padding: 15px 10px; border-radius: 12px;">
-                            <div style="font-size: 28px;">💬</div>
-                            <div style="font-size: 12px; color: #1976d2; margin-top: 5px;">Questions Asked</div>
-                        </div>
-                        <div class="skill-tile" id="skillChecking" style="background: #fff3e0; padding: 15px 10px; border-radius: 12px;">
-                            <div style="font-size: 28px;">🔍</div>
-                            <div style="font-size: 12px; color: #e65100; margin-top: 5px;">Facts Checked</div>
-                        </div>
+                        <p id="pinChangeStatus" style="color: #27ae60; font-size: 13px; margin-top: 8px; min-height: 18px;"></p>
                     </div>
-                </div>
+                </details>
 
-                <!-- API Key Setup -->
-                <div style="background: #fff; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 2px solid #ddd;">
-                    <h3 style="color: #495057; margin-bottom: 10px;">✨ Ready to Play!</h3>
-                    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
-                        All features are enabled. Your child can explore and ask questions!
-                    </p>
-                    <p id="apiKeyStatus" style="color: #27ae60; font-size: 12px;">✓ Connected to AI</p>
-                </div>
-
-
-                <!-- Change PIN -->
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <h3 style="color: #495057; margin-bottom: 10px;">🔒 Change PIN</h3>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="password" id="newPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
-                               placeholder="New PIN"
-                               style="flex: 1; padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; text-align: center; letter-spacing: 8px;">
-                        <button onclick="changePin()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit;">Save</button>
-                    </div>
-                    <p id="pinChangeStatus" style="color: #27ae60; font-size: 13px; margin-top: 8px; min-height: 18px;"></p>
-                </div>
-
-                <!-- Feedback link (low-key) -->
-                <p style="text-align: center; margin-top: 20px;">
-                    <a href="mailto:curiosityexplorer.feedback@gmail.com" style="color: #999; font-size: 14px;">
-                        Share feedback →
-                    </a>
-                </p>
             </div>
             <button class="btn back-btn" onclick="showScreen('welcome')">Back to Home</button>
         </div>
