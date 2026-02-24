@@ -4304,7 +4304,7 @@
         }
 
         // Add message to chat (with optional image)
-        function addChatMessage(text, role, imageUrl = null) {
+        function addChatMessage(text, role, imageUrl = null, autoSpeak = true) {
             const messagesDiv = document.getElementById('chatMessages');
             const bubble = document.createElement('div');
             bubble.className = `chat-bubble ${role}`;
@@ -4326,8 +4326,8 @@
             messagesDiv.appendChild(bubble);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
-            // Auto-read assistant messages aloud
-            if (role === 'assistant' && !text.includes('🤔')) {
+            // Auto-read assistant messages aloud (unless disabled)
+            if (autoSpeak && role === 'assistant' && !text.includes('🤔')) {
                 speakText(text);
             }
         }
@@ -4417,7 +4417,7 @@
         }
 
         // Generate image using DALL-E and append to the answer bubble
-        async function generateAndShowImage(question, answer) {
+        async function generateAndShowImage(question, answer, shouldSpeak = true) {
             try {
                 const messagesDiv = document.getElementById('chatMessages');
 
@@ -4428,7 +4428,6 @@
                 if (!lastBubble) return;
 
                 // Add visual placeholder immediately (visual feedback)
-                // Voice will say "drawing a picture" after answer finishes (delayed below)
                 const placeholder = document.createElement('div');
                 placeholder.className = 'image-placeholder';
                 placeholder.style.cssText = `
@@ -4451,13 +4450,6 @@
                 `;
                 lastBubble.appendChild(placeholder);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
-                // Say "drawing a picture" after answer finishes speaking (delay based on answer length)
-                const answerLength = answer ? answer.length : 0;
-                const speakDelay = Math.min(Math.max(answerLength * 50, 2000), 8000); // 2-8 seconds based on length
-                setTimeout(() => {
-                    speakText("And I'm drawing a picture for you!");
-                }, speakDelay);
 
                 // Add shimmer animation if not already in page
                 if (!document.getElementById('shimmer-style')) {
@@ -4572,12 +4564,17 @@
                 // Add to history (OpenAI format)
                 chatHistory.push({ role: 'assistant', content: reply });
 
-                // Display response first (image loads separately)
-                addChatMessage(reply, 'assistant', null);
+                // Check if we'll generate an image
+                const willGenerateImage = data.should_generate_image && data.question_for_image;
 
-                // Generate image if appropriate (async, don't wait)
-                if (data.should_generate_image && data.question_for_image) {
-                    generateAndShowImage(data.question_for_image, data.answer_for_image);
+                // Display response (don't auto-speak if image will be generated - we'll speak combined message)
+                addChatMessage(reply, 'assistant', null, !willGenerateImage);
+
+                // Generate image if appropriate
+                if (willGenerateImage) {
+                    // Speak answer + drawing message together
+                    speakText(reply + "... And I'm drawing a picture for you!");
+                    generateAndShowImage(data.question_for_image, data.answer_for_image, false);
                 }
 
             } catch (error) {
