@@ -991,6 +991,192 @@
             margin-top: 5px;
         }
 
+        /* Home page two-card layout */
+        .home-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px 0;
+        }
+
+        .home-card {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: white;
+            border: 4px solid #4ecdc4;
+            border-radius: 20px;
+            padding: 22px 28px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-family: inherit;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .home-card:hover, .home-card:active {
+            transform: scale(1.03);
+            border-color: #ff6b6b;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .home-card .home-card-icon {
+            font-size: 52px;
+            flex-shrink: 0;
+        }
+
+        .home-card .home-card-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .home-card .home-card-label {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .home-card .home-card-hint {
+            font-size: 14px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        .home-card.ask-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #5a67d8;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .home-card.ask-card .home-card-label,
+        .home-card.ask-card .home-card-hint {
+            color: white;
+        }
+
+        .home-card.ask-card .home-card-hint {
+            opacity: 0.9;
+        }
+
+        .home-card.ask-card:hover, .home-card.ask-card:active {
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+            border-color: #764ba2;
+        }
+
+        .home-card.spot-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-color: #4ecdc4;
+        }
+
+        .home-card.spot-card:hover, .home-card.spot-card:active {
+            border-color: #ff6b6b;
+        }
+
+        .home-card .chevron {
+            margin-left: auto;
+            font-size: 24px;
+            color: #aaa;
+            transition: transform 0.3s ease;
+        }
+
+        .home-card.spot-card.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Topic picker (hidden by default, expands below Spot card) */
+        .topic-picker {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .topic-picker.open {
+            max-height: 600px;
+            opacity: 1;
+            margin-top: 15px;
+        }
+
+        .topic-picker .topic-grid {
+            margin: 0;
+        }
+
+        /* Learning Journey section */
+        .learning-journey {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .learning-journey h3 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .journey-empty {
+            text-align: center;
+            color: #999;
+            font-size: 15px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 15px;
+        }
+
+        .journey-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .journey-topic {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 50px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .journey-topic:hover, .journey-topic:active {
+            transform: scale(1.05);
+            border-color: #4ecdc4;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .journey-topic .journey-emoji {
+            font-size: 24px;
+        }
+
+        .journey-topic .journey-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .journey-topic .journey-name {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .journey-topic .journey-stats {
+            font-size: 12px;
+            color: #888;
+            font-weight: normal;
+        }
+
         .say-topic-btn-small {
             background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
             color: #2c3e50;
@@ -1610,59 +1796,81 @@
             <input type="hidden" id="nameInput" value="Explorer" />
         </div>
 
-        <!-- Welcome Screen - Big Visual Topic Cards -->
+        <!-- Welcome Screen - Two Cards + Learning Journey -->
         <div id="welcome" class="screen active">
             <!-- Parent settings button in corner -->
             <button class="parent-corner-btn" onclick="showScreen('parentView')" title="Parent Settings">⚙️</button>
 
-            <h1>🌟 Pick a Topic! 🌟</h1>
-            <p class="subtitle">Hi <span id="userName">Explorer</span>! Tap one to start!</p>
+            <h1>🌟 What do you want to do? 🌟</h1>
+            <p class="subtitle">Hi <span id="userName">Explorer</span>! Pick one!</p>
 
-            <div class="topic-grid">
-                <button class="topic-card-big" onclick="selectTopicAndStart('planes')">
-                    <span class="topic-icon">✈️</span>
-                    <span class="topic-label">Planes</span>
+            <div class="home-cards">
+                <!-- Card 1: Ask Me Anything -->
+                <button class="home-card ask-card" onclick="showScreen('askQuestion')">
+                    <span class="home-card-icon">💬</span>
+                    <span class="home-card-text">
+                        <span class="home-card-label">Ask Me Anything!</span>
+                        <span class="home-card-hint">I can answer any question!</span>
+                    </span>
                 </button>
-                <button class="topic-card-big" onclick="selectTopicAndStart('dinosaurs')">
-                    <span class="topic-icon">🦕</span>
-                    <span class="topic-label">Dinosaurs</span>
+
+                <!-- Card 2: Spot the Mistakes -->
+                <button class="home-card spot-card" id="spotCard" onclick="toggleTopicPicker()">
+                    <span class="home-card-icon">🔍</span>
+                    <span class="home-card-text">
+                        <span class="home-card-label">Spot the Mistakes!</span>
+                        <span class="home-card-hint">Pick a topic and find the silly facts!</span>
+                    </span>
+                    <span class="chevron">▼</span>
                 </button>
-                <button class="topic-card-big" onclick="selectTopicAndStart('space')">
-                    <span class="topic-icon">🚀</span>
-                    <span class="topic-label">Space</span>
-                </button>
-                <button class="topic-card-big" onclick="selectTopicAndStart('ocean')">
-                    <span class="topic-icon">🌊</span>
-                    <span class="topic-label">Ocean</span>
-                </button>
-                <button class="topic-card-big" onclick="selectTopicAndStart('robots')">
-                    <span class="topic-icon">🤖</span>
-                    <span class="topic-label">Robots</span>
-                </button>
-                <button class="topic-card-big" onclick="selectTopicAndStart('stars')">
-                    <span class="topic-icon">⭐</span>
-                    <span class="topic-label">Stars</span>
-                </button>
-                <!-- Say Your Own Topic - in grid with other topics -->
-                <button class="topic-card-big say-topic-card" onclick="sayMyTopic()" id="sayTopicBtn">
-                    <span class="topic-icon">🎤</span>
-                    <span class="topic-label">Your Topic!</span>
-                </button>
+
+                <!-- Topic picker (hidden until Spot card is tapped) -->
+                <div class="topic-picker" id="topicPicker">
+                    <div class="topic-grid">
+                        <button class="topic-card-big" onclick="selectTopicAndStart('planes')">
+                            <span class="topic-icon">✈️</span>
+                            <span class="topic-label">Planes</span>
+                        </button>
+                        <button class="topic-card-big" onclick="selectTopicAndStart('dinosaurs')">
+                            <span class="topic-icon">🦕</span>
+                            <span class="topic-label">Dinosaurs</span>
+                        </button>
+                        <button class="topic-card-big" onclick="selectTopicAndStart('space')">
+                            <span class="topic-icon">🚀</span>
+                            <span class="topic-label">Space</span>
+                        </button>
+                        <button class="topic-card-big" onclick="selectTopicAndStart('ocean')">
+                            <span class="topic-icon">🌊</span>
+                            <span class="topic-label">Ocean</span>
+                        </button>
+                        <button class="topic-card-big" onclick="selectTopicAndStart('robots')">
+                            <span class="topic-icon">🤖</span>
+                            <span class="topic-label">Robots</span>
+                        </button>
+                        <button class="topic-card-big" onclick="selectTopicAndStart('stars')">
+                            <span class="topic-icon">⭐</span>
+                            <span class="topic-label">Stars</span>
+                        </button>
+                        <button class="topic-card-big say-topic-card" onclick="sayMyTopic()" id="sayTopicBtn">
+                            <span class="topic-icon">🎤</span>
+                            <span class="topic-label">Your Topic!</span>
+                        </button>
+                    </div>
+                    <p id="sayTopicStatus" style="color: #888; font-size: 14px; margin-top: 10px; display: none;"></p>
+                    <div id="customTopicInput" style="display: none; margin-top: 15px;">
+                        <input type="text" id="customTopicText" placeholder="Type a topic..."
+                               style="padding: 12px 20px; font-size: 18px; border: 3px solid #4ecdc4; border-radius: 25px; width: 200px; text-align: center; font-family: inherit;">
+                        <button onclick="startCustomTopic()" style="background: #4ecdc4; color: white; border: none; border-radius: 25px; padding: 12px 20px; font-size: 18px; font-weight: bold; cursor: pointer; margin-left: 10px;">Go!</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Ask Me Anything - PROMINENT -->
-            <button class="ask-anything-card" onclick="showScreen('askQuestion')">
-                <span class="ask-icon">💬</span>
-                <span class="ask-label">Ask Me Anything!</span>
-                <span class="ask-hint">I can answer any question!</span>
-            </button>
-            <p id="sayTopicStatus" style="color: #888; font-size: 14px; margin-top: 10px; display: none;"></p>
-
-            <!-- Fallback text input for custom topic -->
-            <div id="customTopicInput" style="display: none; margin-top: 15px;">
-                <input type="text" id="customTopicText" placeholder="Type a topic..."
-                       style="padding: 12px 20px; font-size: 18px; border: 3px solid #4ecdc4; border-radius: 25px; width: 200px; text-align: center; font-family: inherit;">
-                <button onclick="startCustomTopic()" style="background: #4ecdc4; color: white; border: none; border-radius: 25px; padding: 12px 20px; font-size: 18px; font-weight: bold; cursor: pointer; margin-left: 10px;">Go!</button>
+            <!-- Learning Journey section -->
+            <div class="learning-journey" id="learningJourney">
+                <h3>🗺️ My Learning Journey</h3>
+                <div id="journeyContent">
+                    <div class="journey-empty">Start exploring to see your journey!</div>
+                </div>
             </div>
         </div>
 
@@ -2894,12 +3102,69 @@
             document.getElementById('topicInput').value = '';
         }
 
+        // Toggle topic picker on welcome screen
+        function toggleTopicPicker() {
+            const picker = document.getElementById('topicPicker');
+            const card = document.getElementById('spotCard');
+            picker.classList.toggle('open');
+            card.classList.toggle('open');
+        }
+
+        // Initialize welcome screen learning journey
+        function initWelcomeScreen() {
+            const explorations = getAllExplorations();
+            const topics = Object.values(explorations);
+            const journeyContent = document.getElementById('journeyContent');
+            const journeySection = document.getElementById('learningJourney');
+
+            // Close topic picker when returning to welcome
+            const picker = document.getElementById('topicPicker');
+            const spotCard = document.getElementById('spotCard');
+            if (picker) picker.classList.remove('open');
+            if (spotCard) spotCard.classList.remove('open');
+
+            if (topics.length === 0) {
+                journeyContent.innerHTML = '<div class="journey-empty">Start exploring to see your journey!</div>';
+                return;
+            }
+
+            // Sort by most recent
+            topics.sort((a, b) => new Date(b.lastExplored) - new Date(a.lastExplored));
+
+            journeyContent.innerHTML = '<div class="journey-topics">' + topics.map(topicData => {
+                const topicKey = topicData.topic.toLowerCase();
+                const emoji = topicDatabase[topicKey]?.emoji || '🎯';
+                const uniqueBadges = deduplicateBadges(topicData.badges || []);
+                const conceptCount = (topicData.concepts || []).length;
+                const badgeCount = uniqueBadges.length;
+
+                let stats = [];
+                if (badgeCount > 0) stats.push(badgeCount + ' badge' + (badgeCount !== 1 ? 's' : ''));
+                if (conceptCount > 0) stats.push(conceptCount + ' fact' + (conceptCount !== 1 ? 's' : ''));
+
+                return `
+                    <button class="journey-topic" onclick="selectTopicAndStart('${topicData.topic}')">
+                        <span class="journey-emoji">${emoji}</span>
+                        <span class="journey-info">
+                            <span class="journey-name">${topicData.topic}</span>
+                            ${stats.length > 0 ? '<span class="journey-stats">' + stats.join(' · ') + '</span>' : ''}
+                        </span>
+                    </button>
+                `;
+            }).join('') + '</div>';
+        }
+
         // Screen navigation
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
             document.getElementById(screenId).classList.add('active');
+
+            // Initialize welcome screen learning journey
+            if (screenId === 'welcome') {
+                initWelcomeScreen();
+            }
 
             // Update dashboard when showing it
             if (screenId === 'dashboard') {
@@ -2921,7 +3186,7 @@
             // Auto-read instructions for each screen
             // Note: mission2-correct, mission2-hint, mission2-success have custom messages in checkFact/showMission2Success
             const screenAudio = {
-                'welcome': 'Pick a topic! Tap one to start!',
+                'welcome': 'What do you want to do? Pick one!',
                 'mission2-intro': 'Find the silly fact! Tap Let\'s Look!',
                 'mission2-facts': 'Which one sounds wrong? Tap it!',
                 'missionSelect': `Let's explore ${gameState.currentTopic}!`,
@@ -4447,6 +4712,7 @@ Respond in this exact JSON format only:
             updateBadgeDisplay();
             updateDashboard();
             initMuteButton();
+            initWelcomeScreen();
         }
 
         // Allow Enter key to submit name
