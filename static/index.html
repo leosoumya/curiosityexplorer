@@ -2087,10 +2087,6 @@
                         <div id="summaryBadges" style="font-size: 32px; font-weight: bold; color: #1976d2;">0</div>
                         <div style="font-size: 14px; color: #666;">Badges</div>
                     </div>
-                    <div style="text-align: center; background: #fff3e0; padding: 20px; border-radius: 15px; flex: 1;">
-                        <div id="summaryMissions" style="font-size: 32px; font-weight: bold; color: #e65100;">0</div>
-                        <div style="font-size: 14px; color: #666;">Games</div>
-                    </div>
                 </div>
 
                 <!-- Recent Activity -->
@@ -3257,11 +3253,11 @@
             }
 
             // Auto-read instructions for each screen
+            // Note: mission2-facts speech is handled in loadMission2Question after facts load
             // Note: mission2-correct, mission2-hint, mission2-success have custom messages in checkFact/showMission2Success
             const screenAudio = {
                 'welcome': 'What do you want to do? Pick one!',
-                'mission2-intro': 'Find the silly fact! Tap Let\'s Look!',
-                'mission2-facts': 'Which one sounds wrong? Tap it!',
+                'mission2-intro': 'Find the silly fact! Tap Let\'s Go!',
                 'missionSelect': `Let's explore ${gameState.currentTopic}!`,
                 'askQuestion': 'Hi! What do you want to know?'
             };
@@ -3281,10 +3277,8 @@
 
             // Update summary card
             const totalBadges = topics.reduce((sum, t) => sum + deduplicateBadges(t.badges || []).length, 0);
-            const totalMissions = topics.reduce((sum, t) => sum + (t.completedMissions?.length || 0), 0);
             document.getElementById('summaryTopics').textContent = topics.length;
             document.getElementById('summaryBadges').textContent = totalBadges;
-            document.getElementById('summaryMissions').textContent = totalMissions || topics.length;
 
             if (topics.length === 0) {
                 parentTopicsList.innerHTML = '<p style="color: #888; font-style: italic;">No activity yet. Play a game to see progress!</p>';
@@ -4038,8 +4032,10 @@
             hintText.innerHTML = `Think about ${topic.toLowerCase()}.<br>What do you know?`;
             hintBox.innerHTML = `Let's think again.<br>What is true about ${topic.toLowerCase()}?`;
 
-            // Read the question aloud
-            speakText(`Which fact about ${topic} is wrong?`);
+            // Read the question aloud (small delay to ensure screen is ready)
+            setTimeout(() => {
+                speakText(`Which fact about ${topic} is wrong?`);
+            }, 200);
         }
 
         function nextMission2Question() {
