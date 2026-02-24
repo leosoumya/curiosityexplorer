@@ -2079,9 +2079,17 @@
                     </div>
                 </div>
 
+                <!-- Questions Asked -->
+                <div id="parentQuestionsSection" style="background: #fff3e0; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                    <h3 style="color: #e65100; margin-bottom: 15px; font-size: 16px;">❓ Questions Your Kid Asked</h3>
+                    <div id="parentQuestionsList" style="max-height: 200px; overflow-y: auto;">
+                        <p style="color: #888; font-style: italic;">No questions yet</p>
+                    </div>
+                </div>
+
                 <!-- Recent Activity -->
                 <div id="parentTopicsLearned" style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <h3 style="color: #495057; margin-bottom: 15px; font-size: 16px;">📚 Recent Activity</h3>
+                    <h3 style="color: #495057; margin-bottom: 15px; font-size: 16px;">📚 Topics Explored</h3>
                     <div id="parentTopicsList">
                         <p style="color: #888; font-style: italic;">No activity yet</p>
                     </div>
@@ -3313,18 +3321,35 @@
 
         // Populate parent view with topics and facts learned
         function updateParentView() {
-
-
             const parentTopicsList = document.getElementById('parentTopicsList');
+            const parentQuestionsList = document.getElementById('parentQuestionsList');
             const explorations = getAllExplorations();
             const topics = Object.values(explorations);
 
             // Update summary card
             const totalBadges = topics.reduce((sum, t) => sum + deduplicateBadges(t.badges || []).length, 0);
-            const totalQuestions = parseInt(localStorage.getItem('totalQuestionsAsked') || '0');
+            const questionLogs = JSON.parse(localStorage.getItem('questionLogs') || '[]');
+            const totalQuestions = questionLogs.length;
             document.getElementById('summaryTopics').textContent = topics.length;
             document.getElementById('summaryBadges').textContent = totalBadges;
             document.getElementById('summaryQuestions').textContent = totalQuestions;
+
+            // Populate questions list
+            if (questionLogs.length === 0) {
+                parentQuestionsList.innerHTML = '<p style="color: #888; font-style: italic;">No questions yet. Ask anything in "Ask Me Anything"!</p>';
+            } else {
+                // Show most recent questions first (last 10)
+                const recentQuestions = questionLogs.slice(-10).reverse();
+                parentQuestionsList.innerHTML = recentQuestions.map(log => {
+                    const timeAgo = getTimeAgo(new Date(log.timestamp));
+                    return `
+                        <div style="background: white; border-radius: 10px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #ff9800;">
+                            <div style="font-weight: bold; color: #333; margin-bottom: 5px;">"${log.question}"</div>
+                            <div style="font-size: 12px; color: #888;">${timeAgo}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
 
             if (topics.length === 0) {
                 parentTopicsList.innerHTML = '<p style="color: #888; font-style: italic;">No activity yet. Play a game to see progress!</p>';
