@@ -1098,9 +1098,10 @@
         }
 
         .topic-picker.open {
-            max-height: 600px;
+            max-height: 1000px;
             opacity: 1;
             margin-top: 15px;
+            overflow: visible;
         }
 
         .topic-picker .topic-grid {
@@ -3281,8 +3282,10 @@
 
             // Update summary card
             const totalBadges = topics.reduce((sum, t) => sum + deduplicateBadges(t.badges || []).length, 0);
+            const totalQuestions = parseInt(localStorage.getItem('totalQuestionsAsked') || '0');
             document.getElementById('summaryTopics').textContent = topics.length;
             document.getElementById('summaryBadges').textContent = totalBadges;
+            document.getElementById('summaryQuestions').textContent = totalQuestions;
 
             if (topics.length === 0) {
                 parentTopicsList.innerHTML = '<p style="color: #888; font-style: italic;">No activity yet. Play a game to see progress!</p>';
