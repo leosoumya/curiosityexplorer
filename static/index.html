@@ -4424,25 +4424,23 @@
             }
         }
 
-        // Generate image using DALL-E and show it in chat
+        // Generate image using DALL-E and append to the answer bubble
         async function generateAndShowImage(question, answer) {
             try {
-                // Add loading indicator
                 const messagesDiv = document.getElementById('chatMessages');
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'chat-bubble assistant image-loading';
-                loadingDiv.innerHTML = '🎨 Drawing a picture for you...';
-                messagesDiv.appendChild(loadingDiv);
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // Find the last assistant bubble to append image to
+                const assistantBubbles = messagesDiv.querySelectorAll('.chat-bubble.assistant');
+                const lastBubble = assistantBubbles[assistantBubbles.length - 1];
+
+                // Say "drawing a picture" via voice (no visual indicator)
+                speakText("And I'm drawing a picture for you!");
 
                 const response = await fetch('/api/image', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ question, answer })
                 });
-
-                // Remove loading indicator
-                loadingDiv.remove();
 
                 if (!response.ok) {
                     console.log('Image generation skipped or failed');
@@ -4451,17 +4449,17 @@
 
                 const data = await response.json();
 
-                if (data.image_url) {
-                    // Add image to chat
-                    const imageDiv = document.createElement('div');
-                    imageDiv.className = 'chat-bubble assistant image-bubble';
-                    imageDiv.innerHTML = `
+                if (data.image_url && lastBubble) {
+                    // Append image to the existing answer bubble
+                    const imageContainer = document.createElement('div');
+                    imageContainer.style.marginTop = '12px';
+                    imageContainer.innerHTML = `
                         <img src="${data.image_url}" alt="Educational illustration"
-                             style="max-width: 100%; border-radius: 12px; margin-top: 8px;"
+                             style="max-width: 100%; border-radius: 12px; cursor: pointer;"
                              onclick="window.open('${data.image_url}', '_blank')">
                         <p style="font-size: 12px; color: #888; margin-top: 5px;">Tap to see bigger!</p>
                     `;
-                    messagesDiv.appendChild(imageDiv);
+                    lastBubble.appendChild(imageContainer);
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 }
             } catch (error) {
