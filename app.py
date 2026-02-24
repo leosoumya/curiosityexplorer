@@ -63,15 +63,48 @@ Answering nonsense questions seriously ❌
 REMEMBER: Answer only. No questions. Laugh at silly questions!"""
 
 
-def extract_image_keyword(question, answer):
-    """Extract the best image search keyword from question/answer using LLM."""
-    api_key = os.environ.get('OPENAI_API_KEY')
-    if not api_key:
-        return None
+def should_generate_image(question, answer):
+    """Decide if an image should be generated for this Q&A."""
+    question_lower = question.lower()
+    answer_lower = answer.lower()
 
     # Check if answer is silly/joke response - no image needed
-    silly_patterns = ['silly', 'funny', 'ha ha', "can't really", "doesn't really", "that's a joke"]
-    if any(p in answer.lower() for p in silly_patterns):
+    silly_patterns = ['silly', 'funny', 'ha ha', "can't really", "doesn't really", "that's a joke", "that's from a"]
+    if any(p in answer_lower for p in silly_patterns):
+        return False, None
+
+    # Kid explicitly asks for an image
+    image_requests = ['show me', 'picture of', 'what does', 'what do', 'look like', 'looks like', 'draw', 'image of']
+    kid_wants_image = any(p in question_lower for p in image_requests)
+
+    # Visual topics that benefit from images
+    visual_topics = [
+        'animal', 'dinosaur', 'planet', 'star', 'moon', 'sun', 'rocket', 'plane', 'airplane',
+        'car', 'truck', 'train', 'boat', 'ship', 'fish', 'bird', 'insect', 'bug', 'spider',
+        'flower', 'tree', 'mountain', 'ocean', 'volcano', 'rainbow', 'cloud', 'robot',
+        'castle', 'dragon', 'unicorn', 'elephant', 'lion', 'tiger', 'whale', 'shark',
+        'butterfly', 'frog', 'snake', 'penguin', 'polar bear', 'giraffe', 'zebra'
+    ]
+    is_visual_topic = any(topic in question_lower or topic in answer_lower for topic in visual_topics)
+
+    # Abstract topics that don't need images
+    abstract_topics = ['why do we', 'how come', 'what happens if', 'what is the meaning',
+                       'how many', 'how much', 'when did', 'who was', 'math', 'count', 'number']
+    is_abstract = any(topic in question_lower for topic in abstract_topics)
+
+    # Generate image if kid asks OR if it's a visual topic (but not abstract)
+    should_generate = kid_wants_image or (is_visual_topic and not is_abstract)
+
+    if not should_generate:
+        return False, None
+
+    return True, None  # Will generate prompt separately
+
+
+def create_kid_friendly_image_prompt(question, answer):
+    """Create a DALL-E prompt for a fun, educational image for kids."""
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
         return None
 
     try:
@@ -81,34 +114,36 @@ def extract_image_keyword(question, answer):
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
-                'content': f"""Extract the MOST SPECIFIC visual subject from this Q&A for an image search.
+                'content': f"""Create a DALL-E image prompt for a 5 year old based on this Q&A.
 
 Question: {question}
 Answer: {answer}
 
 Rules:
-- Return ONLY the search term, nothing else
-- Be SPECIFIC: "dump truck" not "truck", "blue whale" not "whale", "fire truck" not "truck"
-- If it's about a specific animal/vehicle/object, use the full specific name
-- If no good visual subject exists, return "NONE"
+- Make it colorful, friendly, and fun for kids
+- Use words like "cute", "cartoon style", "friendly", "bright colors"
+- Include the main subject from the Q&A
+- Keep it educational but playful
+- NO scary, violent, or inappropriate content
+- Maximum 50 words
 
-Examples:
-- Q: "How big is a dump truck?" -> "dump truck"
-- Q: "Why do fire trucks have ladders?" -> "fire truck"
-- Q: "What do blue whales eat?" -> "blue whale"
-- Q: "Why is the sky blue?" -> "blue sky"
-- Q: "How do planes fly?" -> "airplane flying"
+If this Q&A doesn't need an image (abstract concepts, numbers, etc.), respond with just "NONE"
 
-Search term:"""
+Example outputs:
+- "A cute, friendly blue whale swimming in bright blue ocean, cartoon style, educational illustration for children, colorful and cheerful"
+- "A happy cartoon T-Rex dinosaur with tiny arms waving, bright colors, kid-friendly illustration, fun and educational"
+- "NONE" (for questions like "how many legs does a spider have")
+
+Image prompt:"""
             }],
-            max_tokens=20,
-            temperature=0
+            max_tokens=80,
+            temperature=0.7
         )
 
-        keyword = response.choices[0].message.content.strip().lower()
-        if keyword == 'none' or len(keyword) > 50:
+        prompt = response.choices[0].message.content.strip()
+        if prompt.upper() == 'NONE' or len(prompt) < 10:
             return None
-        return keyword
+        return prompt
     except:
         return None
 
@@ -206,13 +241,15 @@ def ask():
         # Log the Q&A to Supabase
         log_qa(user_id, user_name, question, reply)
 
-        # Extract image keyword for relevant images
-        image_keyword = extract_image_keyword(question, reply)
+        # Check if we should generate an image
+        should_image, _ = should_generate_image(question, reply)
 
         return jsonify({
             'answer': reply,
             'user_id': user_id,
-            'image_keyword': image_keyword
+            'should_generate_image': should_image,
+            'question_for_image': question if should_image else None,
+            'answer_for_image': reply if should_image else None
         })
 
     except Exception as e:
@@ -257,6 +294,50 @@ def tts():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/image', methods=['POST'])
+def generate_image():
+    """Generate an educational image for kids using DALL-E."""
+    data = request.json
+    question = data.get('question', '')
+    answer = data.get('answer', '')
+
+    if not question or not answer:
+        return jsonify({'error': 'Question and answer required'}), 400
+
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return jsonify({'error': 'API key not configured'}), 500
+
+    try:
+        # Create kid-friendly prompt
+        image_prompt = create_kid_friendly_image_prompt(question, answer)
+
+        if not image_prompt:
+            return jsonify({'error': 'No image needed for this question', 'image_url': None}), 200
+
+        client = openai.OpenAI(api_key=api_key)
+
+        # Generate image with DALL-E
+        response = client.images.generate(
+            model='dall-e-3',
+            prompt=image_prompt,
+            size='1024x1024',
+            quality='standard',
+            n=1
+        )
+
+        image_url = response.data[0].url
+
+        return jsonify({
+            'image_url': image_url,
+            'prompt_used': image_prompt
+        })
+
+    except Exception as e:
+        print(f"Image generation error: {e}")
+        return jsonify({'error': str(e), 'image_url': None}), 500
 
 
 @app.route('/admin/logs', methods=['GET'])

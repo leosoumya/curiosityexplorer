@@ -4043,6 +4043,52 @@ Respond in this exact JSON format only:
             }
         }
 
+        // Generate image using DALL-E and show it in chat
+        async function generateAndShowImage(question, answer) {
+            try {
+                // Add loading indicator
+                const messagesDiv = document.getElementById('chatMessages');
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'chat-bubble assistant image-loading';
+                loadingDiv.innerHTML = '🎨 Drawing a picture for you...';
+                messagesDiv.appendChild(loadingDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                const response = await fetch('/api/image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, answer })
+                });
+
+                // Remove loading indicator
+                loadingDiv.remove();
+
+                if (!response.ok) {
+                    console.log('Image generation skipped or failed');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.image_url) {
+                    // Add image to chat
+                    const imageDiv = document.createElement('div');
+                    imageDiv.className = 'chat-bubble assistant image-bubble';
+                    imageDiv.innerHTML = `
+                        <img src="${data.image_url}" alt="Educational illustration"
+                             style="max-width: 100%; border-radius: 12px; margin-top: 8px;"
+                             onclick="window.open('${data.image_url}', '_blank')">
+                        <p style="font-size: 12px; color: #888; margin-top: 5px;">Tap to see bigger!</p>
+                    `;
+                    messagesDiv.appendChild(imageDiv);
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            } catch (error) {
+                console.log('Image generation error:', error);
+                // Silently fail - images are optional
+            }
+        }
+
         // Send question to Gemini
         async function sendQuestion() {
             const input = document.getElementById('questionInput');
@@ -4103,14 +4149,13 @@ Respond in this exact JSON format only:
                 // Add to history (OpenAI format)
                 chatHistory.push({ role: 'assistant', content: reply });
 
-                // Get image using backend-provided keyword (more accurate than local extraction)
-                let imageUrl = null;
-                if (data.image_keyword) {
-                    imageUrl = await fetchImageForTopic(data.image_keyword);
-                }
+                // Display response first (image loads separately)
+                addChatMessage(reply, 'assistant', null);
 
-                // Display response with optional image
-                addChatMessage(reply, 'assistant', imageUrl);
+                // Generate image if appropriate (async, don't wait)
+                if (data.should_generate_image && data.question_for_image) {
+                    generateAndShowImage(data.question_for_image, data.answer_for_image);
+                }
 
             } catch (error) {
                 console.error('Backend API error:', error);
