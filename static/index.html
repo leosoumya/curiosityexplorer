@@ -88,8 +88,8 @@
         }
 
         .subtitle {
-            color: #95a5a6;
-            font-size: 20px;
+            color: #555;
+            font-size: 24px;
             text-align: center;
             margin-bottom: 40px;
             line-height: 1.6;
@@ -1041,8 +1041,8 @@
         }
 
         .home-card .home-card-hint {
-            font-size: 14px;
-            color: #777;
+            font-size: 17px;
+            color: #666;
             margin-top: 4px;
         }
 
@@ -1111,21 +1111,24 @@
             max-width: 500px;
             margin-top: 30px;
             text-align: left;
+            background: linear-gradient(135deg, #fef9e7 0%, #fdebd0 100%);
+            border: 3px dashed #e2b655;
+            border-radius: 20px;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .learning-journey h3 {
-            font-size: 20px;
-            color: #2c3e50;
+            font-size: 22px;
+            color: #8b6914;
             margin-bottom: 12px;
         }
 
         .journey-empty {
             text-align: center;
-            color: #999;
-            font-size: 15px;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: 15px;
+            color: #b8860b;
+            font-size: 17px;
+            padding: 10px;
         }
 
         .journey-topics {
@@ -1674,7 +1677,7 @@
                 <button onclick="toggleAboutModal(); showScreen('askQuestion');" style="background: white; color: #667eea; border: none; border-radius: 10px; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 5px;">
                     💬 Ask Me Anything
                 </button>
-                <button onclick="toggleAboutModal(); showScreen('parentView');" style="background: white; color: #667eea; border: none; border-radius: 10px; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 5px;">
+                <button onclick="toggleAboutModal(); showPinModal();" style="background: white; color: #667eea; border: none; border-radius: 10px; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 5px;">
                     👨‍👩‍👧 Parent View
                 </button>
             </div>
@@ -1689,7 +1692,7 @@
             <div class="about-section">
                 <h4>👨‍👩‍👧 For Parents</h4>
                 <p>See what your child learned and questions they asked.</p>
-                <button onclick="toggleAboutModal(); showScreen('parentView');" style="background: #4ecdc4; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+                <button onclick="toggleAboutModal(); showPinModal();" style="background: #4ecdc4; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px;">
                     Open Parent View →
                 </button>
             </div>
@@ -1745,6 +1748,23 @@
     </div>
 
     <!-- Name Modal for First-Time Users -->
+    <!-- Parent PIN Modal -->
+    <div id="pinModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 320px;">
+            <h2>🔒 Parent Area</h2>
+            <p style="color: #666; margin-bottom: 15px;">Enter your 4-digit PIN</p>
+            <input type="password" id="pinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+                   placeholder="• • • •"
+                   style="padding: 15px; font-size: 28px; border: 3px solid #667eea; border-radius: 15px; width: 140px; text-align: center; letter-spacing: 12px; margin: 10px 0;">
+            <p id="pinError" style="color: #ff6b6b; font-size: 14px; min-height: 20px; margin: 5px 0;"></p>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button onclick="closePinModal()" style="flex: 1; padding: 12px; background: #eee; border: none; border-radius: 12px; font-size: 16px; cursor: pointer; font-family: inherit;">Cancel</button>
+                <button onclick="submitPin()" style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; font-family: inherit;">Enter</button>
+            </div>
+            <p id="pinSetupHint" style="color: #999; font-size: 12px; margin-top: 12px;"></p>
+        </div>
+    </div>
+
     <div id="nameModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h2>👋 Hi there!</h2>
@@ -1799,9 +1819,7 @@
         <!-- Welcome Screen - Two Cards + Learning Journey -->
         <div id="welcome" class="screen active">
             <!-- Parent settings button in corner -->
-            <button class="parent-corner-btn" onclick="showScreen('parentView')" title="Parent Settings">⚙️</button>
-
-            <h1>🌟 What do you want to do? 🌟</h1>
+            <h1 id="welcomeTitle" style="cursor: default; user-select: none;">🌟 What do you want to do? 🌟</h1>
             <p class="subtitle">Hi <span id="userName">Explorer</span>! Pick one!</p>
 
             <div class="home-cards">
@@ -1867,9 +1885,9 @@
 
             <!-- Learning Journey section -->
             <div class="learning-journey" id="learningJourney">
-                <h3>🗺️ My Learning Journey</h3>
+                <h3>🗺️ My Treasure Map</h3>
                 <div id="journeyContent">
-                    <div class="journey-empty">Start exploring to see your journey!</div>
+                    <div class="journey-empty">Play a game to add treasures to your map! ✨</div>
                 </div>
             </div>
         </div>
@@ -2115,6 +2133,18 @@
                     <p id="apiKeyStatus" style="color: #27ae60; font-size: 12px;">✓ Connected to AI</p>
                 </div>
 
+
+                <!-- Change PIN -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                    <h3 style="color: #495057; margin-bottom: 10px;">🔒 Change PIN</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="password" id="newPinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*"
+                               placeholder="New PIN"
+                               style="flex: 1; padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; text-align: center; letter-spacing: 8px;">
+                        <button onclick="changePin()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit;">Save</button>
+                    </div>
+                    <p id="pinChangeStatus" style="color: #27ae60; font-size: 13px; margin-top: 8px; min-height: 18px;"></p>
+                </div>
 
                 <!-- Feedback link (low-key) -->
                 <p style="text-align: center; margin-top: 20px;">
@@ -3102,6 +3132,58 @@
             document.getElementById('topicInput').value = '';
         }
 
+        // Parent PIN protection
+        const DEFAULT_PIN = '1234';
+
+        function getParentPin() {
+            return localStorage.getItem('parentPin') || DEFAULT_PIN;
+        }
+
+        function showPinModal() {
+            const modal = document.getElementById('pinModal');
+            const input = document.getElementById('pinInput');
+            const error = document.getElementById('pinError');
+            const hint = document.getElementById('pinSetupHint');
+            error.textContent = '';
+            input.value = '';
+            hint.textContent = localStorage.getItem('parentPin') ? '' : 'Default PIN is 1234. Change it in Parent Settings.';
+            modal.style.display = 'flex';
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').style.display = 'none';
+            document.getElementById('pinInput').value = '';
+        }
+
+        function submitPin() {
+            const input = document.getElementById('pinInput');
+            const error = document.getElementById('pinError');
+            if (input.value === getParentPin()) {
+                closePinModal();
+                showScreen('parentView');
+            } else {
+                error.textContent = 'Wrong PIN! Try again.';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function changePin() {
+            const input = document.getElementById('newPinInput');
+            const status = document.getElementById('pinChangeStatus');
+            const newPin = input.value.trim();
+            if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+                status.style.color = '#ff6b6b';
+                status.textContent = 'PIN must be exactly 4 digits.';
+                return;
+            }
+            localStorage.setItem('parentPin', newPin);
+            input.value = '';
+            status.style.color = '#27ae60';
+            status.textContent = 'PIN updated!';
+        }
+
         // Toggle topic picker on welcome screen
         function toggleTopicPicker() {
             const picker = document.getElementById('topicPicker');
@@ -3124,7 +3206,7 @@
             if (spotCard) spotCard.classList.remove('open');
 
             if (topics.length === 0) {
-                journeyContent.innerHTML = '<div class="journey-empty">Start exploring to see your journey!</div>';
+                journeyContent.innerHTML = '<div class="journey-empty">Play a game to add treasures to your map! ✨</div>';
                 return;
             }
 
@@ -3873,8 +3955,17 @@ Respond in this exact JSON format only:
             }
         }
 
-        // Fallback facts for when LLM is unavailable - fun facts for 5-6 year olds!
+        // Fallback facts for when LLM is unavailable
         function getFallbackFact(topic) {
+            // Use topic-specific facts from the database first
+            const topicKey = topic.toLowerCase();
+            const topicData = topicDatabase[topicKey];
+            if (topicData && topicData.mission2 && topicData.mission2.facts) {
+                const facts = topicData.mission2.facts;
+                return facts[mission2QuestionCount % facts.length];
+            }
+
+            // Generic fallback only for custom topics without a database entry
             const fallbacks = [
                 { correct: 'Elephants cant jump at all', wrong: 'Elephants can jump really high', correctIcon: '🐘', wrongIcon: '🦘', concept: 'Elephants are too big and heavy to jump!' },
                 { correct: 'Cats sleep most of the day', wrong: 'Cats never ever sleep', correctIcon: '🐱', wrongIcon: '👀', concept: 'Cats love to nap - a lot!' },
@@ -3896,7 +3987,7 @@ Respond in this exact JSON format only:
 
             // Update the intro screen
             document.querySelector('#mission2-intro h2').textContent = m2.title;
-            document.querySelector('#mission2-intro .subtitle').innerHTML = `Even smart computers can get facts wrong!<br>Can you find 5 wrong facts?`;
+            document.querySelector('#mission2-intro .subtitle').innerHTML = `Can you find the silly mistakes? 🔍<br>Find 5 wrong facts!`;
 
             // Reset question count
             mission2QuestionCount = 0;
@@ -4728,6 +4819,29 @@ Respond in this exact JSON format only:
                 saveNameFromModal();
             }
         });
+
+        document.getElementById('pinInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitPin();
+            }
+        });
+
+        // Long-press welcome title to access parent settings
+        (function() {
+            const title = document.getElementById('welcomeTitle');
+            let pressTimer = null;
+            const startPress = (e) => {
+                e.preventDefault();
+                pressTimer = setTimeout(() => showPinModal(), 1000);
+            };
+            const cancelPress = () => { clearTimeout(pressTimer); };
+            title.addEventListener('mousedown', startPress);
+            title.addEventListener('touchstart', startPress, { passive: false });
+            title.addEventListener('mouseup', cancelPress);
+            title.addEventListener('mouseleave', cancelPress);
+            title.addEventListener('touchend', cancelPress);
+            title.addEventListener('touchcancel', cancelPress);
+        })();
 
         // Run initialization when DOM is ready
         if (document.readyState === 'loading') {
