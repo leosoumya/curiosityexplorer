@@ -2189,8 +2189,11 @@
         // Track current speech request to prevent overlapping
         let currentSpeechId = 0;
 
-        async function speakText(text) {
-            if (isMuted) return;
+        async function speakText(text, onComplete = null) {
+            if (isMuted) {
+                if (onComplete) onComplete();
+                return;
+            }
 
             // Stop any currently playing audio
             if (currentAudio) {
@@ -2203,7 +2206,10 @@
                 window.speechSynthesis.cancel();
             }
 
-            if (!text) return;
+            if (!text) {
+                if (onComplete) onComplete();
+                return;
+            }
 
             // Track this speech request
             const speechId = ++currentSpeechId;
@@ -2235,7 +2241,10 @@
 
                     currentAudio = new Audio(audioUrl);
                     currentAudio.play();
-                    currentAudio.onended = () => URL.revokeObjectURL(audioUrl);
+                    currentAudio.onended = () => {
+                        URL.revokeObjectURL(audioUrl);
+                        if (onComplete) onComplete();
+                    };
                     return;
                 }
             } catch (error) {
@@ -2260,6 +2269,9 @@
                 utterance.rate = 1.05;
                 utterance.pitch = 1.5;
                 utterance.volume = 1.0;
+                utterance.onend = () => {
+                    if (onComplete) onComplete();
+                };
                 window.speechSynthesis.speak(utterance);
             }
         }
@@ -4567,14 +4579,22 @@
                 // Check if we'll generate an image
                 const willGenerateImage = data.should_generate_image && data.question_for_image;
 
-                // Display response (don't auto-speak if image will be generated - we'll speak combined message)
-                addChatMessage(reply, 'assistant', null, !willGenerateImage);
+                // Display response
+                addChatMessage(reply, 'assistant', null, false); // Don't auto-speak, we handle it below
 
-                // Generate image if appropriate
                 if (willGenerateImage) {
-                    // Speak answer + drawing message together
-                    speakText(reply + "... And I'm drawing a picture for you!");
-                    generateAndShowImage(data.question_for_image, data.answer_for_image, false);
+                    // 1. Speak answer immediately
+                    // 2. Start image generation in parallel
+                    // 3. When answer finishes, say "drawing a picture"
+                    speakText(reply, () => {
+                        // After answer is spoken, say "drawing a picture"
+                        speakText("And I'm drawing a picture for you!");
+                    });
+                    // Start image generation in parallel (don't wait for speech)
+                    generateAndShowImage(data.question_for_image, data.answer_for_image);
+                } else {
+                    // No image - just speak the answer
+                    speakText(reply);
                 }
 
             } catch (error) {
