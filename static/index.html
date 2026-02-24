@@ -4585,10 +4585,15 @@
                 if (willGenerateImage) {
                     // 1. Speak answer immediately
                     // 2. Start image generation in parallel
-                    // 3. When answer finishes, say "drawing a picture"
+                    // 3. When answer finishes, say "drawing a picture" instantly
                     speakText(reply, () => {
-                        // After answer is spoken, say "drawing a picture"
-                        speakText("And I'm drawing a picture for you!");
+                        // Use browser speech for instant playback (no API delay)
+                        if (!isMuted && window.speechSynthesis) {
+                            const utterance = new SpeechSynthesisUtterance("And I'm drawing a picture for you!");
+                            utterance.rate = 1.0;
+                            utterance.pitch = 1.2;
+                            window.speechSynthesis.speak(utterance);
+                        }
                     });
                     // Start image generation in parallel (don't wait for speech)
                     generateAndShowImage(data.question_for_image, data.answer_for_image);
