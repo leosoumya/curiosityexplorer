@@ -64,7 +64,7 @@ REMEMBER: Answer only. No questions. Laugh at silly questions!"""
 
 
 def should_generate_image(question, answer):
-    """Decide if an image should be generated for this Q&A. Be conservative."""
+    """Decide if an image should be generated for this Q&A."""
     question_lower = question.lower()
     answer_lower = answer.lower()
 
@@ -80,34 +80,56 @@ def should_generate_image(question, answer):
     if kid_wants_image:
         return True, None
 
-    # Only check QUESTION for visual topics (not answer - avoids false positives)
-    # Use specific animals/objects, not generic words
+    # Visual topics - if question mentions these, show an image
     visual_topics = [
-        'dinosaur', 't-rex', 'triceratops', 'brontosaurus',
-        'planet', 'jupiter', 'saturn', 'mars', 'venus', 'mercury', 'neptune', 'uranus',
-        'rocket', 'spaceship', 'space shuttle', 'astronaut',
-        'airplane', 'helicopter', 'jet',
-        'dump truck', 'fire truck', 'monster truck', 'bulldozer', 'excavator',
-        'submarine', 'battleship',
-        'elephant', 'lion', 'tiger', 'whale', 'shark', 'dolphin', 'octopus',
-        'butterfly', 'penguin', 'polar bear', 'giraffe', 'zebra', 'hippo', 'rhino',
-        'volcano', 'rainbow', 'tornado', 'hurricane',
-        'castle', 'pyramid', 'eiffel tower'
+        # Dinosaurs
+        'dinosaur', 't-rex', 'tyrannosaurus', 'triceratops', 'brontosaurus', 'velociraptor', 'stegosaurus', 'pterodactyl',
+        # Space
+        'planet', 'jupiter', 'saturn', 'mars', 'venus', 'mercury', 'neptune', 'uranus', 'pluto',
+        'rocket', 'spaceship', 'space shuttle', 'astronaut', 'moon', 'star', 'galaxy', 'sun', 'comet', 'asteroid',
+        # Vehicles
+        'airplane', 'plane', 'helicopter', 'jet', 'aircraft',
+        'truck', 'dump truck', 'fire truck', 'monster truck', 'bulldozer', 'excavator', 'crane', 'tractor',
+        'train', 'locomotive', 'subway',
+        'boat', 'ship', 'submarine', 'battleship', 'yacht', 'sailboat',
+        'car', 'race car', 'sports car',
+        # Animals
+        'elephant', 'lion', 'tiger', 'whale', 'blue whale', 'shark', 'dolphin', 'octopus',
+        'butterfly', 'penguin', 'polar bear', 'giraffe', 'zebra', 'hippo', 'rhino', 'crocodile', 'alligator',
+        'eagle', 'owl', 'parrot', 'flamingo', 'peacock',
+        'snake', 'spider', 'scorpion', 'frog', 'turtle', 'tortoise',
+        'monkey', 'gorilla', 'chimpanzee', 'orangutan',
+        'bear', 'wolf', 'fox', 'deer', 'moose', 'elk',
+        'horse', 'zebra', 'donkey', 'camel',
+        'kangaroo', 'koala', 'panda',
+        'bee', 'ant', 'ladybug', 'dragonfly',
+        # Nature
+        'volcano', 'rainbow', 'tornado', 'hurricane', 'waterfall', 'mountain', 'glacier', 'desert', 'forest', 'jungle',
+        'ocean', 'coral reef', 'beach',
+        # Buildings/Landmarks
+        'castle', 'pyramid', 'eiffel tower', 'statue of liberty', 'great wall',
+        # Robots/Tech
+        'robot', 'drone'
     ]
 
-    # Only match if the specific topic is in the QUESTION
+    # If question mentions a visual topic, show an image
     is_visual_topic = any(topic in question_lower for topic in visual_topics)
 
-    # Abstract/conceptual questions - no images
-    abstract_patterns = ['why do', 'how come', 'what happens', 'what is the meaning',
-                         'how many', 'how much', 'when did', 'who was', 'who is',
-                         'what time', 'how old', 'how long', 'how far', 'is it true']
-    is_abstract = any(p in question_lower for p in abstract_patterns)
+    if is_visual_topic:
+        return True, None
 
-    if is_abstract:
+    # Only skip purely abstract questions with no visual subject
+    # (feelings, meanings, pure numbers with no subject)
+    abstract_only = ['what is the meaning of life', 'why do we feel', 'what are feelings',
+                     'what is love', 'what is happiness', 'what is time']
+    is_pure_abstract = any(p in question_lower for p in abstract_only)
+
+    if is_pure_abstract:
         return False, None
 
-    return is_visual_topic, None
+    # For other questions, let the LLM decide via the prompt generator
+    # This catches things like "what is a black hole" that aren't in our list
+    return False, None
 
 
 def create_kid_friendly_image_prompt(question, answer):
