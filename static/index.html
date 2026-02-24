@@ -1968,12 +1968,10 @@
 
         <!-- Mission Selection Screen (Post-game options) -->
         <div id="missionSelect" class="screen">
-            <div id="welcomeBackBanner"></div>
             <h2 id="missionSelectTitle">What's Next?</h2>
             <div class="mission-grid" id="missionGrid">
-                <!-- Options will be dynamically inserted here -->
+                <!-- 3 options will be dynamically inserted here -->
             </div>
-            <button class="btn btn-success" onclick="showRecap()" id="recapBtn" style="display: none;">See What I Learned!</button>
         </div>
 
         <!-- Mission 2: Spot the Mistake -->
@@ -2980,7 +2978,7 @@
                     <p>Find more silly facts!</p>
                 </div>
                 <div class="mission-card" onclick="goToSpotTheMistakes()">
-                    <h3>🎯 Pick Different Topic</h3>
+                    <h3>🎯 Pick New Topic</h3>
                     <p>Try something new!</p>
                 </div>
                 <div class="mission-card" onclick="showScreen('askQuestion')">
@@ -2988,10 +2986,6 @@
                     <p>Ask me anything!</p>
                 </div>
             `;
-
-            // Hide recap button - keep screen simple
-            const recapBtn = document.getElementById('recapBtn');
-            if (recapBtn) recapBtn.style.display = 'none';
         }
 
         function keepExploringTopic() {
@@ -3282,6 +3276,11 @@
                 clearChat();  // Always start fresh session
                 checkApiKeyAndShowChat();
                 // Don't speak here - let screenAudio handle it to avoid duplicates
+            }
+
+            // Populate mission select screen with 3 options
+            if (screenId === 'missionSelect') {
+                populateMissions();
             }
 
             // Auto-read instructions for each screen
