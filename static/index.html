@@ -2972,25 +2972,33 @@
             const missionGrid = document.getElementById('missionGrid');
             const currentTopic = gameState.currentTopic;
 
-            document.getElementById('missionSelectTitle').textContent = `Great job with ${currentTopic}!`;
+            document.getElementById('missionSelectTitle').textContent = `Great job!`;
 
             missionGrid.innerHTML = `
+                <div class="mission-card" onclick="keepExploringTopic()">
+                    <h3>🔄 Keep Exploring ${currentTopic}</h3>
+                    <p>Find more silly facts!</p>
+                </div>
                 <div class="mission-card" onclick="goToSpotTheMistakes()">
-                    <h3>🔄 Pick a Different Topic</h3>
-                    <p>Try a new topic to explore!</p>
+                    <h3>🎯 Pick Different Topic</h3>
+                    <p>Try something new!</p>
                 </div>
                 <div class="mission-card" onclick="showScreen('askQuestion')">
-                    <h3>❓ Ask Me Anything</h3>
-                    <p>Ask any question you want!</p>
-                </div>
-                <div class="mission-card" onclick="continueAskingAboutTopic()">
-                    <h3>💬 Keep Asking About ${currentTopic}</h3>
-                    <p>I want to learn more about ${currentTopic}!</p>
+                    <h3>❓ Ask a Question</h3>
+                    <p>Ask me anything!</p>
                 </div>
             `;
 
-            // Show recap button if any missions completed
-            updateRecapButton();
+            // Hide recap button - keep screen simple
+            const recapBtn = document.getElementById('recapBtn');
+            if (recapBtn) recapBtn.style.display = 'none';
+        }
+
+        function keepExploringTopic() {
+            // Reset question count and start fresh round with same topic
+            mission2QuestionCount = 0;
+            mission2ConceptsLearned = [];
+            startMission2();
         }
 
         function goToSpotTheMistakes() {
@@ -3002,17 +3010,6 @@
                 if (!picker.classList.contains('open')) {
                     picker.classList.add('open');
                     card.classList.add('open');
-                }
-            }, 100);
-        }
-
-        function continueAskingAboutTopic() {
-            showScreen('askQuestion');
-            // Pre-fill the input with a prompt about the current topic
-            setTimeout(() => {
-                const input = document.getElementById('questionInput');
-                if (input) {
-                    input.placeholder = `Ask me about ${gameState.currentTopic}...`;
                 }
             }, 100);
         }
