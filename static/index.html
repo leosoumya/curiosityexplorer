@@ -2019,7 +2019,7 @@
             <div class="celebration-emoji wobble-animation">🤔</div>
             <h2>Try Again!</h2>
             <p class="subtitle" id="mission2HintBox">That one was true!</p>
-            <button class="btn btn-large btn-primary" onclick="showScreen('mission2-facts')" style="font-size: 22px; margin-top: 20px;">
+            <button class="btn btn-large btn-primary" onclick="retryMission2Question()" style="font-size: 22px; margin-top: 20px;">
                 Let's Try!
             </button>
         </div>
@@ -3906,6 +3906,7 @@
 
         // Store the current fact for Mission 2
         let currentMission2Fact = null;
+        let currentMission2OptionsText = ''; // Store options text for re-reading after wrong guess
         let mission2QuestionCount = 0;
         let mission2ConceptsLearned = [];
         let mission2GeneratedFacts = []; // Cache generated facts for this session
@@ -4073,8 +4074,22 @@
             const hintBox = document.getElementById('mission2HintBox');
             hintBox.innerHTML = `That one is true! Try the other one.`;
 
+            // Store options text for re-reading after wrong guess
+            currentMission2OptionsText = `${option1Text}... or... ${option2Text}... Which one is silly?`;
+
             // Read both options aloud immediately
-            speakText(`${option1Text}... or... ${option2Text}... Which one is silly?`);
+            speakText(currentMission2OptionsText);
+        }
+
+        // Re-read options when returning from hint screen after wrong guess
+        function retryMission2Question() {
+            showScreen('mission2-facts');
+            // Re-read the options after a short delay
+            setTimeout(() => {
+                if (currentMission2OptionsText) {
+                    speakText(currentMission2OptionsText);
+                }
+            }, 300);
         }
 
         function nextMission2Question() {
