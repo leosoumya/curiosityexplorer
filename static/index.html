@@ -3879,6 +3879,17 @@
         let mission2QuestionCount = 0;
         let mission2ConceptsLearned = [];
         let mission2GeneratedFacts = []; // Cache generated facts for this session
+        let mission2ShuffledFacts = []; // Shuffled facts for current session
+
+        // Shuffle array helper
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
 
         // Generate a fact-checking question using LLM
         async function generateMission2Question(topic, questionNumber) {
@@ -3946,30 +3957,30 @@ Respond in this exact JSON format only:
             }
         }
 
-        // Fallback facts for when LLM is unavailable
+        // Get fact from shuffled array for current session
         function getFallbackFact(topic) {
-            // Use topic-specific facts from the database first
+            // Use pre-shuffled facts from startMission2Questions
+            if (mission2ShuffledFacts && mission2ShuffledFacts.length > 0) {
+                return mission2ShuffledFacts[mission2QuestionCount % mission2ShuffledFacts.length];
+            }
+
+            // Fallback if shuffled array not initialized (shouldn't happen)
             const topicKey = topic.toLowerCase();
             const topicData = topicDatabase[topicKey];
             if (topicData && topicData.mission2 && topicData.mission2.facts) {
                 const facts = topicData.mission2.facts;
-                return facts[mission2QuestionCount % facts.length];
+                return facts[Math.floor(Math.random() * facts.length)];
             }
 
-            // Generic fallback only for custom topics without a database entry
+            // Generic fallback
             const fallbacks = [
                 { correct: 'Elephants cant jump at all', wrong: 'Elephants can jump really high', correctIcon: '🐘', wrongIcon: '🦘', concept: 'Elephants are too big and heavy to jump!' },
                 { correct: 'Cats sleep most of the day', wrong: 'Cats never ever sleep', correctIcon: '🐱', wrongIcon: '👀', concept: 'Cats love to nap - a lot!' },
                 { correct: 'Penguins cant fly but they swim fast', wrong: 'Penguins fly in the sky like birds', correctIcon: '🐧', wrongIcon: '🕊️', concept: 'Penguins use their wings to swim!' },
                 { correct: 'Bees make honey from flowers', wrong: 'Bees buy honey from the store', correctIcon: '🐝', wrongIcon: '🏪', concept: 'Bees visit flowers to make yummy honey!' },
-                { correct: 'Giraffes have super long necks', wrong: 'Giraffes have short necks like dogs', correctIcon: '🦒', wrongIcon: '🐕', concept: 'Giraffes have the longest necks!' },
-                { correct: 'Frogs start as tiny tadpoles', wrong: 'Frogs are born as tiny frogs', correctIcon: '🐸', wrongIcon: '🐣', concept: 'Tadpoles grow legs and become frogs!' },
-                { correct: 'The sun gives us light and warmth', wrong: 'The sun is a big lamp someone turns on', correctIcon: '☀️', wrongIcon: '💡', concept: 'The sun is a giant ball of hot gas!' },
-                { correct: 'Fish breathe underwater with gills', wrong: 'Fish hold their breath all day', correctIcon: '🐟', wrongIcon: '😤', concept: 'Gills help fish get air from water!' },
-                { correct: 'Owls can turn their heads way around', wrong: 'Owls can only look straight ahead', correctIcon: '🦉', wrongIcon: '👁️', concept: 'Owls have super bendy necks!' },
-                { correct: 'Kangaroos carry babies in a pouch', wrong: 'Kangaroos carry babies in a backpack', correctIcon: '🦘', wrongIcon: '🎒', concept: 'Baby kangaroos are called joeys!' }
+                { correct: 'Giraffes have super long necks', wrong: 'Giraffes have short necks like dogs', correctIcon: '🦒', wrongIcon: '🐕', concept: 'Giraffes have the longest necks!' }
             ];
-            return fallbacks[mission2QuestionCount % fallbacks.length];
+            return fallbacks[Math.floor(Math.random() * fallbacks.length)];
         }
 
         // Mission 2: Spot the Mistake (Dynamic)
@@ -3994,6 +4005,17 @@ Respond in this exact JSON format only:
             mission2QuestionCount = 0;
             mission2ConceptsLearned = [];
             mission2GeneratedFacts = []; // Reset generated facts for new session
+
+            // Shuffle facts for this session so questions are different each time
+            const topicKey = gameState.currentTopic.toLowerCase();
+            const topicData = topicDatabase[topicKey];
+            if (topicData && topicData.mission2 && topicData.mission2.facts) {
+                mission2ShuffledFacts = shuffleArray(topicData.mission2.facts);
+            } else {
+                // Use generic facts for custom topics
+                mission2ShuffledFacts = shuffleArray(topicDatabase.generic.mission2.facts);
+            }
+
             loadMission2Question();
         }
 
