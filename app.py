@@ -64,7 +64,7 @@ REMEMBER: Answer only. No questions. Laugh at silly questions!"""
 
 
 def should_generate_image(question, answer):
-    """Decide if an image should be generated for this Q&A."""
+    """Decide if an image should be generated for this Q&A. Be conservative."""
     question_lower = question.lower()
     answer_lower = answer.lower()
 
@@ -73,36 +73,45 @@ def should_generate_image(question, answer):
     if any(p in answer_lower for p in silly_patterns):
         return False, None
 
-    # Kid explicitly asks for an image
-    image_requests = ['show me', 'picture of', 'what does', 'what do', 'look like', 'looks like', 'draw', 'image of']
+    # Kid explicitly asks for an image - always generate
+    image_requests = ['show me', 'picture of', 'look like', 'looks like', 'draw me', 'image of', 'photo of']
     kid_wants_image = any(p in question_lower for p in image_requests)
 
-    # Visual topics that benefit from images
+    if kid_wants_image:
+        return True, None
+
+    # Only check QUESTION for visual topics (not answer - avoids false positives)
+    # Use specific animals/objects, not generic words
     visual_topics = [
-        'animal', 'dinosaur', 'planet', 'star', 'moon', 'sun', 'rocket', 'plane', 'airplane',
-        'car', 'truck', 'train', 'boat', 'ship', 'fish', 'bird', 'insect', 'bug', 'spider',
-        'flower', 'tree', 'mountain', 'ocean', 'volcano', 'rainbow', 'cloud', 'robot',
-        'castle', 'dragon', 'unicorn', 'elephant', 'lion', 'tiger', 'whale', 'shark',
-        'butterfly', 'frog', 'snake', 'penguin', 'polar bear', 'giraffe', 'zebra'
+        'dinosaur', 't-rex', 'triceratops', 'brontosaurus',
+        'planet', 'jupiter', 'saturn', 'mars', 'venus', 'mercury', 'neptune', 'uranus',
+        'rocket', 'spaceship', 'space shuttle', 'astronaut',
+        'airplane', 'helicopter', 'jet',
+        'dump truck', 'fire truck', 'monster truck', 'bulldozer', 'excavator',
+        'submarine', 'battleship',
+        'elephant', 'lion', 'tiger', 'whale', 'shark', 'dolphin', 'octopus',
+        'butterfly', 'penguin', 'polar bear', 'giraffe', 'zebra', 'hippo', 'rhino',
+        'volcano', 'rainbow', 'tornado', 'hurricane',
+        'castle', 'pyramid', 'eiffel tower'
     ]
-    is_visual_topic = any(topic in question_lower or topic in answer_lower for topic in visual_topics)
 
-    # Abstract topics that don't need images
-    abstract_topics = ['why do we', 'how come', 'what happens if', 'what is the meaning',
-                       'how many', 'how much', 'when did', 'who was', 'math', 'count', 'number']
-    is_abstract = any(topic in question_lower for topic in abstract_topics)
+    # Only match if the specific topic is in the QUESTION
+    is_visual_topic = any(topic in question_lower for topic in visual_topics)
 
-    # Generate image if kid asks OR if it's a visual topic (but not abstract)
-    should_generate = kid_wants_image or (is_visual_topic and not is_abstract)
+    # Abstract/conceptual questions - no images
+    abstract_patterns = ['why do', 'how come', 'what happens', 'what is the meaning',
+                         'how many', 'how much', 'when did', 'who was', 'who is',
+                         'what time', 'how old', 'how long', 'how far', 'is it true']
+    is_abstract = any(p in question_lower for p in abstract_patterns)
 
-    if not should_generate:
+    if is_abstract:
         return False, None
 
-    return True, None  # Will generate prompt separately
+    return is_visual_topic, None
 
 
 def create_kid_friendly_image_prompt(question, answer):
-    """Create a DALL-E prompt for a fun, educational image for kids."""
+    """Create a DALL-E prompt for a realistic, educational image for kids."""
     api_key = os.environ.get('OPENAI_API_KEY')
     if not api_key:
         return None
@@ -114,25 +123,26 @@ def create_kid_friendly_image_prompt(question, answer):
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
-                'content': f"""Create a DALL-E image prompt for a 5 year old based on this Q&A.
+                'content': f"""Create a DALL-E image prompt based on this Q&A for a 5-6 year old child.
 
 Question: {question}
 Answer: {answer}
 
 Rules:
-- Make it colorful, friendly, and fun for kids
-- Use words like "cute", "cartoon style", "friendly", "bright colors"
-- Include the main subject from the Q&A
-- Keep it educational but playful
+- Create a REALISTIC, educational image (like a nature documentary or science book)
+- NOT cartoon style - real photography style or realistic illustration
+- Show the actual subject clearly so kids can learn what it really looks like
+- Use "realistic", "educational", "clear", "well-lit", "nature photography" style words
+- Make it visually appealing but accurate
 - NO scary, violent, or inappropriate content
 - Maximum 50 words
 
-If this Q&A doesn't need an image (abstract concepts, numbers, etc.), respond with just "NONE"
+If this Q&A doesn't need an image (abstract concepts, feelings, numbers), respond with just "NONE"
 
 Example outputs:
-- "A cute, friendly blue whale swimming in bright blue ocean, cartoon style, educational illustration for children, colorful and cheerful"
-- "A happy cartoon T-Rex dinosaur with tiny arms waving, bright colors, kid-friendly illustration, fun and educational"
-- "NONE" (for questions like "how many legs does a spider have")
+- "A realistic blue whale swimming in clear ocean water, underwater photography, educational nature image, showing the whale's full body clearly"
+- "A real T-Rex dinosaur in a prehistoric forest, realistic scientific illustration, museum-quality educational image, detailed and accurate"
+- "NONE" (for questions about feelings, numbers, or abstract concepts)
 
 Image prompt:"""
             }],
