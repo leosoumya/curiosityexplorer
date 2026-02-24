@@ -1477,7 +1477,7 @@
             line-height: 1.5;
         }
 
-        /* Floating Home Button */
+        /* Floating Home Button - hidden by default, shown via JS on non-home screens */
         .floating-home-btn {
             position: absolute;
             bottom: 20px;
@@ -1492,7 +1492,7 @@
             box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
             z-index: 999;
             transition: all 0.3s ease;
-            display: flex;
+            display: none; /* Hidden by default, shown via JS */
             align-items: center;
             justify-content: center;
         }
@@ -3448,6 +3448,17 @@
                 screen.classList.remove('active');
             });
             document.getElementById(screenId).classList.add('active');
+
+            // Show/hide floating home button based on screen
+            const floatingHomeBtn = document.querySelector('.floating-home-btn');
+            if (floatingHomeBtn) {
+                // Hide on welcome and treasureMap (which has its own home button)
+                if (screenId === 'welcome' || screenId === 'treasureMap') {
+                    floatingHomeBtn.style.display = 'none';
+                } else {
+                    floatingHomeBtn.style.display = 'flex';
+                }
+            }
 
             // Initialize welcome screen
             if (screenId === 'welcome') {
