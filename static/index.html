@@ -4544,22 +4544,40 @@
                 addChatMessage(reply, 'assistant', null, false); // Don't auto-speak, we handle it below
 
                 if (willGenerateImage) {
-                    // 1. Speak answer immediately
+                    // Use browser speech for INSTANT playback (TTS API is too slow)
+                    // 1. Speak answer immediately using browser speech
                     // 2. Start image generation in parallel
-                    // 3. When answer finishes, say "drawing a picture" instantly
-                    speakText(reply, () => {
-                        // Use browser speech for instant playback (no API delay)
-                        if (!isMuted && window.speechSynthesis) {
-                            const utterance = new SpeechSynthesisUtterance("And I'm drawing a picture for you!");
-                            utterance.rate = 1.0;
-                            utterance.pitch = 1.2;
-                            window.speechSynthesis.speak(utterance);
-                        }
-                    });
+                    // 3. When answer finishes, say "drawing a picture"
+                    if (!isMuted && window.speechSynthesis) {
+                        window.speechSynthesis.cancel(); // Stop any previous speech
+
+                        // Clean text for browser TTS
+                        const cleanReply = reply
+                            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                            .replace(/https?:\/\/[^\s\])]+/g, '')
+                            .replace(/Learn more:.*$/gm, '')
+                            .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+                            .replace(/\s+/g, ' ')
+                            .trim();
+
+                        const answerUtterance = new SpeechSynthesisUtterance(cleanReply);
+                        answerUtterance.rate = 1.0;
+                        answerUtterance.pitch = 1.1;
+
+                        // When answer finishes, say "drawing a picture"
+                        answerUtterance.onend = () => {
+                            const drawingUtterance = new SpeechSynthesisUtterance("And I'm drawing a picture for you!");
+                            drawingUtterance.rate = 1.0;
+                            drawingUtterance.pitch = 1.2;
+                            window.speechSynthesis.speak(drawingUtterance);
+                        };
+
+                        window.speechSynthesis.speak(answerUtterance);
+                    }
                     // Start image generation in parallel (don't wait for speech)
                     generateAndShowImage(data.question_for_image, data.answer_for_image);
                 } else {
-                    // No image - just speak the answer
+                    // No image - use TTS API for better voice quality
                     speakText(reply);
                 }
 
