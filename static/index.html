@@ -4427,10 +4427,8 @@
 
                 if (!lastBubble) return;
 
-                // Say "drawing a picture" via voice
-                speakText("And I'm drawing a picture for you!");
-
-                // Add visual placeholder while image loads
+                // Add visual placeholder immediately (visual feedback)
+                // Voice will say "drawing a picture" after answer finishes (delayed below)
                 const placeholder = document.createElement('div');
                 placeholder.className = 'image-placeholder';
                 placeholder.style.cssText = `
@@ -4453,6 +4451,13 @@
                 `;
                 lastBubble.appendChild(placeholder);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+                // Say "drawing a picture" after answer finishes speaking (delay based on answer length)
+                const answerLength = answer ? answer.length : 0;
+                const speakDelay = Math.min(Math.max(answerLength * 50, 2000), 8000); // 2-8 seconds based on length
+                setTimeout(() => {
+                    speakText("And I'm drawing a picture for you!");
+                }, speakDelay);
 
                 // Add shimmer animation if not already in page
                 if (!document.getElementById('shimmer-style')) {
