@@ -7,7 +7,24 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Whyzee</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600&display=swap" rel="stylesheet">
     <style>
+        /* Whyzee Logo Style */
+        .whyzee-logo {
+            font-family: 'Fredoka', cursive;
+            font-size: 48px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: none;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+        }
         * {
             margin: 0;
             padding: 0;
@@ -111,11 +128,13 @@
 
         .screen {
             display: none;
+            overflow-x: hidden;
         }
 
         .screen.active {
             display: block;
             animation: fadeIn 0.5s ease-in;
+            overflow-x: hidden;
         }
 
         @keyframes fadeIn {
@@ -602,6 +621,8 @@
             margin-top: 15px;
             align-items: center;
             flex-wrap: wrap;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .chat-input {
@@ -613,6 +634,8 @@
             font-family: inherit;
             outline: none;
             transition: border-color 0.3s;
+            min-width: 0;
+            box-sizing: border-box;
         }
 
         .chat-input:focus {
@@ -1656,6 +1679,11 @@
                 font-size: 0.9em;
             }
 
+            /* Whyzee logo */
+            .whyzee-logo {
+                font-size: 36px !important;
+            }
+
             /* Topic picker grid */
             .topic-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
@@ -1822,6 +1850,10 @@
 
             .subtitle {
                 font-size: 1em !important;
+            }
+
+            .whyzee-logo {
+                font-size: 28px !important;
             }
 
             .home-card {
@@ -2028,8 +2060,9 @@
 
         <!-- Welcome Screen - Two Cards + Learning Journey -->
         <div id="welcome" class="screen active">
-            <!-- Parent settings button in corner -->
-            <h1 id="welcomeTitle" style="cursor: default; user-select: none;">🌟 What do you want to do? 🌟</h1>
+            <!-- Whyzee Logo -->
+            <div class="whyzee-logo">Whyzee</div>
+            <h1 id="welcomeTitle" style="cursor: default; user-select: none;">What do you want to do?</h1>
             <p class="subtitle">Hi <span id="userName">Explorer</span>! Pick one!</p>
 
             <div class="home-cards">
