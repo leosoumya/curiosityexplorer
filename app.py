@@ -216,6 +216,28 @@ def log_qa(user_id, user_name, question, answer):
         print(f"Supabase logging error: {e}")
 
 
+@app.route('/api/log-activity', methods=['POST'])
+def log_activity():
+    """Log game activity (like Spot the Mistake) to Supabase."""
+    data = request.json
+    user_id = data.get('user_id', 'anonymous')
+    user_name = data.get('user_name', 'Anonymous')
+    activity = data.get('activity', '')
+    details = data.get('details', '')
+
+    try:
+        supabase.table('qa_logs').insert({
+            'user_id': user_id,
+            'user_name': user_name,
+            'question': activity,
+            'answer': details
+        }).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Activity logging error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/')
 def index():
     """Serve the frontend."""

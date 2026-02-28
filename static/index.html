@@ -3090,8 +3090,29 @@
                 gameState.currentTopicData = generateCustomTopicData(gameState.currentTopic);
             }
 
+            // Log activity to Supabase
+            logSpotMistakeActivity(gameState.currentTopic);
+
             // Go directly to Spot the Mistake (skip mission selection)
             startMission2();
+        }
+
+        // Log Spot the Mistake activity to backend
+        function logSpotMistakeActivity(topic) {
+            try {
+                fetch('/api/log-activity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: localStorage.getItem('curiosityUserId') || 'anonymous',
+                        user_name: localStorage.getItem('curiosityExplorerName') || 'Anonymous',
+                        activity: 'Spot mistake: ' + topic,
+                        details: 'Started Spot the Mistake game'
+                    })
+                });
+            } catch (e) {
+                console.log('Activity logging error:', e);
+            }
         }
 
         // Legacy function for compatibility
