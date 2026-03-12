@@ -650,7 +650,16 @@ def generate_image():
 
         # Try real photo sources for REAL classification
         if image_type == 'real' and search_term:
-            # Try web search first
+            # Try Wikipedia first (fast, reliable, no proxy needed)
+            wiki_result = search_wikipedia_image(search_term)
+            if wiki_result:
+                return jsonify({
+                    'image_url': wiki_result['image_url'],
+                    'image_source': 'wikipedia',
+                    'image_attribution': wiki_result['attribution']
+                })
+
+            # Fall back to web search if Wikipedia has no image
             web_result = search_web_image(search_term, question)
             if web_result:
                 # Proxy the image through our server to avoid hotlink blocking
@@ -659,15 +668,6 @@ def generate_image():
                     'image_url': proxied_url,
                     'image_source': 'web',
                     'image_attribution': web_result['attribution']
-                })
-
-            # Fall back to Wikipedia
-            wiki_result = search_wikipedia_image(search_term)
-            if wiki_result:
-                return jsonify({
-                    'image_url': wiki_result['image_url'],
-                    'image_source': 'wikipedia',
-                    'image_attribution': wiki_result['attribution']
                 })
 
             # No real image found - return null, do NOT fall through to DALL-E
