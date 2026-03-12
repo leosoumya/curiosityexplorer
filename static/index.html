@@ -2077,7 +2077,7 @@
                     <span class="home-card-icon">🔍</span>
                     <span class="home-card-text">
                         <span class="home-card-label">Spot the Mistakes!</span>
-                        <span class="home-card-hint">Pick a topic and find the silly facts!</span>
+                        <span class="home-card-hint">Pick a topic and find the tricky facts!</span>
                     </span>
                     <span class="chevron">▼</span>
                 </button>
@@ -2222,8 +2222,8 @@
         <!-- Mission 2: Spot the Mistake -->
         <div id="mission2-intro" class="screen">
             <div class="celebration-emoji" style="font-size: 80px;">🔍</div>
-            <h2>Find the Silly One!</h2>
-            <p class="subtitle">Which one sounds wrong?</p>
+            <h2>Which One Is Wrong?</h2>
+            <p class="subtitle">One of these is not true. Can you find it?</p>
             <button class="btn btn-large btn-primary" onclick="startMission2Questions()" style="font-size: 24px; padding: 20px 50px;">
                 Let's Go!
             </button>
@@ -2233,7 +2233,7 @@
             <div class="progress-indicator" id="mission2Progress">
                 <span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span>
             </div>
-            <h2>Which sounds silly?</h2>
+            <h2>Which is NOT true?</h2>
 
             <div class="button-group" style="flex-direction: column; align-items: center; margin-top: 30px;">
                 <button class="choice-btn" onclick="checkFact('correct')">
@@ -2632,18 +2632,26 @@
                     title: 'Spot the Mistake',
                     description: 'Find the wrong fact about planes!',
                     icon: '🔍',
-                    facts: [
-                        { correct: 'Planes have wings to help them fly', wrong: 'Planes drive on roads to take off', correctIcon: '✈️', wrongIcon: '🚗', concept: 'Planes use runways, not roads' },
-                        { correct: 'Pilots sit in the cockpit to fly the plane', wrong: 'Planes fly themselves with no pilot', correctIcon: '👨‍✈️', wrongIcon: '🤷', concept: 'Pilots are trained to fly planes safely' },
-                        { correct: 'Planes need fuel to fly', wrong: 'Planes run on water from clouds', correctIcon: '⛽', wrongIcon: '💧', concept: 'Planes use special fuel called jet fuel' },
-                        { correct: 'Jet engines push planes forward', wrong: 'Planes are pulled by invisible strings', correctIcon: '🔥', wrongIcon: '🧵', concept: 'Engines create thrust to move planes' },
-                        { correct: 'Planes can fly above the clouds', wrong: 'Planes must stay below all clouds', correctIcon: '☁️', wrongIcon: '⛈️', concept: 'Planes often fly very high in the sky' },
-                        { correct: 'Airplane wheels fold up after takeoff', wrong: 'Airplane wheels fall off after takeoff', correctIcon: '🛞', wrongIcon: '💥', concept: 'Landing gear retracts to reduce drag' },
-                        { correct: 'Wings help planes stay in the air', wrong: 'Wings are just for decoration', correctIcon: '🦅', wrongIcon: '🎨', concept: 'Wings create lift to keep planes flying' },
-                        { correct: 'Planes have lights for flying at night', wrong: 'Planes can only fly during the day', correctIcon: '💡', wrongIcon: '🌙', concept: 'Planes have navigation lights for safety' },
-                        { correct: 'Big planes can carry hundreds of people', wrong: 'All planes can only fit 2 people', correctIcon: '👥', wrongIcon: '👫', concept: 'Different planes have different sizes' },
-                        { correct: 'Planes take off into the wind', wrong: 'Planes take off with the wind pushing from behind', correctIcon: '🌬️', wrongIcon: '💨', concept: 'Taking off into wind helps planes lift faster' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'The pilot steers with a control stick called a yoke', wrong: 'The pilot steers by turning a steering wheel like a car', correctIcon: '🛫', wrongIcon: '🚗', concept: 'Planes use a yoke or stick, not a car steering wheel!' },
+                            { correct: 'Planes need a long runway to take off', wrong: 'Planes can take off from any road or parking lot', correctIcon: '🛬', wrongIcon: '🅿️', concept: 'Runways are specially built to be long and flat!' },
+                            { correct: 'Airplane windows are small and round for safety', wrong: 'Airplane windows are square just like house windows', correctIcon: '✈️', wrongIcon: '🏠', concept: 'Round windows handle air pressure better than square ones!' },
+                            { correct: 'Planes fly using jet fuel, a special type of fuel', wrong: 'Planes use the same gas you put in a car', correctIcon: '⛽', wrongIcon: '🚗', concept: 'Jet fuel is different from car gasoline!' }
+                        ],
+                        tier2: [
+                            { correct: 'Airplane tires are filled with nitrogen gas', wrong: 'Airplane tires use regular air like bicycle tires', correctIcon: '✈️', wrongIcon: '🚲', concept: 'Nitrogen stays stable in extreme cold and heat planes experience!' },
+                            { correct: 'Planes fly at about 35,000 feet high', wrong: 'Planes fly at about 5,000 feet high', correctIcon: '🌤️', wrongIcon: '🏔️', concept: 'Planes cruise much higher than the tallest mountains!' },
+                            { correct: 'The black box flight recorder is actually orange', wrong: 'The black box flight recorder is painted black', correctIcon: '🟧', wrongIcon: '⬛', concept: 'Its orange so rescue teams can find it easily!' },
+                            { correct: 'Plane wings can flex and bend during flight', wrong: 'Plane wings are completely stiff and never move', correctIcon: '🦅', wrongIcon: '🧱', concept: 'Wings are designed to flex so they dont break!' }
+                        ],
+                        tier3: [
+                            { correct: 'Some planes can fly without any pilot on board', wrong: 'Every plane must always have a pilot inside', correctIcon: '🤖', wrongIcon: '👨‍✈️', concept: 'Drones and some military planes fly with no one inside!' },
+                            { correct: 'Airplanes are actually safer than cars', wrong: 'Cars are much safer than airplanes', correctIcon: '✈️', wrongIcon: '🚗', concept: 'Flying is one of the safest ways to travel!' },
+                            { correct: 'Planes can land themselves using computers', wrong: 'Only human pilots can ever land a plane', correctIcon: '💻', wrongIcon: '👨‍✈️', concept: 'Autopilot systems can land planes in bad weather!' },
+                            { correct: 'Most of a planes fuel is stored inside the wings', wrong: 'All of a planes fuel is stored under the seats', correctIcon: '🛫', wrongIcon: '💺', concept: 'Wings are hollow and hold thousands of gallons of fuel!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: 'Plan a Flight',
@@ -2679,18 +2687,26 @@
                     title: 'Spot the Mistake',
                     description: 'Find the wrong fact about stars!',
                     icon: '🔍',
-                    facts: [
-                        { correct: 'Stars are very far away from Earth', wrong: 'You can touch stars with your hand', correctIcon: '⭐', wrongIcon: '✋', concept: 'Stars are far away and very hot' },
-                        { correct: 'The Sun is a star', wrong: 'The Sun is a planet', correctIcon: '☀️', wrongIcon: '🪐', concept: 'Our Sun is actually a medium-sized star' },
-                        { correct: 'Stars look tiny because they are far away', wrong: 'Stars are actually smaller than apples', correctIcon: '🔭', wrongIcon: '🍎', concept: 'Stars are huge but look small from far away' },
-                        { correct: 'Stars make their own light', wrong: 'Stars reflect light from the Moon', correctIcon: '💡', wrongIcon: '🌙', concept: 'Stars glow because they are very hot' },
-                        { correct: 'There are billions of stars in the sky', wrong: 'There are only 100 stars total', correctIcon: '✨', wrongIcon: '💯', concept: 'The universe has more stars than we can count' },
-                        { correct: 'Stars can be different colors', wrong: 'All stars are yellow', correctIcon: '🌈', wrongIcon: '🟡', concept: 'Star colors depend on how hot they are' },
-                        { correct: 'Some stars are bigger than our Sun', wrong: 'Our Sun is the biggest star ever', correctIcon: '🌟', wrongIcon: '☀️', concept: 'Some stars are giants, much bigger than the Sun' },
-                        { correct: 'Stars twinkle because of Earths air', wrong: 'Stars twinkle because they are blinking', correctIcon: '🌬️', wrongIcon: '👁️', concept: 'Air makes starlight wiggle and twinkle' },
-                        { correct: 'We see old light from distant stars', wrong: 'We see stars exactly as they are right now', correctIcon: '⏰', wrongIcon: '📸', concept: 'Light from stars takes years to reach us' },
-                        { correct: 'Groups of stars make patterns called constellations', wrong: 'Stars move around randomly every night', correctIcon: '⭐', wrongIcon: '🎲', concept: 'People named star patterns long ago' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'The Sun is actually a star', wrong: 'The Sun is a planet like Earth', correctIcon: '☀️', wrongIcon: '🪐', concept: 'Our Sun is a medium-sized star!' },
+                            { correct: 'Stars look tiny because they are very far away', wrong: 'Stars are tiny little lights floating in the sky', correctIcon: '🔭', wrongIcon: '💡', concept: 'Stars are huge but look small because they are so far!' },
+                            { correct: 'Stars come out during the day too, we just cant see them', wrong: 'Stars only exist at nighttime', correctIcon: '🌞', wrongIcon: '🌙', concept: 'The Sun is so bright it hides the other stars!' },
+                            { correct: 'Stars make their own light by burning gases', wrong: 'Stars reflect light from the Sun like the Moon does', correctIcon: '🔥', wrongIcon: '🌙', concept: 'Stars glow because they are incredibly hot!' }
+                        ],
+                        tier2: [
+                            { correct: 'The closest star to Earth is about 4 light years away', wrong: 'The closest star to Earth is about 4 miles away', correctIcon: '🌟', wrongIcon: '📏', concept: 'Even the nearest star is unimaginably far!' },
+                            { correct: 'Blue stars are hotter than red stars', wrong: 'Red stars are hotter than blue stars', correctIcon: '🔵', wrongIcon: '🔴', concept: 'The hottest stars burn blue, not red!' },
+                            { correct: 'Stars twinkle because of Earths moving air', wrong: 'Stars twinkle because they flicker on and off', correctIcon: '🌬️', wrongIcon: '💡', concept: 'Our atmosphere bends starlight and makes it shimmer!' },
+                            { correct: 'Some stars are much bigger than our Sun', wrong: 'Our Sun is the biggest star in the universe', correctIcon: '🌟', wrongIcon: '☀️', concept: 'Some giant stars could swallow millions of Suns!' }
+                        ],
+                        tier3: [
+                            { correct: 'Many stars we see at night may already be gone', wrong: 'Every star we see is still shining right now', correctIcon: '⏰', wrongIcon: '✨', concept: 'Light takes so long to reach us, some stars died long ago!' },
+                            { correct: 'There are more stars than grains of sand on Earth', wrong: 'There are about a million stars total', correctIcon: '🏖️', wrongIcon: '💯', concept: 'The universe has billions and billions of stars!' },
+                            { correct: 'You can sometimes see stars during the daytime', wrong: 'It is impossible to see any star during the day', correctIcon: '🌤️', wrongIcon: '☀️', concept: 'Venus and bright stars can be seen near sunrise or sunset!' },
+                            { correct: 'Constellations look different from other planets', wrong: 'Constellations look the same from everywhere in space', correctIcon: '🪐', wrongIcon: '⭐', concept: 'Star patterns change depending on where you are!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: 'Plan Stargazing',
@@ -2726,18 +2742,26 @@
                     title: 'Spot the Mistake',
                     description: 'Find the wrong fact about dinosaurs!',
                     icon: '🔍',
-                    facts: [
-                        { correct: 'Dinosaurs lived millions of years ago', wrong: 'Dinosaurs live in the zoo today', correctIcon: '🦴', wrongIcon: '🦁', concept: 'Dinosaurs are extinct and lived long ago' },
-                        { correct: 'We learn about dinosaurs from fossils', wrong: 'We learn about dinosaurs from videos of them', correctIcon: '🦴', wrongIcon: '📹', concept: 'Fossils are preserved bones from long ago' },
-                        { correct: 'Some dinosaurs ate only plants', wrong: 'All dinosaurs ate meat', correctIcon: '🌿', wrongIcon: '🥩', concept: 'Dinosaurs had different diets like animals today' },
-                        { correct: 'T-Rex had tiny arms', wrong: 'T-Rex had super long arms', correctIcon: '🦖', wrongIcon: '🦧', concept: 'T-Rex arms were small compared to its body' },
-                        { correct: 'Some dinosaurs had feathers', wrong: 'No dinosaur ever had feathers', correctIcon: '🪶', wrongIcon: '🦎', concept: 'Scientists found fossils showing feathered dinosaurs' },
-                        { correct: 'Dinosaurs hatched from eggs', wrong: 'Dinosaurs were born like puppies', correctIcon: '🥚', wrongIcon: '🐕', concept: 'Dinosaurs laid eggs like birds and reptiles' },
-                        { correct: 'Birds are related to dinosaurs', wrong: 'Birds and dinosaurs are not related at all', correctIcon: '🐦', wrongIcon: '❌', concept: 'Birds evolved from small dinosaurs' },
-                        { correct: 'Some dinosaurs were as small as chickens', wrong: 'All dinosaurs were bigger than houses', correctIcon: '🐔', wrongIcon: '🏠', concept: 'Dinosaurs came in many different sizes' },
-                        { correct: 'Dinosaurs lived on land', wrong: 'Most dinosaurs lived underwater', correctIcon: '🏜️', wrongIcon: '🌊', concept: 'Dinosaurs were land animals' },
-                        { correct: 'A big asteroid helped end the dinosaurs', wrong: 'Dinosaurs just decided to leave Earth', correctIcon: '☄️', wrongIcon: '🚀', concept: 'A giant space rock changed Earths climate' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'Dinosaurs lived millions of years ago', wrong: 'Dinosaurs lived about a hundred years ago', correctIcon: '🦴', wrongIcon: '📅', concept: 'Dinosaurs went extinct 65 million years ago!' },
+                            { correct: 'Some dinosaurs ate only plants', wrong: 'All dinosaurs ate meat', correctIcon: '🌿', wrongIcon: '🥩', concept: 'Many dinosaurs were gentle plant eaters!' },
+                            { correct: 'Dinosaurs hatched from eggs', wrong: 'Dinosaurs were born the same way as puppies', correctIcon: '🥚', wrongIcon: '🐕', concept: 'Dinosaurs laid eggs like birds and reptiles!' },
+                            { correct: 'We learn about dinosaurs from fossils in rocks', wrong: 'We learn about dinosaurs from old photographs', correctIcon: '🦴', wrongIcon: '📷', concept: 'Cameras didnt exist when dinosaurs were alive!' }
+                        ],
+                        tier2: [
+                            { correct: 'T-Rex had tiny arms too short to reach its mouth', wrong: 'T-Rex had long arms for grabbing prey', correctIcon: '🦖', wrongIcon: '🦧', concept: 'T-Rex arms were small compared to its huge body!' },
+                            { correct: 'Some dinosaurs had feathers like birds', wrong: 'All dinosaurs had smooth scaly skin like lizards', correctIcon: '🪶', wrongIcon: '🦎', concept: 'Scientists found fossils showing feathered dinosaurs!' },
+                            { correct: 'The biggest dinosaurs were plant eaters, not meat eaters', wrong: 'The biggest dinosaurs were always the fierce meat eaters', correctIcon: '🌿', wrongIcon: '🥩', concept: 'Gentle giants like Brachiosaurus were the largest!' },
+                            { correct: 'Dinosaurs lived on every continent including Antarctica', wrong: 'Dinosaurs only lived in hot jungle places', correctIcon: '🌍', wrongIcon: '🌴', concept: 'Dinosaur fossils have been found everywhere on Earth!' }
+                        ],
+                        tier3: [
+                            { correct: 'Birds are actually living dinosaurs', wrong: 'All dinosaurs went completely extinct', correctIcon: '🐦', wrongIcon: '💀', concept: 'Birds evolved from small feathered dinosaurs!' },
+                            { correct: 'Some dinosaurs were as small as chickens', wrong: 'All dinosaurs were bigger than elephants', correctIcon: '🐔', wrongIcon: '🐘', concept: 'Dinosaurs came in all sizes, even tiny ones!' },
+                            { correct: 'Dinosaurs lived for over 160 million years', wrong: 'Dinosaurs only lived for about a thousand years', correctIcon: '⏳', wrongIcon: '📅', concept: 'Dinosaurs ruled Earth for an incredibly long time!' },
+                            { correct: 'Some dinosaurs could run faster than cars', wrong: 'All dinosaurs moved slowly like turtles', correctIcon: '💨', wrongIcon: '🐢', concept: 'Some small dinosaurs were incredibly fast runners!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: 'Dinosaur Decisions',
@@ -2773,18 +2797,26 @@
                     title: 'Spot the Mistake',
                     description: 'Find the wrong fact about oceans!',
                     icon: '🔍',
-                    facts: [
-                        { correct: 'Fish can breathe underwater using gills', wrong: 'Fish wear tiny scuba tanks to breathe', correctIcon: '🐟', wrongIcon: '🤿', concept: 'Fish use gills to breathe underwater' },
-                        { correct: 'The ocean is salty', wrong: 'The ocean tastes like lemonade', correctIcon: '🧂', wrongIcon: '🍋', concept: 'Ocean water has salt dissolved in it' },
-                        { correct: 'Whales are mammals, not fish', wrong: 'Whales are the biggest fish', correctIcon: '🐋', wrongIcon: '🐟', concept: 'Whales breathe air and feed milk to babies' },
-                        { correct: 'Octopuses have eight arms', wrong: 'Octopuses have two arms like people', correctIcon: '🐙', wrongIcon: '💪', concept: 'Octo means eight in Latin' },
-                        { correct: 'The deep ocean is very dark', wrong: 'The deep ocean has streetlights', correctIcon: '🌑', wrongIcon: '💡', concept: 'Sunlight cannot reach the deep ocean' },
-                        { correct: 'Dolphins are very smart animals', wrong: 'Dolphins are robots made by scientists', correctIcon: '🐬', wrongIcon: '🤖', concept: 'Dolphins can learn tricks and communicate' },
-                        { correct: 'Coral reefs are home to many fish', wrong: 'Coral reefs are made of plastic', correctIcon: '🪸', wrongIcon: '🧱', concept: 'Coral is made by tiny living creatures' },
-                        { correct: 'Sharks have been around for millions of years', wrong: 'Sharks were invented 50 years ago', correctIcon: '🦈', wrongIcon: '🆕', concept: 'Sharks are older than dinosaurs' },
-                        { correct: 'Jellyfish dont have brains', wrong: 'Jellyfish are the smartest ocean animals', correctIcon: '🧠', wrongIcon: '🎓', concept: 'Jellyfish are simple creatures without brains' },
-                        { correct: 'Sea turtles can live for over 100 years', wrong: 'Sea turtles only live for 1 year', correctIcon: '🐢', wrongIcon: '📅', concept: 'Sea turtles are one of the longest-living animals' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'Whales are mammals that breathe air', wrong: 'Whales are the biggest type of fish', correctIcon: '🐋', wrongIcon: '🐟', concept: 'Whales breathe air and feed milk to their babies!' },
+                            { correct: 'The ocean is salty because of minerals from rocks', wrong: 'Someone poured salt into the ocean long ago', correctIcon: '🧂', wrongIcon: '🧑‍🍳', concept: 'Rivers carry tiny bits of salt from rocks into the sea!' },
+                            { correct: 'Fish breathe underwater using special gills', wrong: 'Fish hold their breath like we do in a pool', correctIcon: '🐟', wrongIcon: '😤', concept: 'Gills take oxygen right out of the water!' },
+                            { correct: 'Dolphins are mammals, not fish', wrong: 'Dolphins are a type of smart fish', correctIcon: '🐬', wrongIcon: '🐟', concept: 'Dolphins breathe air and are warm-blooded like us!' }
+                        ],
+                        tier2: [
+                            { correct: 'The deep ocean is pitch black with no sunlight', wrong: 'Sunlight reaches all the way to the ocean floor', correctIcon: '🌑', wrongIcon: '☀️', concept: 'Sunlight only reaches about 200 meters deep!' },
+                            { correct: 'Octopuses have three hearts', wrong: 'Octopuses have one heart just like people', correctIcon: '🐙', wrongIcon: '❤️', concept: 'Two hearts pump blood to gills, one to the body!' },
+                            { correct: 'Sharks must keep swimming or they could sink', wrong: 'Sharks can float still in the water like a boat', correctIcon: '🦈', wrongIcon: '🚤', concept: 'Most sharks dont have swim bladders to help them float!' },
+                            { correct: 'Jellyfish have been around longer than dinosaurs', wrong: 'Jellyfish first appeared after the dinosaurs', correctIcon: '🪼', wrongIcon: '🦕', concept: 'Jellyfish have existed for over 500 million years!' }
+                        ],
+                        tier3: [
+                            { correct: 'We have explored less of the ocean than the Moon', wrong: 'We have explored most of the ocean floor already', correctIcon: '🌊', wrongIcon: '🗺️', concept: 'Over 80% of the ocean is still unmapped and unexplored!' },
+                            { correct: 'There are underwater rivers flowing inside the ocean', wrong: 'Water in the ocean only moves from waves at the top', correctIcon: '🌊', wrongIcon: '🏄', concept: 'Dense salty water flows along the ocean floor like a river!' },
+                            { correct: 'Some sea creatures make their own light', wrong: 'All deep sea creatures live in total darkness', correctIcon: '💡', wrongIcon: '🌑', concept: 'Bioluminescence lets animals glow in the dark ocean!' },
+                            { correct: 'The ocean produces most of the oxygen we breathe', wrong: 'All our oxygen comes from trees and forests', correctIcon: '🌊', wrongIcon: '🌲', concept: 'Tiny ocean plants called phytoplankton make over half our oxygen!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: 'Ocean Adventures',
@@ -2820,18 +2852,26 @@
                     title: 'Spot the Mistake',
                     description: 'Find the wrong fact about robots!',
                     icon: '🔍',
-                    facts: [
-                        { correct: 'Robots follow instructions from people', wrong: 'Robots can think all by themselves', correctIcon: '💻', wrongIcon: '🧠', concept: 'Robots need instructions called programs' },
-                        { correct: 'Robots need electricity to work', wrong: 'Robots eat food like humans do', correctIcon: '🔌', wrongIcon: '🍕', concept: 'Robots run on batteries or electricity' },
-                        { correct: 'People build and program robots', wrong: 'Robots grow from robot seeds', correctIcon: '👨‍🔧', wrongIcon: '🌱', concept: 'Engineers and programmers create robots' },
-                        { correct: 'Robots can help doctors do surgery', wrong: 'Robots go to school to become doctors', correctIcon: '🏥', wrongIcon: '🎒', concept: 'Robots are tools that help human doctors' },
-                        { correct: 'Some robots can vacuum floors', wrong: 'Robots are too proud to clean', correctIcon: '🧹', wrongIcon: '👑', concept: 'Robot vacuums help keep homes clean' },
-                        { correct: 'Robots dont have feelings', wrong: 'Robots get sad when you turn them off', correctIcon: '😐', wrongIcon: '😢', concept: 'Robots are machines without emotions' },
-                        { correct: 'Robots can work in dangerous places', wrong: 'Robots are scared of the dark', correctIcon: '☢️', wrongIcon: '😨', concept: 'Robots can go where humans cannot' },
-                        { correct: 'Some robots look like arms in factories', wrong: 'All robots look like metal humans', correctIcon: '🦾', wrongIcon: '🚶', concept: 'Robots come in many shapes and sizes' },
-                        { correct: 'Robots do exactly what they are programmed to do', wrong: 'Robots make up their own rules', correctIcon: '📋', wrongIcon: '🎲', concept: 'Robots follow code written by people' },
-                        { correct: 'Mars rovers are robots exploring another planet', wrong: 'Robots refuse to travel to space', correctIcon: '🔴', wrongIcon: '🚫', concept: 'Robot explorers help us learn about Mars' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'Robots follow instructions written by people', wrong: 'Robots can think and decide everything on their own', correctIcon: '💻', wrongIcon: '🧠', concept: 'Robots need programs written by humans to work!' },
+                            { correct: 'Robots run on electricity from batteries or plugs', wrong: 'Robots eat food to get energy like people do', correctIcon: '🔌', wrongIcon: '🍕', concept: 'Robots need electricity, not food!' },
+                            { correct: 'People called engineers design and build robots', wrong: 'Robots build themselves in robot factories', correctIcon: '👨‍🔧', wrongIcon: '🏭', concept: 'Engineers and programmers create every robot!' },
+                            { correct: 'Robots can only do what they are programmed to do', wrong: 'Robots can learn any new skill by themselves instantly', correctIcon: '📋', wrongIcon: '✨', concept: 'Robots need humans to program each new skill!' }
+                        ],
+                        tier2: [
+                            { correct: 'Most robots dont look like humans at all', wrong: 'Most robots are shaped like metal people', correctIcon: '🦾', wrongIcon: '🚶', concept: 'Most robots are arms, wheels, or drones, not humanoids!' },
+                            { correct: 'Robots can work in places too dangerous for people', wrong: 'Robots are too fragile to work in dangerous places', correctIcon: '☢️', wrongIcon: '🔨', concept: 'Robots explore volcanoes, deep oceans, and outer space!' },
+                            { correct: 'Robot vacuums use sensors to avoid bumping into walls', wrong: 'Robot vacuums just bounce randomly around the room', correctIcon: '📡', wrongIcon: '🎱', concept: 'Sensors help robots map and navigate your home!' },
+                            { correct: 'Robots in factories can build cars faster than people', wrong: 'People can always build things faster than robots', correctIcon: '🏭', wrongIcon: '🏃', concept: 'Factory robots work fast without getting tired!' }
+                        ],
+                        tier3: [
+                            { correct: 'Some robots can learn from their mistakes and improve', wrong: 'Robots always do the exact same thing every time', correctIcon: '🤖', wrongIcon: '🔁', concept: 'Machine learning lets some robots get better over time!' },
+                            { correct: 'There are tiny robots smaller than a grain of rice', wrong: 'All robots are at least as big as a toaster', correctIcon: '🔬', wrongIcon: '📦', concept: 'Nanobots are so tiny you need a microscope to see them!' },
+                            { correct: 'Robots have been to Mars but no human has yet', wrong: 'Humans went to Mars before we sent any robots', correctIcon: '🔴', wrongIcon: '🧑‍🚀', concept: 'Mars rovers explore Mars while we figure out human trips!' },
+                            { correct: 'Some robots are made of soft squishy materials', wrong: 'All robots are made of hard metal parts', correctIcon: '🧸', wrongIcon: '🔩', concept: 'Soft robots can squeeze through tight spaces!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: 'Robot Challenges',
@@ -2867,18 +2907,26 @@
                     title: 'Spot the Mistake',
                     description: 'Find the wrong fact about space!',
                     icon: '🔍',
-                    facts: [
-                        { correct: 'There is no air to breathe in space', wrong: 'You can breathe normally in space', correctIcon: '🌌', wrongIcon: '😮', concept: 'Astronauts need spacesuits because theres no air' },
-                        { correct: 'The Moon orbits around Earth', wrong: 'The Moon is glued to the sky', correctIcon: '🌙', wrongIcon: '🧲', concept: 'The Moon travels in a path around our planet' },
-                        { correct: 'Astronauts float in space', wrong: 'Astronauts walk normally in space', correctIcon: '🧑‍🚀', wrongIcon: '🚶', concept: 'There is very little gravity in space' },
-                        { correct: 'Space is very cold and dark', wrong: 'Space is warm and sunny everywhere', correctIcon: '🥶', wrongIcon: '☀️', concept: 'Space has no air to hold heat or scatter light' },
-                        { correct: 'Rockets need lots of fuel to escape Earth', wrong: 'Rockets float up like balloons', correctIcon: '⛽', wrongIcon: '🎈', concept: 'Rockets must push hard against gravity' },
-                        { correct: 'The Sun is much bigger than Earth', wrong: 'Earth is bigger than the Sun', correctIcon: '☀️', wrongIcon: '🌍', concept: 'The Sun is huge - a million Earths could fit inside' },
-                        { correct: 'There are 8 planets in our solar system', wrong: 'There are 100 planets in our solar system', correctIcon: '🪐', wrongIcon: '💯', concept: 'Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune' },
-                        { correct: 'It takes light from the Sun 8 minutes to reach Earth', wrong: 'Sunlight reaches Earth instantly', correctIcon: '⏱️', wrongIcon: '⚡', concept: 'Even light takes time to travel through space' },
-                        { correct: 'Saturn has beautiful rings made of ice and rock', wrong: 'Saturns rings are made of rainbows', correctIcon: '💍', wrongIcon: '🌈', concept: 'Saturns rings are bits of ice and rock orbiting the planet' },
-                        { correct: 'Astronauts train for years before going to space', wrong: 'Anyone can go to space tomorrow', correctIcon: '🎓', wrongIcon: '🎫', concept: 'Space travel requires lots of preparation' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'There is no air to breathe in outer space', wrong: 'There is a little bit of air in space, just less than on Earth', correctIcon: '🌌', wrongIcon: '💨', concept: 'Space is a vacuum with almost no air at all!' },
+                            { correct: 'Astronauts float because theres very little gravity', wrong: 'Astronauts float because space has special floating air', correctIcon: '🧑‍🚀', wrongIcon: '🎈', concept: 'Low gravity in orbit makes everything float!' },
+                            { correct: 'The Moon goes around Earth in an orbit', wrong: 'The Moon stays in one spot in the sky and Earth moves past it', correctIcon: '🌙', wrongIcon: '📌', concept: 'The Moon orbits Earth about once every month!' },
+                            { correct: 'Rockets need enormous power to escape Earths gravity', wrong: 'Rockets just need to go fast enough and they float up', correctIcon: '🚀', wrongIcon: '🎈', concept: 'Earths gravity is strong and rockets must push very hard!' }
+                        ],
+                        tier2: [
+                            { correct: 'A day on Venus is longer than a year on Venus', wrong: 'A day on Venus is about the same as a day on Earth', correctIcon: '🪐', wrongIcon: '🌍', concept: 'Venus spins so slowly that its year ends before its day!' },
+                            { correct: 'The Sun is so big that a million Earths could fit inside', wrong: 'The Sun is about 10 times bigger than Earth', correctIcon: '☀️', wrongIcon: '🌍', concept: 'The Sun is truly enormous compared to Earth!' },
+                            { correct: 'Saturn would float if you could put it in a giant bathtub', wrong: 'Saturn is the heaviest planet in our solar system', correctIcon: '🪐', wrongIcon: '⚖️', concept: 'Saturn is less dense than water because its mostly gas!' },
+                            { correct: 'Light from the Sun takes 8 minutes to reach Earth', wrong: 'Sunlight reaches Earth instantly the moment it shines', correctIcon: '⏱️', wrongIcon: '⚡', concept: 'Even light takes time to travel across space!' }
+                        ],
+                        tier3: [
+                            { correct: 'There are more stars in space than grains of sand on Earth', wrong: 'Scientists have counted all the stars in the universe', correctIcon: '⭐', wrongIcon: '🔢', concept: 'The universe has more stars than anyone could ever count!' },
+                            { correct: 'Footprints on the Moon will last for millions of years', wrong: 'Footprints on the Moon blow away in a few days', correctIcon: '👣', wrongIcon: '💨', concept: 'Theres no wind or rain on the Moon to erase them!' },
+                            { correct: 'A spoonful of neutron star would weigh as much as a mountain', wrong: 'Neutron stars are lighter than regular stars', correctIcon: '⭐', wrongIcon: '🪶', concept: 'Neutron stars are incredibly dense and heavy!' },
+                            { correct: 'Space is completely silent with no sound at all', wrong: 'Sound travels even faster in space than on Earth', correctIcon: '🤫', wrongIcon: '🔊', concept: 'Sound needs air to travel and space has no air!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: 'Space Missions',
@@ -2915,18 +2963,26 @@
                     title: 'Spot the Mistake',
                     description: 'Find what doesn\'t make sense!',
                     icon: '🔍',
-                    facts: [
-                        { correct: 'Dogs wag their tails when happy', wrong: 'Dogs wag their tails when angry', correctIcon: '🐕', wrongIcon: '😠', concept: 'A wagging tail means a happy pup!' },
-                        { correct: 'Ice is frozen water', wrong: 'Ice is a type of rock', correctIcon: '🧊', wrongIcon: '🪨', concept: 'When water gets very cold it becomes ice!' },
-                        { correct: 'Birds have feathers to help them fly', wrong: 'Birds have fur like cats', correctIcon: '🐦', wrongIcon: '🐱', concept: 'Feathers are light and help birds soar!' },
-                        { correct: 'The moon comes out at night', wrong: 'The moon only comes out on Tuesdays', correctIcon: '🌙', wrongIcon: '📅', concept: 'We can see the moon almost every night!' },
-                        { correct: 'Rainbows appear after it rains', wrong: 'Rainbows are painted in the sky', correctIcon: '🌈', wrongIcon: '🎨', concept: 'Sunlight and raindrops make rainbows!' },
-                        { correct: 'Butterflies start as caterpillars', wrong: 'Butterflies come from butterfly eggs with wings', correctIcon: '🦋', wrongIcon: '🥚', concept: 'Caterpillars change into beautiful butterflies!' },
-                        { correct: 'Cows give us milk', wrong: 'Cows give us orange juice', correctIcon: '🐄', wrongIcon: '🍊', concept: 'Milk comes from cows on farms!' },
-                        { correct: 'Flowers need water to grow', wrong: 'Flowers need candy to grow', correctIcon: '🌸', wrongIcon: '🍬', concept: 'Water and sunshine help flowers grow big!' },
-                        { correct: 'Spiders have 8 legs', wrong: 'Spiders have 2 legs like people', correctIcon: '🕷️', wrongIcon: '🚶', concept: 'Count them - spiders have 8 legs!' },
-                        { correct: 'Snow is cold and white', wrong: 'Snow is hot and pink', correctIcon: '❄️', wrongIcon: '🌸', concept: 'Snow is frozen water that falls from clouds!' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'Dogs wag their tails when they are happy', wrong: 'Dogs wag their tails when they are angry at you', correctIcon: '🐕', wrongIcon: '😠', concept: 'A wagging tail usually means a happy pup!' },
+                            { correct: 'Ice is frozen water that melts when warm', wrong: 'Ice is a type of cold rock found underground', correctIcon: '🧊', wrongIcon: '🪨', concept: 'When water gets very cold it turns into ice!' },
+                            { correct: 'Birds have feathers that help them fly', wrong: 'Birds have fur like cats to keep them warm', correctIcon: '🐦', wrongIcon: '🐱', concept: 'Feathers are light and perfectly shaped for flying!' },
+                            { correct: 'Butterflies start life as caterpillars', wrong: 'Butterflies hatch from eggs with tiny wings already', correctIcon: '🦋', wrongIcon: '🥚', concept: 'Caterpillars transform into butterflies inside a cocoon!' }
+                        ],
+                        tier2: [
+                            { correct: 'Elephants are the only animals that cant jump', wrong: 'All big animals like cows and horses cant jump either', correctIcon: '🐘', wrongIcon: '🐄', concept: 'Elephants are the only mammals that truly cannot jump!' },
+                            { correct: 'A snails top speed is about 50 meters per hour', wrong: 'Snails can actually move quite fast when scared', correctIcon: '🐌', wrongIcon: '💨', concept: 'Snails are one of the slowest creatures on Earth!' },
+                            { correct: 'Penguins use their wings to swim, not fly', wrong: 'Penguins just dont try hard enough to fly', correctIcon: '🐧', wrongIcon: '🕊️', concept: 'Penguin wings evolved into perfect flippers for swimming!' },
+                            { correct: 'Cats sleep about 16 hours every day', wrong: 'Cats only sleep about 4 hours like most animals', correctIcon: '🐱', wrongIcon: '⏰', concept: 'Cats are champion sleepers, napping most of the day!' }
+                        ],
+                        tier3: [
+                            { correct: 'Bananas are technically berries but strawberries are not', wrong: 'Strawberries are berries and bananas are fruits', correctIcon: '🍌', wrongIcon: '🍓', concept: 'In science, berries have seeds inside the flesh!' },
+                            { correct: 'Honey never goes bad, even after thousands of years', wrong: 'Honey goes bad after a few months like most food', correctIcon: '🍯', wrongIcon: '🗑️', concept: 'Scientists found edible honey in ancient Egyptian tombs!' },
+                            { correct: 'Cows have best friends and get sad when separated', wrong: 'Cows dont notice or care about other cows', correctIcon: '🐄', wrongIcon: '😐', concept: 'Cows form strong friendships and have feelings!' },
+                            { correct: 'Octopuses have blue blood, not red like ours', wrong: 'All animals with blood have red blood like humans', correctIcon: '🐙', wrongIcon: '🩸', concept: 'Copper in their blood makes it blue instead of red!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: 'Make a Choice',
@@ -2969,18 +3025,26 @@
                     title: 'Spot the Mistake',
                     description: `Find what doesn't make sense about ${topic}!`,
                     icon: '🔍',
-                    facts: [
-                        { correct: 'Dogs wag their tails when happy', wrong: 'Dogs wag their tails when angry', correctIcon: '🐕', wrongIcon: '😠', concept: 'A wagging tail means a happy pup!' },
-                        { correct: 'Ice is frozen water', wrong: 'Ice is a type of rock', correctIcon: '🧊', wrongIcon: '🪨', concept: 'When water gets very cold it becomes ice!' },
-                        { correct: 'Birds have feathers to help them fly', wrong: 'Birds have fur like cats', correctIcon: '🐦', wrongIcon: '🐱', concept: 'Feathers are light and help birds soar!' },
-                        { correct: 'The moon comes out at night', wrong: 'The moon only comes out on Tuesdays', correctIcon: '🌙', wrongIcon: '📅', concept: 'We can see the moon almost every night!' },
-                        { correct: 'Rainbows appear after it rains', wrong: 'Rainbows are painted in the sky', correctIcon: '🌈', wrongIcon: '🎨', concept: 'Sunlight and raindrops make rainbows!' },
-                        { correct: 'Butterflies start as caterpillars', wrong: 'Butterflies come from butterfly eggs with wings', correctIcon: '🦋', wrongIcon: '🥚', concept: 'Caterpillars change into beautiful butterflies!' },
-                        { correct: 'Cows give us milk', wrong: 'Cows give us orange juice', correctIcon: '🐄', wrongIcon: '🍊', concept: 'Milk comes from cows on farms!' },
-                        { correct: 'Flowers need water to grow', wrong: 'Flowers need candy to grow', correctIcon: '🌸', wrongIcon: '🍬', concept: 'Water and sunshine help flowers grow big!' },
-                        { correct: 'Spiders have 8 legs', wrong: 'Spiders have 2 legs like people', correctIcon: '🕷️', wrongIcon: '🚶', concept: 'Count them - spiders have 8 legs!' },
-                        { correct: 'Snow is cold and white', wrong: 'Snow is hot and pink', correctIcon: '❄️', wrongIcon: '🌸', concept: 'Snow is frozen water that falls from clouds!' }
-                    ]
+                    facts: {
+                        tier1: [
+                            { correct: 'Dogs wag their tails when they are happy', wrong: 'Dogs wag their tails when they are angry at you', correctIcon: '🐕', wrongIcon: '😠', concept: 'A wagging tail usually means a happy pup!' },
+                            { correct: 'Ice is frozen water that melts when warm', wrong: 'Ice is a type of cold rock found underground', correctIcon: '🧊', wrongIcon: '🪨', concept: 'When water gets very cold it turns into ice!' },
+                            { correct: 'Birds have feathers that help them fly', wrong: 'Birds have fur like cats to keep them warm', correctIcon: '🐦', wrongIcon: '🐱', concept: 'Feathers are light and perfectly shaped for flying!' },
+                            { correct: 'Butterflies start life as caterpillars', wrong: 'Butterflies hatch from eggs with tiny wings already', correctIcon: '🦋', wrongIcon: '🥚', concept: 'Caterpillars transform into butterflies inside a cocoon!' }
+                        ],
+                        tier2: [
+                            { correct: 'Elephants are the only animals that cant jump', wrong: 'All big animals like cows and horses cant jump either', correctIcon: '🐘', wrongIcon: '🐄', concept: 'Elephants are the only mammals that truly cannot jump!' },
+                            { correct: 'A snails top speed is about 50 meters per hour', wrong: 'Snails can actually move quite fast when scared', correctIcon: '🐌', wrongIcon: '💨', concept: 'Snails are one of the slowest creatures on Earth!' },
+                            { correct: 'Penguins use their wings to swim, not fly', wrong: 'Penguins just dont try hard enough to fly', correctIcon: '🐧', wrongIcon: '🕊️', concept: 'Penguin wings evolved into perfect flippers for swimming!' },
+                            { correct: 'Cats sleep about 16 hours every day', wrong: 'Cats only sleep about 4 hours like most animals', correctIcon: '🐱', wrongIcon: '⏰', concept: 'Cats are champion sleepers, napping most of the day!' }
+                        ],
+                        tier3: [
+                            { correct: 'Bananas are technically berries but strawberries are not', wrong: 'Strawberries are berries and bananas are fruits', correctIcon: '🍌', wrongIcon: '🍓', concept: 'In science, berries have seeds inside the flesh!' },
+                            { correct: 'Honey never goes bad, even after thousands of years', wrong: 'Honey goes bad after a few months like most food', correctIcon: '🍯', wrongIcon: '🗑️', concept: 'Scientists found edible honey in ancient Egyptian tombs!' },
+                            { correct: 'Cows have best friends and get sad when separated', wrong: 'Cows dont notice or care about other cows', correctIcon: '🐄', wrongIcon: '😐', concept: 'Cows form strong friendships and have feelings!' },
+                            { correct: 'Octopuses have blue blood, not red like ours', wrong: 'All animals with blood have red blood like humans', correctIcon: '🐙', wrongIcon: '🩸', concept: 'Copper in their blood makes it blue instead of red!' }
+                        ]
+                    }
                 },
                 mission3: {
                     title: `${capitalizedTopic} Choices`,
@@ -4256,7 +4320,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         topic: topic,
-                        previous_facts: previousFacts
+                        previous_facts: previousFacts,
+                        question_number: questionNumber
                     })
                 });
 
@@ -4279,28 +4344,28 @@
 
         // Get fact from shuffled array for current session
         function getFallbackFact(topic) {
-            // Use pre-shuffled facts from startMission2Questions
-            if (mission2ShuffledFacts && mission2ShuffledFacts.length > 0) {
-                return mission2ShuffledFacts[mission2QuestionCount % mission2ShuffledFacts.length];
+            // Select from appropriate tier based on question count
+            if (mission2ShuffledFacts && mission2ShuffledFacts.tier1) {
+                const tier = mission2QuestionCount <= 1 ? 'tier1' : mission2QuestionCount <= 3 ? 'tier2' : 'tier3';
+                const tierFacts = mission2ShuffledFacts[tier];
+                const tierIndex = tier === 'tier1' ? mission2QuestionCount : tier === 'tier2' ? mission2QuestionCount - 2 : mission2QuestionCount - 4;
+                return tierFacts[tierIndex % tierFacts.length];
             }
 
-            // Fallback if shuffled array not initialized (shouldn't happen)
+            // Fallback if shuffled array not initialized
             const topicKey = topic.toLowerCase();
             const topicData = topicDatabase[topicKey];
             if (topicData && topicData.mission2 && topicData.mission2.facts) {
                 const facts = topicData.mission2.facts;
-                return facts[Math.floor(Math.random() * facts.length)];
+                const tier = mission2QuestionCount <= 1 ? 'tier1' : mission2QuestionCount <= 3 ? 'tier2' : 'tier3';
+                return facts[tier][Math.floor(Math.random() * facts[tier].length)];
             }
 
             // Generic fallback
-            const fallbacks = [
-                { correct: 'Elephants cant jump at all', wrong: 'Elephants can jump really high', correctIcon: '🐘', wrongIcon: '🦘', concept: 'Elephants are too big and heavy to jump!' },
-                { correct: 'Cats sleep most of the day', wrong: 'Cats never ever sleep', correctIcon: '🐱', wrongIcon: '👀', concept: 'Cats love to nap - a lot!' },
-                { correct: 'Penguins cant fly but they swim fast', wrong: 'Penguins fly in the sky like birds', correctIcon: '🐧', wrongIcon: '🕊️', concept: 'Penguins use their wings to swim!' },
-                { correct: 'Bees make honey from flowers', wrong: 'Bees buy honey from the store', correctIcon: '🐝', wrongIcon: '🏪', concept: 'Bees visit flowers to make yummy honey!' },
-                { correct: 'Giraffes have super long necks', wrong: 'Giraffes have short necks like dogs', correctIcon: '🦒', wrongIcon: '🐕', concept: 'Giraffes have the longest necks!' }
-            ];
-            return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            const generic = topicDatabase.generic.mission2.facts;
+            const tier = mission2QuestionCount <= 1 ? 'tier1' : mission2QuestionCount <= 3 ? 'tier2' : 'tier3';
+            const tierFacts = generic[tier];
+            return tierFacts[Math.floor(Math.random() * tierFacts.length)];
         }
 
         // Mission 2: Spot the Mistake (Dynamic)
@@ -4309,7 +4374,7 @@
 
             // Update the intro screen
             document.querySelector('#mission2-intro h2').textContent = m2.title;
-            document.querySelector('#mission2-intro .subtitle').innerHTML = `Can you find the silly mistakes? 🔍<br>Find 5 wrong facts!`;
+            document.querySelector('#mission2-intro .subtitle').innerHTML = `Can you spot what's wrong? 🔍<br>Find 5 tricky facts!`;
 
             // Reset question count
             mission2QuestionCount = 0;
@@ -4326,15 +4391,17 @@
             mission2ConceptsLearned = [];
             mission2GeneratedFacts = []; // Reset generated facts for new session
 
-            // Shuffle facts for this session so questions are different each time
+            // Shuffle each tier independently for this session
             const topicKey = gameState.currentTopic.toLowerCase();
             const topicData = topicDatabase[topicKey];
-            if (topicData && topicData.mission2 && topicData.mission2.facts) {
-                mission2ShuffledFacts = shuffleArray(topicData.mission2.facts);
-            } else {
-                // Use generic facts for custom topics
-                mission2ShuffledFacts = shuffleArray(topicDatabase.generic.mission2.facts);
-            }
+            const facts = (topicData && topicData.mission2 && topicData.mission2.facts)
+                ? topicData.mission2.facts
+                : topicDatabase.generic.mission2.facts;
+            mission2ShuffledFacts = {
+                tier1: shuffleArray(facts.tier1),
+                tier2: shuffleArray(facts.tier2),
+                tier3: shuffleArray(facts.tier3)
+            };
 
             loadMission2Question();
         }
@@ -4398,7 +4465,7 @@
             hintBox.innerHTML = `That one is true! Try the other one.`;
 
             // Store options text for re-reading after wrong guess
-            currentMission2OptionsText = `${option1Text}... or... ${option2Text}... Which one is silly?`;
+            currentMission2OptionsText = `${option1Text}... or... ${option2Text}... Which one is not true?`;
 
             // Read both options aloud immediately
             speakText(currentMission2OptionsText);
@@ -4459,18 +4526,20 @@
                     showMission2Success();
                 } else {
                     // Show correct feedback and prepare for next question
-                    document.getElementById('mission2CorrectFeedback').textContent = currentMission2Fact.concept;
+                    const feedbackPrefix = mission2QuestionCount <= 2 ? 'Lots of people think that, but... ' : mission2QuestionCount <= 4 ? 'That sounded right, but... ' : 'This one is surprising! ';
+                    document.getElementById('mission2CorrectFeedback').textContent = feedbackPrefix + currentMission2Fact.concept;
                     // Show progress as stars
                     updateProgressStars(mission2QuestionCount);
                     document.getElementById('mission2CorrectProgress').innerHTML =
                         document.getElementById('mission2Progress').innerHTML;
                     // Start speech first (async), then show screen immediately
-                    speakText(`Yes! ${currentMission2Fact.concept}`);
+                    const tierPrefix = mission2QuestionCount <= 2 ? 'Lots of people think that, but...' : mission2QuestionCount <= 4 ? 'That sounded right, but...' : 'This one is surprising!';
+                    speakText(`Yes! ${tierPrefix} ${currentMission2Fact.concept}`);
                     showScreen('mission2-correct');
                 }
             } else {
                 playWrongSound(); // Play gentle "try again" sound
-                document.getElementById('mission2HintBox').textContent = 'That one was true!';
+                document.getElementById('mission2HintBox').textContent = 'That one IS true! The tricky part is the other one.';
                 // Start speech first (async), then show screen immediately
                 speakText('Oops! Try again!');
                 showScreen('mission2-hint');
@@ -4757,7 +4826,8 @@
                     placeholder.innerHTML = `
                         <img src="${data.image_url}" alt="${altText}"
                              style="max-width: 100%; border-radius: 12px; cursor: pointer;"
-                             onclick="window.open('${data.image_url}', '_blank')">
+                             onclick="window.open('${data.image_url}', '_blank')"
+                             onerror="this.parentElement.remove()">
                         <p style="font-size: 12px; color: #888; margin-top: 5px;">${attribution}</p>
                     `;
                     placeholder.style.cssText = 'margin-top: 12px;';

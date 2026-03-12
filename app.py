@@ -254,6 +254,19 @@ def search_wikipedia_image(search_term):
         return None
 
 
+def _validate_image_url(url):
+    """Check if an image URL actually returns a valid image (not 403/404)."""
+    try:
+        req = urllib.request.Request(url, method='HEAD', headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; CuriosityExplorer/1.0; educational kids app)'
+        })
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            content_type = resp.headers.get('Content-Type', '')
+            return resp.status == 200 and ('image' in content_type or 'octet-stream' in content_type)
+    except Exception:
+        return False
+
+
 def search_web_image(search_term, question):
     """Search the web for a real photograph using OpenAI web search."""
     api_key = os.environ.get('OPENAI_API_KEY')
@@ -283,20 +296,29 @@ Return ONLY the URL on a single line, nothing else. If no suitable image found, 
         if not result_text or result_text.upper() == "NONE":
             return None
 
-        # Extract URL from response
-        url_match = re.search(r'https?://[^\s\'"<>]+\.(?:jpg|jpeg|png|webp|gif)[^\s\'"<>]*', result_text, re.IGNORECASE)
-        if not url_match:
-            # Try Wikimedia Commons URLs
-            url_match = re.search(r'https?://upload\.wikimedia\.org/[^\s\'"<>]+', result_text)
-        if not url_match:
+        # Extract all candidate URLs from response
+        urls = []
+        for m in re.finditer(r'https?://[^\s\'"<>]+\.(?:jpg|jpeg|png|webp|gif)[^\s\'"<>]*', result_text, re.IGNORECASE):
+            urls.append(m.group(0))
+        for m in re.finditer(r'https?://upload\.wikimedia\.org/[^\s\'"<>]+', result_text):
+            if m.group(0) not in urls:
+                urls.append(m.group(0))
+
+        if not urls:
             return None
 
-        url = url_match.group(0)
-        return {
-            'image_url': url,
-            'source': 'web',
-            'attribution': 'Photo from the web'
-        }
+        # Try each URL until one validates
+        for url in urls:
+            # Strip trailing punctuation that may have been captured
+            url = url.rstrip('.,;:)]}')
+            if _validate_image_url(url):
+                return {
+                    'image_url': url,
+                    'source': 'web',
+                    'attribution': 'Photo from the web'
+                }
+
+        return None
     except Exception as e:
         print(f"Web image search error: {e}")
         return None
@@ -438,6 +460,8 @@ def generate_fact():
     data = request.json
     topic = data.get('topic', '')
     previous_facts = data.get('previous_facts', [])
+    question_number = data.get('question_number', 1)
+    tier = 1 if question_number <= 2 else 2 if question_number <= 4 else 3
 
     if not topic:
         return jsonify({'error': 'No topic provided'}), 400
@@ -454,30 +478,39 @@ def generate_fact():
         if previous_facts:
             previous_str = f"\n\nDO NOT use these facts (already used):\n- " + "\n- ".join(previous_facts[-5:])
 
+        tier_descriptions = {
+            1: "a COMMON MISCONCEPTION that kids actually believe (e.g., 'the pilot steers with a steering wheel like a car')",
+            2: "a PLAUSIBLE WRONG DETAIL - right category but wrong specifics (e.g., 'airplane tires use regular air like bicycle tires')",
+            3: "a fact that CHALLENGES ASSUMPTIONS - something that seems obviously true but isn't (e.g., 'every plane must always have a pilot inside')"
+        }
+        tier_desc = tier_descriptions[tier]
+
         response = client.chat.completions.create(
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
                 'content': f"""Create a spot-the-mistake fact about "{topic}" for a 5-6 year old child.
+Difficulty tier {tier}: The wrong fact should be {tier_desc}.
 
 Return JSON with exactly this format:
-{{"correct": "true fact", "wrong": "silly wrong fact", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "what they learn"}}
+{{"correct": "true fact", "wrong": "believable but wrong fact", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "what they learn"}}
 
 Rules:
 - The CORRECT fact must be true and educational about {topic}
-- The WRONG fact must be obviously silly/funny (not scary)
+- The WRONG fact must sound BELIEVABLE, not silly or obviously fake
+- Both facts should sound like they COULD be true
 - Use simple words a 5 year old understands
-- Keep facts short (under 10 words each)
-- The concept should explain why the correct fact is true
+- Keep facts short (under 12 words each)
+- The concept should explain why the wrong fact isn't true
 - Use fun emojis that match the facts{previous_str}
 
-Examples for dinosaurs:
-{{"correct": "T-Rex had tiny arms", "wrong": "T-Rex could do push-ups", "correctIcon": "🦖", "wrongIcon": "💪", "concept": "T-Rex arms were too small for push-ups!"}}
+Example for tier 2 about planes:
+{{"correct": "Airplane tires are filled with nitrogen gas", "wrong": "Airplane tires use regular air like bike tires", "correctIcon": "✈️", "wrongIcon": "🚲", "concept": "Nitrogen stays stable in extreme heat and cold!"}}
 
 Return ONLY the JSON, nothing else."""
             }],
-            max_tokens=200,
-            temperature=0.9
+            max_tokens=250,
+            temperature=0.7
         )
 
         result = response.choices[0].message.content.strip()
@@ -615,8 +648,10 @@ def generate_image():
             # Try web search first
             web_result = search_web_image(search_term, question)
             if web_result:
+                # Proxy the image through our server to avoid hotlink blocking
+                proxied_url = f"/api/image-proxy?url={urllib.parse.quote(web_result['image_url'], safe='')}"
                 return jsonify({
-                    'image_url': web_result['image_url'],
+                    'image_url': proxied_url,
                     'image_source': 'web',
                     'image_attribution': web_result['attribution']
                 })
@@ -661,6 +696,27 @@ def generate_image():
     except Exception as e:
         print(f"Image generation error: {e}")
         return jsonify({'error': str(e), 'image_url': None}), 500
+
+
+@app.route('/api/image-proxy')
+def image_proxy():
+    """Proxy external images to avoid hotlink blocking and CORS issues."""
+    url = request.args.get('url', '')
+    if not url or not url.startswith('https://'):
+        return 'Bad request', 400
+    try:
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; CuriosityExplorer/1.0; educational kids app)'
+        })
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = resp.read()
+            content_type = resp.headers.get('Content-Type', 'image/jpeg')
+            return Response(data, content_type=content_type, headers={
+                'Cache-Control': 'public, max-age=3600'
+            })
+    except Exception as e:
+        print(f"Image proxy error: {e}")
+        return 'Image not found', 404
 
 
 @app.route('/admin/logs', methods=['GET'])
