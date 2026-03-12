@@ -254,19 +254,6 @@ def search_wikipedia_image(search_term):
         return None
 
 
-def _validate_image_url(url):
-    """Check if an image URL actually returns a valid image (not 403/404)."""
-    try:
-        req = urllib.request.Request(url, method='HEAD', headers={
-            'User-Agent': 'Mozilla/5.0 (compatible; CuriosityExplorer/1.0; educational kids app)'
-        })
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            content_type = resp.headers.get('Content-Type', '')
-            return resp.status == 200 and ('image' in content_type or 'octet-stream' in content_type)
-    except Exception:
-        return False
-
-
 def search_web_image(search_term, question):
     """Search the web for a real photograph using OpenAI web search."""
     api_key = os.environ.get('OPENAI_API_KEY')
@@ -277,13 +264,17 @@ def search_web_image(search_term, question):
         response = client.responses.create(
             model='gpt-4.1-mini',
             tools=[{'type': 'web_search'}],
-            input=f"""Find a direct URL to a real photograph of: "{search_term}"
+            input=f"""Find a real photograph of: "{search_term}"
 Context: a child asked "{question}"
 
-Return ONLY a direct image URL (must end in .jpg, .jpeg, .png, .webp, or .gif, or be from Wikimedia Commons upload.wikimedia.org).
-Prefer: Wikimedia Commons, museum archives, government sites (NASA, Smithsonian), educational sites.
-The image must be a real photograph, not AI-generated.
-Return ONLY the URL on a single line, nothing else. If no suitable image found, return "NONE"."""
+I need a direct image URL from one of these sources (in order of preference):
+1. Wikimedia Commons (upload.wikimedia.org)
+2. NASA images (images.nasa.gov or nasa.gov)
+3. Smithsonian or museum sites
+4. Government/educational sites (.gov, .edu)
+
+The URL must point directly to an image file.
+Return ONLY the URL, nothing else. If you cannot find a suitable image, return NONE."""
         )
         # Extract text from response
         result_text = ""
@@ -293,30 +284,44 @@ Return ONLY the URL on a single line, nothing else. If no suitable image found, 
                     if cb.type == "output_text":
                         result_text = cb.text.strip()
 
-        if not result_text or result_text.upper() == "NONE":
+        print(f"Web image search for '{search_term}': got response: {result_text[:200]}")
+
+        if not result_text or 'NONE' in result_text.upper():
             return None
 
-        # Extract all candidate URLs from response
+        # Extract all candidate URLs from response (broad match)
         urls = []
-        for m in re.finditer(r'https?://[^\s\'"<>]+\.(?:jpg|jpeg|png|webp|gif)[^\s\'"<>]*', result_text, re.IGNORECASE):
-            urls.append(m.group(0))
-        for m in re.finditer(r'https?://upload\.wikimedia\.org/[^\s\'"<>]+', result_text):
-            if m.group(0) not in urls:
-                urls.append(m.group(0))
+        for m in re.finditer(r'https?://[^\s\'"<>\)]+', result_text):
+            url = m.group(0).rstrip('.,;:)]}')
+            urls.append(url)
+
+        print(f"Web image search: found {len(urls)} candidate URLs: {urls[:3]}")
 
         if not urls:
             return None
 
-        # Try each URL until one validates
-        for url in urls:
-            # Strip trailing punctuation that may have been captured
-            url = url.rstrip('.,;:)]}')
-            if _validate_image_url(url):
+        # Prefer Wikimedia/NASA/gov URLs, then any URL
+        preferred = [u for u in urls if any(d in u for d in ['wikimedia.org', 'nasa.gov', '.gov/', '.edu/'])]
+        ordered = preferred + [u for u in urls if u not in preferred]
+
+        # Return the first URL — the proxy endpoint will handle fetching
+        # and the frontend onerror will handle failures
+        for url in ordered:
+            # Basic sanity: must look like it could be an image
+            if re.search(r'\.(jpg|jpeg|png|webp|gif|svg)', url, re.IGNORECASE) or 'upload.wikimedia.org' in url:
                 return {
                     'image_url': url,
                     'source': 'web',
                     'attribution': 'Photo from the web'
                 }
+
+        # If no URL looks like an image, try the first URL anyway
+        if ordered:
+            return {
+                'image_url': ordered[0],
+                'source': 'web',
+                'attribution': 'Photo from the web'
+            }
 
         return None
     except Exception as e:
@@ -702,20 +707,26 @@ def generate_image():
 def image_proxy():
     """Proxy external images to avoid hotlink blocking and CORS issues."""
     url = request.args.get('url', '')
-    if not url or not url.startswith('https://'):
+    if not url or not url.startswith('http'):
         return 'Bad request', 400
     try:
         req = urllib.request.Request(url, headers={
-            'User-Agent': 'Mozilla/5.0 (compatible; CuriosityExplorer/1.0; educational kids app)'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+            'Referer': url,
         })
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:
             data = resp.read()
             content_type = resp.headers.get('Content-Type', 'image/jpeg')
+            if len(data) < 1000:
+                # Too small to be a real image, likely an error page
+                print(f"Image proxy: response too small ({len(data)} bytes) for {url}")
+                return 'Image not found', 404
             return Response(data, content_type=content_type, headers={
                 'Cache-Control': 'public, max-age=3600'
             })
     except Exception as e:
-        print(f"Image proxy error: {e}")
+        print(f"Image proxy error for {url}: {e}")
         return 'Image not found', 404
 
 
