@@ -4667,91 +4667,7 @@
             }
         }
 
-        // Extract image search keywords from text (question or answer)
-        function getImageKeywords(text) {
-            // Topics that benefit from images (ordered by specificity)
-            const visualTopics = [
-                // Specific animals first
-                'cheetah', 'giraffe', 'elephant', 'dolphin', 'whale', 'shark', 'dinosaur',
-                'butterfly', 'penguin', 'kangaroo', 'koala', 'panda', 'zebra', 'gorilla',
-                'lion', 'tiger', 'bear', 'wolf', 'fox', 'rabbit', 'horse', 'cow', 'pig',
-                'dog', 'cat', 'bird', 'fish', 'frog', 'snake', 'spider', 'bee', 'ant',
-                // Space
-                'saturn', 'jupiter', 'mars', 'neptune', 'uranus', 'mercury', 'venus',
-                'astronaut', 'rocket', 'spaceship', 'galaxy', 'comet', 'asteroid',
-                'planet', 'moon', 'sun', 'star', 'earth', 'space',
-                // Vehicles
-                'airplane', 'helicopter', 'submarine', 'motorcycle',
-                'plane', 'jet', 'car', 'train', 'boat', 'ship', 'truck', 'bus',
-                // Nature
-                'volcano', 'waterfall', 'rainbow', 'lightning', 'tornado', 'hurricane',
-                'flower', 'tree', 'forest', 'ocean', 'mountain', 'desert', 'river', 'lake',
-                // Other
-                'castle', 'pyramid', 'robot', 'dragon', 'unicorn', 'mermaid'
-            ];
-
-            const lowerText = text.toLowerCase();
-            for (const topic of visualTopics) {
-                if (lowerText.includes(topic)) {
-                    return topic;
-                }
-            }
-            return null;
-        }
-
-        // Fetch image for a topic (uses Wikipedia free API)
-        async function fetchImageForTopic(keyword) {
-            if (!keyword) return null;
-            try {
-                // Convert spaces to underscores for Wikipedia (e.g., "dump truck" -> "dump_truck")
-                const wikiTitle = keyword.replace(/\s+/g, '_');
-
-                // Use Wikipedia REST API (free, no auth required)
-                const response = await fetch(
-                    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiTitle)}`,
-                    { headers: { 'Accept': 'application/json' } }
-                );
-
-                if (!response.ok) {
-                    // Try search API as fallback
-                    const searchResponse = await fetch(
-                        `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(keyword)}&format=json&origin=*`
-                    );
-                    if (searchResponse.ok) {
-                        const searchData = await searchResponse.json();
-                        if (searchData.query?.search?.[0]?.title) {
-                            const title = searchData.query.search[0].title.replace(/\s+/g, '_');
-                            const retryResponse = await fetch(
-                                `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
-                                { headers: { 'Accept': 'application/json' } }
-                            );
-                            if (retryResponse.ok) {
-                                const retryData = await retryResponse.json();
-                                if (retryData.thumbnail?.source) {
-                                    return retryData.thumbnail.source.replace(/\/\d+px-/, '/400px-');
-                                }
-                            }
-                        }
-                    }
-                    return null;
-                }
-
-                const data = await response.json();
-                // Get thumbnail image if available
-                if (data.thumbnail && data.thumbnail.source) {
-                    // Request larger image by modifying the URL
-                    let imageUrl = data.thumbnail.source;
-                    // Wikipedia thumbnails can be resized - change to 400px width
-                    imageUrl = imageUrl.replace(/\/\d+px-/, '/400px-');
-                    return imageUrl;
-                }
-                return null;
-            } catch {
-                return null;
-            }
-        }
-
-        // Generate image using DALL-E and append to the answer bubble
+        // Generate image using DALL-E or fetch from Wikipedia, and append to the answer bubble
         async function generateAndShowImage(question, answer, shouldSpeak = true) {
             try {
                 const messagesDiv = document.getElementById('chatMessages');
@@ -4780,11 +4696,21 @@
                     justify-content: center;
                     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
                 `;
-                placeholder.innerHTML = `
-                    <div style="font-size: 50px; margin-bottom: 8px; animation: bounce 1s infinite;">🎨</div>
-                    <div style="color: white; font-size: 18px; font-weight: bold;">Drawing a picture for you!</div>
-                    <div style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px;">Just a moment...</div>
-                `;
+                // Detect "show me" / "picture of" style questions for search-themed placeholder
+                const isShowMe = /show me|picture of|photo of|image of/i.test(question);
+                if (isShowMe) {
+                    placeholder.innerHTML = `
+                        <div style="font-size: 50px; margin-bottom: 8px; animation: bounce 1s infinite;">🔍</div>
+                        <div style="color: white; font-size: 18px; font-weight: bold;">Finding a real picture for you!</div>
+                        <div style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px;">Searching...</div>
+                    `;
+                } else {
+                    placeholder.innerHTML = `
+                        <div style="font-size: 50px; margin-bottom: 8px; animation: bounce 1s infinite;">🎨</div>
+                        <div style="color: white; font-size: 18px; font-weight: bold;">Drawing a picture for you!</div>
+                        <div style="color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px;">Just a moment...</div>
+                    `;
+                }
                 lastBubble.appendChild(placeholder);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
@@ -4820,12 +4746,19 @@
                 const data = await response.json();
 
                 if (data.image_url) {
-                    // Replace placeholder with actual image
+                    // Replace placeholder with actual image + source attribution
+                    const isReal = data.image_source === 'wikipedia' || data.image_source === 'web';
+                    const altText = isReal ? 'Real photo' : 'AI illustration';
+                    const attribution = data.image_source === 'wikipedia'
+                        ? '📷 Real photo from Wikipedia | Tap to see bigger!'
+                        : data.image_source === 'web'
+                        ? '📷 Real photo from the web | Tap to see bigger!'
+                        : '🎨 AI illustration | Tap to see bigger!';
                     placeholder.innerHTML = `
-                        <img src="${data.image_url}" alt="Educational illustration"
+                        <img src="${data.image_url}" alt="${altText}"
                              style="max-width: 100%; border-radius: 12px; cursor: pointer;"
                              onclick="window.open('${data.image_url}', '_blank')">
-                        <p style="font-size: 12px; color: #888; margin-top: 5px;">Tap to see bigger!</p>
+                        <p style="font-size: 12px; color: #888; margin-top: 5px;">${attribution}</p>
                     `;
                     placeholder.style.cssText = 'margin-top: 12px;';
                     placeholder.className = '';

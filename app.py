@@ -5,6 +5,9 @@ Handles Q&A with GPT-5.2 and TTS with shimmer voice
 
 import os
 import re
+import json
+import urllib.request
+import urllib.parse
 from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import openai
@@ -177,6 +180,125 @@ Image prompt:"""
             return None
         return prompt
     except:
+        return None
+
+
+def search_wikipedia_image(search_term):
+    """Search Wikipedia for a real photograph matching the search term.
+    Returns {image_url, source, attribution} or None."""
+    headers = {'User-Agent': 'CuriosityExplorer/1.0 (educational kids app)'}
+
+    def _fetch_json(url):
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            return json.loads(resp.read().decode())
+
+    def _extract_image(summary_data):
+        thumb = summary_data.get('thumbnail', {}).get('source')
+        original = summary_data.get('originalimage', {}).get('source')
+        title = summary_data.get('title', search_term)
+        if thumb:
+            # Request 800px width
+            image_url = re.sub(r'/\d+px-', '/800px-', thumb)
+            return {
+                'image_url': image_url,
+                'source': 'wikipedia',
+                'attribution': f'Photo from Wikipedia: {title}'
+            }
+        if original:
+            return {
+                'image_url': original,
+                'source': 'wikipedia',
+                'attribution': f'Photo from Wikipedia: {title}'
+            }
+        return None
+
+    try:
+        # Tier 1: Direct page summary lookup
+        encoded = urllib.parse.quote(search_term.replace(' ', '_'), safe='')
+        url = f'https://en.wikipedia.org/api/rest_v1/page/summary/{encoded}'
+        try:
+            data = _fetch_json(url)
+            result = _extract_image(data)
+            if result:
+                return result
+        except urllib.error.HTTPError:
+            pass  # 404 or other error, fall through to search
+
+        # Tier 2: Wikipedia search API fallback
+        params = urllib.parse.urlencode({
+            'action': 'query',
+            'list': 'search',
+            'srsearch': search_term,
+            'format': 'json',
+            'origin': '*'
+        })
+        search_url = f'https://en.wikipedia.org/w/api.php?{params}'
+        search_data = _fetch_json(search_url)
+        results = search_data.get('query', {}).get('search', [])
+        if not results:
+            return None
+
+        # Try the top result's summary
+        best_title = results[0]['title']
+        encoded_title = urllib.parse.quote(best_title.replace(' ', '_'), safe='')
+        summary_url = f'https://en.wikipedia.org/api/rest_v1/page/summary/{encoded_title}'
+        try:
+            summary_data = _fetch_json(summary_url)
+            return _extract_image(summary_data)
+        except urllib.error.HTTPError:
+            return None
+
+    except Exception as e:
+        print(f"Wikipedia image search error: {e}")
+        return None
+
+
+def search_web_image(search_term, question):
+    """Search the web for a real photograph using OpenAI web search."""
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return None
+    try:
+        client = openai.OpenAI(api_key=api_key)
+        response = client.responses.create(
+            model='gpt-4.1-mini',
+            tools=[{'type': 'web_search'}],
+            input=f"""Find a direct URL to a real photograph of: "{search_term}"
+Context: a child asked "{question}"
+
+Return ONLY a direct image URL (must end in .jpg, .jpeg, .png, .webp, or .gif, or be from Wikimedia Commons upload.wikimedia.org).
+Prefer: Wikimedia Commons, museum archives, government sites (NASA, Smithsonian), educational sites.
+The image must be a real photograph, not AI-generated.
+Return ONLY the URL on a single line, nothing else. If no suitable image found, return "NONE"."""
+        )
+        # Extract text from response
+        result_text = ""
+        for block in response.output:
+            if block.type == "message":
+                for cb in block.content:
+                    if cb.type == "output_text":
+                        result_text = cb.text.strip()
+
+        if not result_text or result_text.upper() == "NONE":
+            return None
+
+        # Extract URL from response
+        url_match = re.search(r'https?://[^\s\'"<>]+\.(?:jpg|jpeg|png|webp|gif)[^\s\'"<>]*', result_text, re.IGNORECASE)
+        if not url_match:
+            # Try Wikimedia Commons URLs
+            url_match = re.search(r'https?://upload\.wikimedia\.org/[^\s\'"<>]+', result_text)
+        if not url_match:
+            return None
+
+        url = url_match.group(0)
+        return {
+            'image_url': url,
+            'source': 'web',
+            'attribution': 'Photo from the web'
+        }
+    except Exception as e:
+        print(f"Web image search error: {e}")
         return None
 
 
@@ -361,7 +483,6 @@ Return ONLY the JSON, nothing else."""
         result = response.choices[0].message.content.strip()
 
         # Parse JSON from response
-        import json
         # Clean up response if needed
         if result.startswith('```'):
             result = result.split('```')[1]
@@ -421,9 +542,59 @@ def tts():
         return jsonify({'error': str(e)}), 500
 
 
+def classify_image_type(question):
+    """Classify whether a question needs a real photo or AI-generated illustration.
+    Returns ('real', 'search term') or ('generated', None)."""
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return ('generated', None)
+
+    try:
+        client = openai.OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model='gpt-4.1-nano',
+            messages=[{
+                'role': 'user',
+                'content': f"""Classify this kid's question: does it need a REAL photograph or an AI-GENERATED illustration?
+
+Question: "{question}"
+
+REAL = factual/historical things that exist or existed in the real world, where a photo would be more accurate.
+Examples: "show me the first fire truck", "picture of the Eiffel Tower", "what does a koala look like", "show me the first laptop", "picture of a real elephant"
+
+GENERATED = creative, fictional, extinct prehistoric, or abstract things where illustration is better.
+Examples: "what does a T-Rex look like", "show me a dinosaur", "draw a unicorn", "what does an alien look like", "show me a dragon"
+
+Reply with EXACTLY one line in this format:
+REAL|<descriptive web search term for finding a photograph>
+or
+GENERATED
+
+Examples:
+"show me the first fire truck" -> REAL|first fire truck in history photograph
+"show me the Eiffel Tower" -> REAL|Eiffel Tower Paris photograph
+"what does a T-Rex look like" -> GENERATED
+"show me a picture of the first laptop" -> REAL|first laptop computer 1981 Osborne photograph
+"show me the first airplane" -> REAL|Wright brothers first airplane 1903 photograph
+"draw me a dragon" -> GENERATED"""
+            }],
+            max_tokens=30,
+            temperature=0.0
+        )
+        result = response.choices[0].message.content.strip()
+        if result.startswith('REAL|'):
+            search_term = result[5:].strip()
+            return ('real', search_term)
+        return ('generated', None)
+    except Exception as e:
+        print(f"Image classification error: {e}")
+        return ('generated', None)
+
+
 @app.route('/api/image', methods=['POST'])
 def generate_image():
-    """Generate an educational image for kids using DALL-E."""
+    """Generate or fetch an educational image for kids.
+    Routes to Wikipedia (real photos) or DALL-E (illustrations) based on question type."""
     data = request.json
     question = data.get('question', '')
     answer = data.get('answer', '')
@@ -436,7 +607,33 @@ def generate_image():
         return jsonify({'error': 'API key not configured'}), 500
 
     try:
-        # Create kid-friendly prompt
+        # Classify whether this needs a real photo or AI illustration
+        image_type, search_term = classify_image_type(question)
+
+        # Try real photo sources for REAL classification
+        if image_type == 'real' and search_term:
+            # Try web search first
+            web_result = search_web_image(search_term, question)
+            if web_result:
+                return jsonify({
+                    'image_url': web_result['image_url'],
+                    'image_source': 'web',
+                    'image_attribution': web_result['attribution']
+                })
+
+            # Fall back to Wikipedia
+            wiki_result = search_wikipedia_image(search_term)
+            if wiki_result:
+                return jsonify({
+                    'image_url': wiki_result['image_url'],
+                    'image_source': 'wikipedia',
+                    'image_attribution': wiki_result['attribution']
+                })
+
+            # No real image found - return null, do NOT fall through to DALL-E
+            return jsonify({'image_url': None}), 200
+
+        # DALL-E path (generated illustrations only)
         image_prompt = create_kid_friendly_image_prompt(question, answer)
 
         if not image_prompt:
@@ -444,7 +641,6 @@ def generate_image():
 
         client = openai.OpenAI(api_key=api_key)
 
-        # Generate image with DALL-E
         response = client.images.generate(
             model='dall-e-3',
             prompt=image_prompt,
@@ -457,6 +653,8 @@ def generate_image():
 
         return jsonify({
             'image_url': image_url,
+            'image_source': 'dalle',
+            'image_attribution': None,
             'prompt_used': image_prompt
         })
 
