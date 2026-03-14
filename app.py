@@ -652,12 +652,14 @@ def generate_image():
 
         # Try real photo sources for REAL classification
         if image_type == 'real' and search_term:
-            # Try Wikipedia first (fast, reliable, no proxy needed)
+            # Try Wikipedia first (fast, reliable)
             wiki_result = search_wikipedia_image(search_term)
             print(f"[IMAGE] Wikipedia result: {wiki_result['image_url'][:80] if wiki_result else 'None'}")
             if wiki_result:
+                # Proxy Wikipedia images too - direct hotlinking gets 429 rate limited
+                proxied_url = f"/api/image-proxy?url={urllib.parse.quote(wiki_result['image_url'], safe='')}"
                 return jsonify({
-                    'image_url': wiki_result['image_url'],
+                    'image_url': proxied_url,
                     'image_source': 'wikipedia',
                     'image_attribution': wiki_result['attribution']
                 })
@@ -714,6 +716,7 @@ def debug_image():
     question = request.args.get('q', 'show me a picture of the first airplane')
     answer = 'test answer'
     steps = []
+    wiki_result = None
     try:
         import time
         t0 = time.time()
@@ -734,33 +737,45 @@ def debug_image():
     except Exception as e:
         steps.append(f"ERROR: {type(e).__name__}: {e}")
 
-    return '<pre>' + '\n'.join(steps) + '</pre>'
+    # If we got a wiki result, show the proxied image too
+    img_html = ''
+    if wiki_result:
+        proxied = f"/api/image-proxy?url={urllib.parse.quote(wiki_result['image_url'], safe='')}"
+        img_html = f'<br><br><img src="{proxied}" style="max-width:400px" onerror="this.alt=\'FAILED TO LOAD\'">'
+    return '<pre>' + '\n'.join(steps) + '</pre>' + img_html
 
 
 @app.route('/api/image-proxy')
 def image_proxy():
-    """Proxy external images to avoid hotlink blocking and CORS issues."""
+    """Proxy external images to avoid hotlink blocking, CORS, and rate limiting."""
     url = request.args.get('url', '')
     if not url or not url.startswith('http'):
         return 'Bad request', 400
     try:
-        req = urllib.request.Request(url, headers={
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-            'Referer': url,
-        })
+        # Use appropriate headers based on the source
+        if 'wikimedia.org' in url or 'wikipedia.org' in url:
+            headers = {
+                'User-Agent': 'CuriosityExplorer/1.0 (educational kids app; contact: curiosityexplorer.feedback@gmail.com)',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+            }
+        else:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Referer': url,
+            }
+        req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = resp.read()
             content_type = resp.headers.get('Content-Type', 'image/jpeg')
             if len(data) < 1000:
-                # Too small to be a real image, likely an error page
-                print(f"Image proxy: response too small ({len(data)} bytes) for {url}")
+                print(f"[IMAGE] Proxy: response too small ({len(data)} bytes) for {url}")
                 return 'Image not found', 404
             return Response(data, content_type=content_type, headers={
-                'Cache-Control': 'public, max-age=3600'
+                'Cache-Control': 'public, max-age=86400'
             })
     except Exception as e:
-        print(f"Image proxy error for {url}: {e}")
+        print(f"[IMAGE] Proxy error for {url}: {e}")
         return 'Image not found', 404
 
 
