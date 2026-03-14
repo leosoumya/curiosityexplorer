@@ -708,6 +708,35 @@ def generate_image():
         return jsonify({'error': str(e), 'image_url': None}), 500
 
 
+@app.route('/api/debug-image')
+def debug_image():
+    """Debug endpoint - visit in browser to test image flow."""
+    question = request.args.get('q', 'show me a picture of the first airplane')
+    answer = 'test answer'
+    steps = []
+    try:
+        import time
+        t0 = time.time()
+        image_type, search_term = classify_image_type(question)
+        steps.append(f"1. Classify ({time.time()-t0:.1f}s): type={image_type}, term={search_term}")
+
+        if image_type == 'real' and search_term:
+            t0 = time.time()
+            wiki_result = search_wikipedia_image(search_term)
+            steps.append(f"2. Wikipedia ({time.time()-t0:.1f}s): {wiki_result}")
+
+            if not wiki_result:
+                t0 = time.time()
+                web_result = search_web_image(search_term, question)
+                steps.append(f"3. Web search ({time.time()-t0:.1f}s): {web_result}")
+        else:
+            steps.append("2. Skipped (not REAL type)")
+    except Exception as e:
+        steps.append(f"ERROR: {type(e).__name__}: {e}")
+
+    return '<pre>' + '\n'.join(steps) + '</pre>'
+
+
 @app.route('/api/image-proxy')
 def image_proxy():
     """Proxy external images to avoid hotlink blocking and CORS issues."""
