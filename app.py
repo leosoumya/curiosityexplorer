@@ -604,16 +604,17 @@ GENERATED = creative, fictional, extinct prehistoric, or abstract things where i
 Examples: "what does a T-Rex look like", "show me a dinosaur", "draw a unicorn", "what does an alien look like", "show me a dragon"
 
 Reply with EXACTLY one line in this format:
-REAL|<descriptive web search term for finding a photograph>
+REAL|<short Wikipedia search term>
 or
 GENERATED
 
 Examples:
-"show me the first fire truck" -> REAL|first fire truck in history photograph
-"show me the Eiffel Tower" -> REAL|Eiffel Tower Paris photograph
+"show me the first fire truck" -> REAL|fire engine history
+"show me the Eiffel Tower" -> REAL|Eiffel Tower
 "what does a T-Rex look like" -> GENERATED
-"show me a picture of the first laptop" -> REAL|first laptop computer 1981 Osborne photograph
-"show me the first airplane" -> REAL|Wright brothers first airplane 1903 photograph
+"show me a picture of the first laptop" -> REAL|history of laptops
+"show me the first airplane" -> REAL|Wright Flyer
+"what does a koala look like" -> REAL|koala
 "draw me a dragon" -> GENERATED"""
             }],
             max_tokens=30,
