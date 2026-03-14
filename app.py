@@ -648,11 +648,13 @@ def generate_image():
     try:
         # Classify whether this needs a real photo or AI illustration
         image_type, search_term = classify_image_type(question)
+        print(f"[IMAGE] Classified '{question}' as {image_type}, term='{search_term}'")
 
         # Try real photo sources for REAL classification
         if image_type == 'real' and search_term:
             # Try Wikipedia first (fast, reliable, no proxy needed)
             wiki_result = search_wikipedia_image(search_term)
+            print(f"[IMAGE] Wikipedia result: {wiki_result['image_url'][:80] if wiki_result else 'None'}")
             if wiki_result:
                 return jsonify({
                     'image_url': wiki_result['image_url'],
@@ -662,6 +664,7 @@ def generate_image():
 
             # Fall back to web search if Wikipedia has no image
             web_result = search_web_image(search_term, question)
+            print(f"[IMAGE] Web search result: {web_result['image_url'][:80] if web_result else 'None'}")
             if web_result:
                 # Proxy the image through our server to avoid hotlink blocking
                 proxied_url = f"/api/image-proxy?url={urllib.parse.quote(web_result['image_url'], safe='')}"
@@ -672,6 +675,7 @@ def generate_image():
                 })
 
             # No real image found - return null, do NOT fall through to DALL-E
+            print(f"[IMAGE] No real image found for '{search_term}', returning null")
             return jsonify({'image_url': None}), 200
 
         # DALL-E path (generated illustrations only)
@@ -700,7 +704,7 @@ def generate_image():
         })
 
     except Exception as e:
-        print(f"Image generation error: {e}")
+        print(f"[IMAGE] Error: {type(e).__name__}: {e}")
         return jsonify({'error': str(e), 'image_url': None}), 500
 
 
