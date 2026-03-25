@@ -6,8 +6,16 @@ Handles Q&A with GPT-5.2 and TTS with shimmer voice
 import os
 import re
 import json
+import time
 import urllib.request
 import urllib.parse
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import openai
@@ -15,6 +23,25 @@ from supabase import create_client, Client
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
+
+
+def openai_retry(fn, max_attempts=3):
+    """Retry an OpenAI API call on transient 500 errors."""
+    for attempt in range(max_attempts):
+        try:
+            return fn()
+        except openai.InternalServerError as e:
+            print(f"[RETRY] Attempt {attempt + 1}/{max_attempts} failed with InternalServerError: {e}")
+            if attempt < max_attempts - 1:
+                time.sleep(1 * (attempt + 1))
+                continue
+            raise
+        except openai.APIStatusError as e:
+            if e.status_code >= 500 and attempt < max_attempts - 1:
+                print(f"[RETRY] Attempt {attempt + 1}/{max_attempts} failed with status {e.status_code}: {e}")
+                time.sleep(1 * (attempt + 1))
+                continue
+            raise
 
 # Supabase setup
 SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://nyfpidtlkhwhgcrgaerf.supabase.co')
@@ -144,7 +171,7 @@ def create_kid_friendly_image_prompt(question, answer):
     try:
         client = openai.OpenAI(api_key=api_key)
 
-        response = client.chat.completions.create(
+        response = openai_retry(lambda: client.chat.completions.create(
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
@@ -173,7 +200,7 @@ Image prompt:"""
             }],
             max_tokens=80,
             temperature=0.7
-        )
+        ))
 
         prompt = response.choices[0].message.content.strip()
         if prompt.upper() == 'NONE' or len(prompt) < 10:
@@ -261,7 +288,7 @@ def search_web_image(search_term, question):
         return None
     try:
         client = openai.OpenAI(api_key=api_key)
-        response = client.responses.create(
+        response = openai_retry(lambda: client.responses.create(
             model='gpt-4.1-mini',
             tools=[{'type': 'web_search'}],
             input=f"""Find a real photograph of: "{search_term}"
@@ -275,7 +302,7 @@ I need a direct image URL from one of these sources (in order of preference):
 
 The URL must point directly to an image file.
 Return ONLY the URL, nothing else. If you cannot find a suitable image, return NONE."""
-        )
+        ))
         # Extract text from response
         result_text = ""
         for block in response.output:
@@ -423,15 +450,15 @@ def ask():
                 full_input += f"You said: {content}\n"
         full_input += f"Kid asks: {question}"
 
-        # Call OpenAI Responses API with web search
-        response = client.responses.create(
-            model='gpt-5.2',
+        # Call OpenAI Responses API with web search (with retry for transient errors)
+        response = openai_retry(lambda: client.responses.create(
+            model='gpt-4.1',
             instructions=SOCRATIC_PROMPT,
             input=full_input,
             tools=[{'type': 'web_search'}],
             tool_choice='required',
             max_output_tokens=250
-        )
+        ))
 
         # Extract text from response
         reply = "Hmm, I'm not sure about that. Can you try asking in a different way?"
@@ -456,6 +483,8 @@ def ask():
         })
 
     except Exception as e:
+        print(f"[ASK] Error type: {type(e).__name__}, MRO: {[c.__name__ for c in type(e).__mro__]}")
+        print(f"[ASK] Error: {e}")
         return jsonify({'error': str(e)}), 500
 
 
@@ -490,7 +519,7 @@ def generate_fact():
         }
         tier_desc = tier_descriptions[tier]
 
-        response = client.chat.completions.create(
+        response = openai_retry(lambda: client.chat.completions.create(
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
@@ -516,7 +545,7 @@ Return ONLY the JSON, nothing else."""
             }],
             max_tokens=250,
             temperature=0.7
-        )
+        ))
 
         result = response.choices[0].message.content.strip()
 
@@ -562,12 +591,12 @@ def tts():
         client = openai.OpenAI(api_key=api_key)
 
         # Generate speech with shimmer voice
-        response = client.audio.speech.create(
+        response = openai_retry(lambda: client.audio.speech.create(
             model='tts-1',
             voice='shimmer',  # Friendly, expressive voice for kids
             input=clean_text,
             speed=1.0
-        )
+        ))
 
         # Return audio as mp3
         return Response(
@@ -589,7 +618,7 @@ def classify_image_type(question):
 
     try:
         client = openai.OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
+        response = openai_retry(lambda: client.chat.completions.create(
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
@@ -619,7 +648,7 @@ Examples:
             }],
             max_tokens=30,
             temperature=0.0
-        )
+        ))
         result = response.choices[0].message.content.strip()
         if result.startswith('REAL|'):
             search_term = result[5:].strip()
@@ -688,15 +717,15 @@ def generate_image():
 
         client = openai.OpenAI(api_key=api_key)
 
-        response = client.images.generate(
+        dalle_response = openai_retry(lambda: client.images.generate(
             model='dall-e-3',
             prompt=image_prompt,
             size='1024x1024',
             quality='standard',
             n=1
-        )
+        ))
 
-        image_url = response.data[0].url
+        image_url = dalle_response.data[0].url
 
         return jsonify({
             'image_url': image_url,
