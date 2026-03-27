@@ -510,7 +510,7 @@ def generate_fact():
         # Build prompt with previous facts to avoid repetition
         previous_str = ""
         if previous_facts:
-            previous_str = f"\n\nDO NOT use these facts (already used):\n- " + "\n- ".join(previous_facts[-5:])
+            previous_str = f"\n\nIMPORTANT: Cover a DIFFERENT aspect/subtopic of \"{topic}\" than these already-used facts:\n- " + "\n- ".join(previous_facts)
 
         tier_descriptions = {
             1: "a COMMON MISCONCEPTION that kids actually believe (e.g., 'the pilot steers with a steering wheel like a car')",
@@ -519,18 +519,28 @@ def generate_fact():
         }
         tier_desc = tier_descriptions[tier]
 
+        # Pick a subtopic category to ensure variety
+        subtopic_categories = [
+            "history and invention", "how it works / science", "parts and design",
+            "people (pilots, crew, inventors)", "records and fun facts",
+            "types and varieties", "safety", "where they're found / geography"
+        ]
+        # Use question number to rotate through categories
+        category = subtopic_categories[(question_number - 1) % len(subtopic_categories)]
+
         response = openai_retry(lambda: client.chat.completions.create(
-            model='gpt-4.1-nano',
+            model='gpt-4.1-mini',
             messages=[{
                 'role': 'user',
                 'content': f"""Create a spot-the-mistake fact about "{topic}" for a 5-6 year old child.
+The fact MUST be about this specific subtopic: **{category}**
 Difficulty tier {tier}: The wrong fact should be {tier_desc}.
 
 Return JSON with exactly this format:
 {{"correct": "true fact", "wrong": "believable but wrong fact", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "what they learn"}}
 
 Rules:
-- The CORRECT fact must be true and educational about {topic}
+- The CORRECT fact must be true and educational about {topic}, specifically about {category}
 - The WRONG fact must sound BELIEVABLE, not silly or obviously fake
 - Both facts should sound like they COULD be true
 - Use simple words a 5 year old understands
@@ -538,13 +548,13 @@ Rules:
 - The concept should explain why the wrong fact isn't true
 - Use fun emojis that match the facts{previous_str}
 
-Example for tier 2 about planes:
+Example for tier 2 about planes (subtopic: parts and design):
 {{"correct": "Airplane tires are filled with nitrogen gas", "wrong": "Airplane tires use regular air like bike tires", "correctIcon": "✈️", "wrongIcon": "🚲", "concept": "Nitrogen stays stable in extreme heat and cold!"}}
 
 Return ONLY the JSON, nothing else."""
             }],
             max_tokens=250,
-            temperature=0.7
+            temperature=0.9
         ))
 
         result = response.choices[0].message.content.strip()

@@ -4312,7 +4312,7 @@
         // Generate a fact-checking question using LLM
         async function generateMission2Question(topic, questionNumber) {
             // Get previous facts to avoid repetition
-            const previousFacts = mission2GeneratedFacts.map(f => f.wrong);
+            const previousFacts = mission2GeneratedFacts.flatMap(f => [f.correct, f.wrong]);
 
             try {
                 const response = await fetch('/api/generate-fact', {
