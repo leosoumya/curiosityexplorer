@@ -609,33 +609,45 @@ def generate_fact():
 
         response = openai_retry(lambda: client.chat.completions.create(
             model='gpt-4.1',
-            messages=[{
+            messages=[
+            {
+                'role': 'system',
+                'content': """You write quiz questions for smart 6-7 year old kids. Your #1 rule: the wrong answer must sound COMPLETELY REAL and PLAUSIBLE. A kid should genuinely pause and think "hmm, that could be true."
+
+BAD wrong facts (too silly, kid instantly knows it's fake):
+- "Planes have balloons inside their wings"
+- "Pilots steer with their feet while sleeping"
+- "Airplane food is cooked by robots in the sky"
+
+GOOD wrong facts (sound real, require actual knowledge to spot):
+- "Airplane windows can be opened by passengers during flight"
+- "Every airplane has exactly two engines"
+- "Pilots must fly the plane the entire time, they can never let go"
+- "The flight attendant decides when the plane takes off"
+- "Airplane tires are filled with regular air"
+
+The wrong fact should read like something from a real textbook — just with one detail that's incorrect."""
+            },
+            {
                 'role': 'user',
-                'content': f"""You are making a quiz game for a 6-7 year old about "{topic}".
+                'content': f"""Topic: "{topic}"
+Subtopic: "{category}"
 
-This question MUST be about: **{category}**
-
-Here is an example of the KIND of fact I want (about {category}):
+Example for this subtopic:
   Correct: "{category_example_correct}"
   Wrong: "{category_example_wrong}"
 
-Generate a DIFFERENT fact pair about "{category}" (not the example above). Difficulty tier {tier}: The wrong fact should be {tier_desc}.
+Generate a DIFFERENT fact pair about "{category}" (do not reuse the example).
 
-FORBIDDEN: Do NOT make a fact about how planes fly, wings, lift, or aerodynamics. The fact MUST be about {category}.
+The wrong fact MUST sound like a real fact — plausible, specific, and not silly or cartoonish. A 6-year-old should need to actually THINK about which one is wrong.
 
-Return JSON:
-{{"correct": "true fact", "wrong": "wrong but believable fact", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "1 sentence explaining why the wrong fact is wrong"}}
+STRICT: The topic is "{category}". Do NOT write about flying, wings, lift, or how planes get in the air unless "{category}" is specifically about that.{previous_str}
 
-Rules:
-- Both facts must be specifically about {category}
-- The wrong fact must be TRICKY — a smart 6 year old should have to think
-- Simple words, 6 to 15 words per fact
-- Fun emojis that match the specific facts{previous_str}
-
-JSON only, no other text."""
+Return ONLY this JSON:
+{{"correct": "true fact about {category}", "wrong": "plausible but incorrect fact about {category}", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "short explanation of why the wrong one is wrong"}}"""
             }],
             max_tokens=250,
-            temperature=1.0
+            temperature=0.7
         ))
 
         result = response.choices[0].message.content.strip()
