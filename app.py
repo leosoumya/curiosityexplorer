@@ -645,8 +645,10 @@ The wrong fact MUST sound like a real fact — plausible, specific, and not sill
 
 STRICT: The topic is "{category}". Do NOT write about flying, wings, lift, or how planes get in the air unless "{category}" is specifically about that.{previous_str}
 
+LENGTH LIMIT: Each fact MUST be under 12 words. The concept MUST be under 15 words. Short and punchy. If your fact is longer than 12 words, rewrite it shorter.
+
 Return ONLY this JSON:
-{{"correct": "true fact about {category}", "wrong": "plausible but incorrect fact about {category}", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "short explanation of why the wrong one is wrong"}}"""
+{{"correct": "short true fact (under 12 words)", "wrong": "short plausible wrong fact (under 12 words)", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "short fun explanation (under 15 words)"}}"""
             }],
             max_tokens=250,
             temperature=0.7

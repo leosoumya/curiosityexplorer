@@ -4448,19 +4448,23 @@
             // Store option texts for reading aloud
             let option1Text, option2Text;
 
+            // Use neutral labels so icons don't hint at the answer
+            const labelA = '🅰️';
+            const labelB = '🅱️';
+
             if (showCorrectFirst) {
                 option1Text = currentMission2Fact.correct;
                 option2Text = currentMission2Fact.wrong;
-                choiceButtons[0].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct}`;
+                choiceButtons[0].innerHTML = `${labelA} ${currentMission2Fact.correct}`;
                 choiceButtons[0].setAttribute('onclick', "checkFact('correct')");
-                choiceButtons[1].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong}`;
+                choiceButtons[1].innerHTML = `${labelB} ${currentMission2Fact.wrong}`;
                 choiceButtons[1].setAttribute('onclick', "checkFact('wrong')");
             } else {
                 option1Text = currentMission2Fact.wrong;
                 option2Text = currentMission2Fact.correct;
-                choiceButtons[0].innerHTML = `${currentMission2Fact.wrongIcon} ${currentMission2Fact.wrong}`;
+                choiceButtons[0].innerHTML = `${labelA} ${currentMission2Fact.wrong}`;
                 choiceButtons[0].setAttribute('onclick', "checkFact('wrong')");
-                choiceButtons[1].innerHTML = `${currentMission2Fact.correctIcon} ${currentMission2Fact.correct}`;
+                choiceButtons[1].innerHTML = `${labelB} ${currentMission2Fact.correct}`;
                 choiceButtons[1].setAttribute('onclick', "checkFact('correct')");
             }
 
