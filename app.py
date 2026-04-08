@@ -50,7 +50,7 @@ SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Socratic prompt for kid-friendly responses
-SOCRATIC_PROMPT = """You are a friendly helper for a 5-6 year old child.
+SOCRATIC_PROMPT = """You are a friendly helper for a 6-7 year old child.
 
 STRICT RULES:
 1. ONLY give the answer. NEVER ask a question back.
@@ -175,7 +175,7 @@ def create_kid_friendly_image_prompt(question, answer):
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
-                'content': f"""Create a DALL-E image prompt based on this Q&A for a 5-6 year old child.
+                'content': f"""Create a DALL-E image prompt based on this Q&A for a 6-7 year old child.
 
 Question: {question}
 Answer: {answer}
@@ -519,42 +519,123 @@ def generate_fact():
         }
         tier_desc = tier_descriptions[tier]
 
-        # Pick a subtopic category to ensure variety
-        subtopic_categories = [
-            "history and invention", "how it works / science", "parts and design",
-            "people (pilots, crew, inventors)", "records and fun facts",
-            "types and varieties", "safety", "where they're found / geography"
+        # Topic-specific subtopic pools — each entry has a category name AND a concrete example
+        # The example anchors the LLM on the right kind of fact so it can't drift to generic "how X works"
+        topic_specific_categories = {
+            "planes": [
+                {"cat": "airplane food and passengers", "example_correct": "Airplane meals are cooked in a kitchen on the ground, not on the plane", "example_wrong": "Airplane meals are cooked by the pilot during the flight"},
+                {"cat": "airport runways and ground crew", "example_correct": "Airport ground crew use hand signals to guide planes to park", "example_wrong": "Pilots park planes by themselves with no help from anyone"},
+                {"cat": "airplane tires and landing gear", "example_correct": "Airplane tires are filled with nitrogen gas, not regular air", "example_wrong": "Airplane tires use the same air as bicycle tires"},
+                {"cat": "the Wright Brothers and history of flight", "example_correct": "The Wright Brothers first flight lasted only 12 seconds", "example_wrong": "The Wright Brothers first flight lasted a whole hour"},
+                {"cat": "airplane paint, colors, and livery", "example_correct": "White paint helps keep planes cool in the sun", "example_wrong": "Planes are white because paint is too heavy for colored planes"},
+                {"cat": "cargo planes and what planes carry", "example_correct": "Some cargo planes are big enough to carry other planes inside", "example_wrong": "Cargo planes can only carry small packages like mail trucks"},
+                {"cat": "airplane windows and cabin pressure", "example_correct": "Airplane windows are round to handle air pressure safely", "example_wrong": "Airplane windows are round just because they look nicer that way"},
+                {"cat": "the cockpit and pilot instruments", "example_correct": "Modern cockpits have screens instead of most round dials", "example_wrong": "Pilots still use a paper map to find their way"},
+                {"cat": "the black box and airplane safety equipment", "example_correct": "The black box flight recorder is actually painted bright orange", "example_wrong": "The black box is painted black so it blends in with the plane"},
+                {"cat": "how pilots train and get their license", "example_correct": "Pilots practice in flight simulators that feel like real planes", "example_wrong": "Pilots learn to fly only by reading books, never practicing"},
+                {"cat": "the biggest and smallest planes ever built", "example_correct": "The biggest plane ever built has a wingspan wider than a football field", "example_wrong": "The biggest plane is about the same size as a school bus"},
+                {"cat": "jet engines and airplane fuel", "example_correct": "Jet fuel is a special type of fuel different from car gasoline", "example_wrong": "Planes use the exact same fuel you put in a car"},
+            ],
+            "stars": [
+                {"cat": "the Sun compared to other stars", "example_correct": "The Sun is actually a medium-sized star, not a big one", "example_wrong": "The Sun is the biggest star in the whole universe"},
+                {"cat": "star colors and temperature", "example_correct": "Blue stars are much hotter than red stars", "example_wrong": "Red stars are the hottest because red means hot"},
+                {"cat": "constellations and star patterns in the sky", "example_correct": "The Big Dipper is shaped like a giant ladle or cup", "example_wrong": "Constellations are stars that are close together in space"},
+                {"cat": "shooting stars and meteors", "example_correct": "Shooting stars are actually tiny rocks burning up in our air", "example_wrong": "Shooting stars are real stars falling down from the sky"},
+                {"cat": "how stars are born inside nebulas", "example_correct": "New stars are born inside giant clouds of gas called nebulas", "example_wrong": "New stars just pop into existence out of nothing"},
+                {"cat": "the biggest and smallest stars we know", "example_correct": "The biggest known stars could fit millions of our Suns inside", "example_wrong": "All stars are about the same size as our Sun"},
+                {"cat": "why stars twinkle at night", "example_correct": "Stars twinkle because Earth's air bends their light around", "example_wrong": "Stars twinkle because they flicker on and off really fast"},
+                {"cat": "galaxies and the Milky Way", "example_correct": "Our galaxy the Milky Way has over 100 billion stars", "example_wrong": "The Milky Way only has about a thousand stars total"},
+                {"cat": "how far away stars really are", "example_correct": "The closest star besides the Sun is over 4 light years away", "example_wrong": "The closest star besides the Sun is about 4 miles away"},
+                {"cat": "what happens when a star dies", "example_correct": "Some stars explode into a supernova when they die", "example_wrong": "Stars just slowly fade away like a flashlight running out"},
+                {"cat": "famous telescopes and astronomers", "example_correct": "The James Webb Space Telescope floats in space to see far away", "example_wrong": "All telescopes must stay on the ground to work properly"},
+                {"cat": "planets orbiting other stars", "example_correct": "Scientists have found thousands of planets orbiting other stars", "example_wrong": "Planets only exist around our Sun and nowhere else"},
+            ],
+            "dinosaurs": [
+                {"cat": "what dinosaurs ate", "example_correct": "Most dinosaurs actually ate plants, not meat", "example_wrong": "Most dinosaurs were scary meat-eaters that hunted all day"},
+                {"cat": "dinosaur eggs and babies", "example_correct": "Some dinosaur eggs were as big as a basketball", "example_wrong": "All dinosaur eggs were tiny like chicken eggs"},
+                {"cat": "the asteroid that ended the dinosaurs", "example_correct": "A giant asteroid hit Earth about 66 million years ago", "example_wrong": "Dinosaurs disappeared because they got too old and tired"},
+                {"cat": "fossils and how scientists dig them up", "example_correct": "Scientists use tiny brushes to carefully clean dinosaur fossils", "example_wrong": "Scientists dig up fossils with big bulldozers and shovels"},
+                {"cat": "the biggest and smallest dinosaurs", "example_correct": "Some dinosaurs were as small as a chicken", "example_wrong": "All dinosaurs were huge and bigger than a house"},
+                {"cat": "flying and swimming reptiles in dinosaur times", "example_correct": "Pterodactyls could fly but they were not actually dinosaurs", "example_wrong": "Pterodactyls were the most famous flying dinosaurs"},
+                {"cat": "T-Rex body, arms, and teeth", "example_correct": "T-Rex had tiny arms shorter than a human adults arms", "example_wrong": "T-Rex had long strong arms to grab its food"},
+                {"cat": "how fast different dinosaurs could run", "example_correct": "Some small dinosaurs could run as fast as a car in a city", "example_wrong": "All dinosaurs moved very slowly like turtles"},
+                {"cat": "dinosaur skin, feathers, and colors", "example_correct": "Many dinosaurs had feathers, not just scaly skin", "example_wrong": "No dinosaur ever had feathers, only birds do"},
+                {"cat": "where dinosaur bones have been found", "example_correct": "Dinosaur bones have been found on every continent including Antarctica", "example_wrong": "Dinosaur bones are only found in hot desert places"},
+                {"cat": "animals alive today that are related to dinosaurs", "example_correct": "Birds are actually living dinosaurs that survived", "example_wrong": "Lizards are the closest living relatives of dinosaurs"},
+                {"cat": "how dinosaurs stayed warm or cool", "example_correct": "Some dinosaurs may have been warm-blooded like us", "example_wrong": "All dinosaurs were cold-blooded like lizards and snakes"},
+            ],
+            "ocean": [
+                {"cat": "the deepest parts of the ocean", "example_correct": "The deepest ocean spot is deeper than Mount Everest is tall", "example_wrong": "The deepest part of the ocean is about as deep as a swimming pool"},
+                {"cat": "coral reefs and reef animals", "example_correct": "Coral is actually made of tiny living animals, not rocks", "example_wrong": "Coral reefs are made of colorful underwater rocks"},
+                {"cat": "ocean waves and tides", "example_correct": "The Moon pulls on ocean water to create high and low tides", "example_wrong": "Tides happen because big fish swimming together push the water"},
+                {"cat": "whales and dolphins", "example_correct": "Whales and dolphins breathe air just like you do", "example_wrong": "Whales and dolphins breathe underwater using gills like fish"},
+                {"cat": "sharks and their special abilities", "example_correct": "Sharks can sense electricity from other animals muscles", "example_wrong": "Sharks find food only by seeing it with their eyes"},
+                {"cat": "glowing sea creatures and bioluminescence", "example_correct": "Some deep sea creatures make their own light to see in the dark", "example_wrong": "The deep ocean has sunlight just like shallow water does"},
+                {"cat": "submarines and deep sea exploration", "example_correct": "Only three people have ever visited the deepest ocean spot", "example_wrong": "Thousands of people visit the bottom of the ocean every year"},
+                {"cat": "seaweed, kelp, and ocean plants", "example_correct": "Giant kelp can grow as tall as a 15-story building", "example_wrong": "Ocean plants are all tiny and only a few inches long"},
+                {"cat": "why the ocean is salty", "example_correct": "Rivers carry tiny bits of salt from rocks into the ocean", "example_wrong": "The ocean is salty because someone dumped salt in it long ago"},
+                {"cat": "octopuses and strange sea animals", "example_correct": "An octopus has three hearts and blue blood", "example_wrong": "An octopus has one heart and red blood just like humans"},
+                {"cat": "underwater volcanoes and hydrothermal vents", "example_correct": "There are more volcanoes underwater than on land", "example_wrong": "Volcanoes only exist on land, never under the ocean"},
+                {"cat": "icebergs and polar oceans", "example_correct": "Most of an iceberg is hidden underwater, only a tiny part shows", "example_wrong": "Icebergs float with most of their ice above the water"},
+            ],
+        }
+        # Fallback for custom/unknown topics
+        default_categories = [
+            {"cat": "history and who discovered or invented it", "example_correct": "It was discovered much longer ago than most people think", "example_wrong": "It was only discovered a few years ago"},
+            {"cat": "surprising world records about it", "example_correct": "The biggest one is much larger than you would guess", "example_wrong": "They are all about the same size everywhere"},
+            {"cat": "what it looks like up close vs far away", "example_correct": "It looks completely different when you zoom in really close", "example_wrong": "It looks exactly the same no matter how close you get"},
+            {"cat": "where in the world you can find it", "example_correct": "You can find it in more places than most people realize", "example_wrong": "It only exists in one small part of the world"},
+            {"cat": "how people use it in everyday life", "example_correct": "People use it in ways you might not expect", "example_wrong": "It has only one simple use that everyone knows about"},
+            {"cat": "famous people connected to it", "example_correct": "A famous scientist made an important discovery about it", "example_wrong": "Nobody famous ever studied or cared about it"},
+            {"cat": "how it has changed over time", "example_correct": "It used to be very different from what we see today", "example_wrong": "It has always looked exactly the same since the beginning"},
+            {"cat": "what scientists are still learning about it", "example_correct": "Scientists still have big unanswered questions about it", "example_wrong": "Scientists already know everything there is to know about it"},
+            {"cat": "myths and common mistakes people believe about it", "example_correct": "Most people believe something about it that is actually wrong", "example_wrong": "Everything most people believe about it is true"},
+            {"cat": "fun or weird facts most people dont know", "example_correct": "There is something really surprising about it that few people know", "example_wrong": "There is nothing surprising about it at all"},
         ]
-        # Use question number to rotate through categories
-        category = subtopic_categories[(question_number - 1) % len(subtopic_categories)]
+
+        topic_lower = topic.lower()
+        subtopic_pool = topic_specific_categories.get(topic_lower, default_categories)
+
+        # Avoid recently used categories
+        used_categories = data.get('used_categories', [])
+        available = [c for c in subtopic_pool if c.get("cat") not in used_categories]
+        if not available:
+            available = subtopic_pool  # Reset if all used
+        import random
+        chosen = random.choice(available)
+        category = chosen["cat"]
+        category_example_correct = chosen["example_correct"]
+        category_example_wrong = chosen["example_wrong"]
 
         response = openai_retry(lambda: client.chat.completions.create(
-            model='gpt-4.1-mini',
+            model='gpt-4.1',
             messages=[{
                 'role': 'user',
-                'content': f"""Create a spot-the-mistake fact about "{topic}" for a 5-6 year old child.
-The fact MUST be about this specific subtopic: **{category}**
-Difficulty tier {tier}: The wrong fact should be {tier_desc}.
+                'content': f"""You are making a quiz game for a 6-7 year old about "{topic}".
 
-Return JSON with exactly this format:
-{{"correct": "true fact", "wrong": "believable but wrong fact", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "what they learn"}}
+This question MUST be about: **{category}**
+
+Here is an example of the KIND of fact I want (about {category}):
+  Correct: "{category_example_correct}"
+  Wrong: "{category_example_wrong}"
+
+Generate a DIFFERENT fact pair about "{category}" (not the example above). Difficulty tier {tier}: The wrong fact should be {tier_desc}.
+
+FORBIDDEN: Do NOT make a fact about how planes fly, wings, lift, or aerodynamics. The fact MUST be about {category}.
+
+Return JSON:
+{{"correct": "true fact", "wrong": "wrong but believable fact", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "1 sentence explaining why the wrong fact is wrong"}}
 
 Rules:
-- The CORRECT fact must be true and educational about {topic}, specifically about {category}
-- The WRONG fact must sound BELIEVABLE, not silly or obviously fake
-- Both facts should sound like they COULD be true
-- Use simple words a 5 year old understands
-- Keep facts short (under 12 words each)
-- The concept should explain why the wrong fact isn't true
-- Use fun emojis that match the facts{previous_str}
+- Both facts must be specifically about {category}
+- The wrong fact must be TRICKY — a smart 6 year old should have to think
+- Simple words, 6 to 15 words per fact
+- Fun emojis that match the specific facts{previous_str}
 
-Example for tier 2 about planes (subtopic: parts and design):
-{{"correct": "Airplane tires are filled with nitrogen gas", "wrong": "Airplane tires use regular air like bike tires", "correctIcon": "✈️", "wrongIcon": "🚲", "concept": "Nitrogen stays stable in extreme heat and cold!"}}
-
-Return ONLY the JSON, nothing else."""
+JSON only, no other text."""
             }],
             max_tokens=250,
-            temperature=0.9
+            temperature=1.0
         ))
 
         result = response.choices[0].message.content.strip()
@@ -571,7 +652,8 @@ Return ONLY the JSON, nothing else."""
 
         return jsonify({
             'fact': fact,
-            'topic': topic
+            'topic': topic,
+            'category': category
         })
 
     except Exception as e:

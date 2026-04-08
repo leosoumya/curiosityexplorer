@@ -4297,6 +4297,7 @@
         let mission2QuestionCount = 0;
         let mission2ConceptsLearned = [];
         let mission2GeneratedFacts = []; // Cache generated facts for this session
+        let mission2UsedCategories = []; // Track used subtopic categories to avoid repetition
         let mission2ShuffledFacts = []; // Shuffled facts for current session
 
         // Shuffle array helper
@@ -4321,7 +4322,8 @@
                     body: JSON.stringify({
                         topic: topic,
                         previous_facts: previousFacts,
-                        question_number: questionNumber
+                        question_number: questionNumber,
+                        used_categories: mission2UsedCategories
                     })
                 });
 
@@ -4331,6 +4333,7 @@
 
                 if (data.fact) {
                     mission2GeneratedFacts.push(data.fact);
+                    if (data.category) mission2UsedCategories.push(data.category);
                     return data.fact;
                 }
 
@@ -4390,6 +4393,7 @@
             mission2QuestionCount = 0;
             mission2ConceptsLearned = [];
             mission2GeneratedFacts = []; // Reset generated facts for new session
+            mission2UsedCategories = []; // Reset used categories for new session
 
             // Shuffle each tier independently for this session
             const topicKey = gameState.currentTopic.toLowerCase();
