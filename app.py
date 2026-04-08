@@ -626,7 +626,9 @@ GOOD wrong facts (sound real, require actual knowledge to spot):
 - "The flight attendant decides when the plane takes off"
 - "Airplane tires are filled with regular air"
 
-The wrong fact should read like something from a real textbook — just with one detail that's incorrect."""
+The wrong fact should read like something from a real textbook — just with one detail that's incorrect.
+
+CRITICAL: Do NOT hallucinate. The "correct" fact MUST be verifiably true. The "wrong" fact MUST be actually false. If you are not sure a fact is true, do not use it. Double-check before responding."""
             },
             {
                 'role': 'user',
