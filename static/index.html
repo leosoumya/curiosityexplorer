@@ -1167,23 +1167,8 @@
             margin-bottom: 12px;
         }
 
-        /* Small treasure map button on welcome screen */
-        .treasure-map-btn {
-            margin-top: 25px;
-            padding: 10px 20px;
-            font-size: 14px;
-            color: #8b6914;
-            background: transparent;
-            border: 2px dashed #e2b655;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
 
-        .treasure-map-btn:hover {
-            background: #fef9e7;
-            border-color: #d4a84b;
-        }
+
 
         .journey-empty {
             text-align: center;
@@ -1808,11 +1793,8 @@
                 right: 15px !important;
             }
 
-            /* Treasure map button */
-            .treasure-map-btn {
-                font-size: 13px;
-                padding: 8px 16px;
-            }
+
+
 
             /* Parent view */
             .parent-view {
@@ -2126,23 +2108,12 @@
                 </div>
             </div>
 
-            <!-- Small button to access treasure map -->
-            <button class="treasure-map-btn" onclick="showScreen('treasureMap')" id="treasureMapBtn">
-                🗺️ My Treasure Map
-            </button>
+
+
         </div>
 
-        <!-- Treasure Map Screen (separate page) -->
-        <div id="treasureMap" class="screen">
-            <h2>🗺️ My Treasure Map</h2>
-            <p class="subtitle">See all the topics you've explored!</p>
-            <div class="learning-journey" id="learningJourney" style="margin-top: 20px;">
-                <div id="journeyContent">
-                    <div class="journey-empty">Play a game to add treasures to your map! ✨</div>
-                </div>
-            </div>
-            <button class="btn back-btn" onclick="showScreen('welcome')" style="margin-top: 20px;">🏠 Back to Home</button>
-        </div>
+
+
 
         <!-- Ask a Question Screen -->
         <div id="askQuestion" class="screen">
@@ -3187,7 +3158,7 @@
             selectTopicAndStart(topic);
         }
 
-        // View topic progress from treasure map (shows badges, doesn't start game)
+        // View topic progress (shows badges, doesn't start game)
         function viewTopicProgress(topic) {
             const topicData = loadTopicData(topic);
             if (!topicData) {
@@ -3581,42 +3552,8 @@
             if (spotCard) spotCard.classList.remove('open');
         }
 
-        // Initialize treasure map screen
-        function initTreasureMap() {
-            const explorations = getAllExplorations();
-            const topics = Object.values(explorations);
-            const journeyContent = document.getElementById('journeyContent');
 
-            if (topics.length === 0) {
-                journeyContent.innerHTML = '<div class="journey-empty">Play a game to add treasures to your map! ✨</div>';
-                return;
-            }
 
-            // Sort by most recent
-            topics.sort((a, b) => new Date(b.lastExplored) - new Date(a.lastExplored));
-
-            journeyContent.innerHTML = '<div class="journey-topics">' + topics.map(topicData => {
-                const topicKey = topicData.topic.toLowerCase();
-                const emoji = topicDatabase[topicKey]?.emoji || '🎯';
-                const uniqueBadges = deduplicateBadges(topicData.badges || []);
-                const conceptCount = (topicData.concepts || []).length;
-                const badgeCount = uniqueBadges.length;
-
-                let stats = [];
-                if (badgeCount > 0) stats.push(badgeCount + ' badge' + (badgeCount !== 1 ? 's' : ''));
-                if (conceptCount > 0) stats.push(conceptCount + ' fact' + (conceptCount !== 1 ? 's' : ''));
-
-                return `
-                    <button class="journey-topic" onclick="viewTopicProgress('${topicData.topic}')">
-                        <span class="journey-emoji">${emoji}</span>
-                        <span class="journey-info">
-                            <span class="journey-name">${topicData.topic}</span>
-                            ${stats.length > 0 ? '<span class="journey-stats">' + stats.join(' · ') + '</span>' : ''}
-                        </span>
-                    </button>
-                `;
-            }).join('') + '</div>';
-        }
 
         // Screen navigation
         function showScreen(screenId) {
@@ -3628,8 +3565,8 @@
             // Show/hide floating home button based on screen
             const floatingHomeBtn = document.querySelector('.floating-home-btn');
             if (floatingHomeBtn) {
-                // Hide on welcome and treasureMap (which has its own home button)
-                if (screenId === 'welcome' || screenId === 'treasureMap') {
+                // Hide on welcome screen
+                if (screenId === 'welcome') {
                     floatingHomeBtn.style.display = 'none';
                 } else {
                     floatingHomeBtn.style.display = 'flex';
@@ -3639,11 +3576,6 @@
             // Initialize welcome screen
             if (screenId === 'welcome') {
                 initWelcomeScreen();
-            }
-
-            // Initialize treasure map screen
-            if (screenId === 'treasureMap') {
-                initTreasureMap();
             }
 
             // Update dashboard when showing it
