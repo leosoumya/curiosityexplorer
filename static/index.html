@@ -768,19 +768,36 @@
 
         .progress-indicator {
             text-align: center;
-            font-size: 32px;
+            font-size: 28px;
             margin-bottom: 20px;
-            letter-spacing: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
         }
 
-        .progress-indicator .star {
-            color: #ddd;
-            transition: all 0.3s ease;
+        .progress-indicator .step {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: inline-block;
+            transition: all 0.4s ease;
+            border: 2px solid #ccc;
         }
 
-        .progress-indicator .star.filled {
-            color: #f1c40f;
-            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        .progress-indicator .step.filled {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-color: #27ae60;
+            box-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+            transform: scale(1.15);
+        }
+
+        .progress-indicator .progress-label {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-left: 8px;
+            font-weight: 600;
         }
 
         .cloud {
@@ -2197,7 +2214,7 @@
         <div id="mission2-intro" class="screen">
             <div class="celebration-emoji" style="font-size: 80px;">🔍</div>
             <h2>Which One Is Wrong?</h2>
-            <p class="subtitle">One of these is not true. Can you find it?</p>
+            <p class="subtitle">One of these is false. Can you spot it?</p>
             <button class="btn btn-large btn-primary" onclick="startMission2Questions()" style="font-size: 24px; padding: 20px 50px;">
                 Let's Go!
             </button>
@@ -2205,9 +2222,10 @@
 
         <div id="mission2-facts" class="screen">
             <div class="progress-indicator" id="mission2Progress">
-                <span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span><span class="star">☆</span>
+                <span class="step"></span><span class="step"></span><span class="step"></span><span class="step"></span><span class="step"></span>
+                <span class="progress-label">0 / 5</span>
             </div>
-            <h2>Which is NOT true?</h2>
+            <h2>Which one is false?</h2>
 
             <div class="button-group" style="flex-direction: column; align-items: center; margin-top: 30px;">
                 <button class="choice-btn" onclick="checkFact('correct')">
@@ -4345,18 +4363,19 @@
             loadMission2Question();
         }
 
-        // Update progress stars visually
+        // Update progress dots visually
         function updateProgressStars(completed) {
             const progressEl = document.getElementById('mission2Progress');
-            let stars = '';
+            let dots = '';
             for (let i = 0; i < 5; i++) {
                 if (i < completed) {
-                    stars += '<span class="star filled">★</span>';
+                    dots += '<span class="step filled"></span>';
                 } else {
-                    stars += '<span class="star">☆</span>';
+                    dots += '<span class="step"></span>';
                 }
             }
-            progressEl.innerHTML = stars;
+            dots += `<span class="progress-label">${completed} / 5</span>`;
+            progressEl.innerHTML = dots;
         }
 
         async function loadMission2Question() {
@@ -4408,7 +4427,7 @@
             hintBox.innerHTML = `That one is true! Try the other one.`;
 
             // Store options text for re-reading after wrong guess
-            currentMission2OptionsText = `${option1Text}... or... ${option2Text}... Which one is not true?`;
+            currentMission2OptionsText = `${option1Text}... or... ${option2Text}... Which one is false?`;
 
             // Read both options aloud immediately
             speakText(currentMission2OptionsText);

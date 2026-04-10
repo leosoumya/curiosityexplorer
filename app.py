@@ -510,7 +510,7 @@ def generate_fact():
         # Build prompt with previous facts to avoid repetition
         previous_str = ""
         if previous_facts:
-            previous_str = f"\n\nIMPORTANT: Cover a DIFFERENT aspect/subtopic of \"{topic}\" than these already-used facts:\n- " + "\n- ".join(previous_facts)
+            previous_str = f"\n\nCRITICAL — DO NOT REPEAT: The following facts have already been used in this session. Your new fact pair MUST be about a completely different idea. Do NOT rephrase, reword, or cover the same concept as any of these:\n- " + "\n- ".join(previous_facts)
 
         tier_descriptions = {
             1: "a COMMON MISCONCEPTION that kids actually believe (e.g., 'the pilot steers with a steering wheel like a car')",
@@ -639,7 +639,8 @@ GOOD wrong facts (a kid might actually think this is true):
 - "All dinosaurs were green or brown"
 - "Fish close their eyes when they sleep"
 
-CRITICAL: Do NOT make up facts. The "correct" fact MUST be true. The "wrong" fact MUST be actually false. Only use facts you are confident about."""
+CRITICAL: Do NOT make up facts. The "correct" fact MUST be true. The "wrong" fact MUST be actually false. Only use facts you are confident about.
+CRITICAL: NEVER repeat or rephrase a fact from a previous round. Each question must teach something NEW."""
             },
             {
                 'role': 'user',
@@ -662,7 +663,7 @@ Return ONLY this JSON:
 {{"correct": "cool true fact a kid would love", "wrong": "wrong fact a kid might believe", "correctIcon": "emoji", "wrongIcon": "emoji", "concept": "fun reason why the wrong one is wrong"}}"""
             }],
             max_tokens=250,
-            temperature=0.7
+            temperature=0.85
         ))
 
         result = response.choices[0].message.content.strip()

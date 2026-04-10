@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curiosity Explorer — Hypothesis Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+
+      /* Core palette */
+      --bg:           #f5f5f4;
+      --surface:      #ffffff;
+      --border:       #e7e5e4;
+      --border-light: #f0efee;
+      --text-primary: #1c1917;
+      --text-secondary: #78716c;
+      --text-muted:   #a8a29e;
+
+      /* Header */
+      --header-bg:    #18181b;
+      --header-text:  #fafaf9;
+      --header-sub:   #a1a1aa;
+
+      /* Status colours */
+      --blue:         #2563eb;
+      --blue-light:   #eff6ff;
+      --blue-border:  #bfdbfe;
+      --green:        #16a34a;
+      --green-light:  #f0fdf4;
+      --green-border: #bbf7d0;
+      --red:          #dc2626;
+      --red-light:    #fef2f2;
+      --red-border:   #fecaca;
+      --amber:        #d97706;
+      --amber-light:  #fffbeb;
+      --amber-border: #fde68a;
+
+      /* Confidence tags */
+      --conf-high-bg:   #f0fdf4;
+      --conf-high-text: #15803d;
+      --conf-med-bg:    #fffbeb;
+      --conf-med-text:  #b45309;
+      --conf-low-bg:    #fef2f2;
+      --conf-low-text:  #b91c1c;
+
+      --radius:     10px;
+      --radius-sm:  6px;
+      --shadow:     0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md:  0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+    }
+
+    html {
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--text-primary);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+    .site-header {
+      background: var(--header-bg);
+      padding: 40px 0 32px;
+    }
+
+    .site-header .inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .site-header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--header-text);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .site-header .subtitle {
+      margin-top: 6px;
+      font-size: 0.875rem;
+      color: var(--header-sub);
+      font-weight: 400;
+    }
+
+    /* Summary bar */
+    .summary-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px;
+      padding: 10px 18px;
+      text-align: center;
+      min-width: 110px;
+    }
+
+    .stat-chip .count {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--header-text);
+      line-height: 1;
+    }
+
+    .stat-chip .label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--header-sub);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .stat-chip.in-progress .count { color: #93c5fd; }
+    .stat-chip.validated   .count { color: #86efac; }
+    .stat-chip.invalidated .count { color: #fca5a5; }
+    .stat-chip.inconclusive .count { color: #fcd34d; }
+
+    /* ============================================================
+       MAIN LAYOUT
+    ============================================================ */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    /* Section headings */
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      margin-top: 40px;
+    }
+
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    /* ============================================================
+       HOW-TO BANNER (collapsed by default)
+    ============================================================ */
+    .howto {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 28px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .howto-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 13px 18px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-align: left;
+    }
+
+    .howto-toggle:hover { color: var(--text-primary); }
+
+    .howto-toggle .arrow {
+      font-size: 0.75rem;
+      transition: transform 0.2s;
+      color: var(--text-muted);
+    }
+
+    .howto-toggle[aria-expanded="true"] .arrow {
+      transform: rotate(90deg);
+    }
+
+    .howto-body {
+      display: none;
+      padding: 0 18px 16px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .howto-body.open {
+      display: block;
+    }
+
+    .howto-body ol {
+      padding-left: 18px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    .howto-body code {
+      background: #f4f4f5;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-family: 'Menlo', 'Consolas', monospace;
+      color: #52525b;
+    }
+
+    /* ============================================================
+       HYPOTHESIS CARDS
+    ============================================================ */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .hyp-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+
+    .hyp-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Card header row (always visible) */
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 20px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .card-header:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: -2px;
+    }
+
+    .card-id {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 8px;
+      white-space: nowrap;
+      margin-top: 2px;
+      letter-spacing: 0.04em;
+    }
+
+    .card-header-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .status-badge::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-badge.in-progress  { background: var(--blue-light);  color: var(--blue);  border: 1px solid var(--blue-border);  }
+    .status-badge.in-progress::before  { background: var(--blue); }
+    .status-badge.validated    { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+    .status-badge.validated::before    { background: var(--green); }
+    .status-badge.invalidated  { background: var(--red-light);   color: var(--red);   border: 1px solid var(--red-border);   }
+    .status-badge.invalidated::before  { background: var(--red); }
+    .status-badge.inconclusive { background: var(--amber-light); color: var(--amber); border: 1px solid var(--amber-border); }
+    .status-badge.inconclusive::before { background: var(--amber); }
+
+    .conf-tag {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .conf-tag.high { background: var(--conf-high-bg); color: var(--conf-high-text); }
+    .conf-tag.medium { background: var(--conf-med-bg);  color: var(--conf-med-text);  }
+    .conf-tag.low  { background: var(--conf-low-bg);  color: var(--conf-low-text);  }
+
+    .card-hypothesis {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .card-dates {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .card-chevron {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      transition: transform 0.2s;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+
+    .hyp-card.expanded .card-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* Card body (expanded) */
+    .card-body {
+      display: none;
+      padding: 0 20px 22px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .hyp-card.expanded .card-body {
+      display: block;
+    }
+
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 28px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .fields-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .field-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .field-value {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+
+    .field-value.empty {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* Verdict callout */
+    .verdict-callout {
+      margin-top: 18px;
+      padding: 13px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      border-left: 3px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .verdict-callout.has-verdict {
+      border-left-color: var(--green);
+      background: var(--green-light);
+      color: var(--text-primary);
+    }
+
+    .verdict-callout .verdict-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .verdict-callout.has-verdict .verdict-label {
+      color: var(--green);
+    }
+
+    /* Ideas sparked pills */
+    .ideas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .idea-pill {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .idea-pill::before {
+      content: '→';
+      color: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ============================================================
+       IDEAS PARKING LOT
+    ============================================================ */
+    .parking-lot {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .parking-lot-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .parking-lot-header h2 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .parking-lot-header .pl-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .parking-lot-body {
+      padding: 6px 0;
+    }
+
+    .idea-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px 20px;
+      align-items: baseline;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border-light);
+      transition: background 0.1s;
+    }
+
+    .idea-row:last-child {
+      border-bottom: none;
+    }
+
+    .idea-row:hover {
+      background: var(--bg);
+    }
+
+    .idea-text {
+      font-size: 0.86rem;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .idea-source {
+      font-size: 0.73rem;
+      color: var(--blue);
+      font-weight: 500;
+      white-space: nowrap;
+      background: var(--blue-light);
+      border: 1px solid var(--blue-border);
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+
+    .idea-date {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 600px) {
+      .idea-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+
+      .idea-source, .idea-date {
+        display: inline-block;
+      }
+    }
+
+    /* ============================================================
+       QUESTION PATTERNS SECTION
+    ============================================================ */
+    .patterns-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .patterns-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .patterns-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .patterns-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .patterns-stats {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-light);
+      flex-wrap: wrap;
+    }
+
+    .pat-stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      text-align: center;
+      min-width: 100px;
+    }
+
+    .pat-stat .num {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: block;
+    }
+
+    .pat-stat .lbl {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    /* Sub-sections within patterns */
+    .pat-subsection {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .pat-subsection:last-child {
+      border-bottom: none;
+    }
+
+    .pat-subsection-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 14px;
+    }
+
+    /* Bar chart rows */
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .bar-label {
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      width: 140px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 22px;
+      background: var(--bg);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    .bar-pct {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      width: 42px;
+      flex-shrink: 0;
+    }
+
+    .bar-example {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: -6px;
+      margin-bottom: 10px;
+      padding-left: 152px;
+    }
+
+    /* Behavioral pattern cards */
+    .beh-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+    }
+
+    .beh-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .beh-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .beh-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .beh-freq {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .beh-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-bottom: 8px;
+    }
+
+    .beh-insight {
+      font-size: 0.8rem;
+      color: var(--blue);
+      background: var(--blue-light);
+      border-left: 3px solid var(--blue);
+      padding: 8px 12px;
+      border-radius: 0 6px 6px 0;
+      line-height: 1.5;
+    }
+
+    /* Daily activity row */
+    .daily-row {
+      display: grid;
+      grid-template-columns: 90px 60px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.82rem;
+    }
+
+    .daily-row:last-child {
+      border-bottom: none;
+    }
+
+    .daily-date {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .daily-count {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .daily-note {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    /* Notable quotes */
+    .quote-card {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .quote-card:last-child {
+      border-bottom: none;
+    }
+
+    .quote-text {
+      font-size: 0.86rem;
+      color: var(--text-primary);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .quote-text::before {
+      content: "\201C";
+      color: var(--text-muted);
+    }
+
+    .quote-text::after {
+      content: "\201D";
+      color: var(--text-muted);
+    }
+
+    .quote-note {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Topic cluster pills */
+    .topic-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.82rem;
+    }
+
+    .topic-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      width: 140px;
+      flex-shrink: 0;
+      text-align: right;
+    }
+
+    .topic-pct {
+      font-weight: 600;
+      color: var(--blue);
+      width: 35px;
+      flex-shrink: 0;
+    }
+
+    .topic-notes {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 600px) {
+      .bar-label, .topic-name {
+        width: 100px;
+        font-size: 0.75rem;
+      }
+      .bar-example {
+        padding-left: 112px;
+      }
+      .daily-row {
+        grid-template-columns: 80px 40px 1fr;
+      }
+    }
+
+    /* ============================================================
+       PRINT STYLES
+    ============================================================ */
+    @media print {
+      body { background: white; font-size: 12px; }
+      .site-header { background: #18181b !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .hyp-card { box-shadow: none; border: 1px solid #ccc; }
+      .card-body { display: block !important; }
+      .card-chevron { display: none; }
+      .howto { display: none; }
+      .main { padding: 16px; }
+      .patterns-section { break-inside: avoid; }
+      .beh-card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     SITE HEADER
+============================================================ -->
+<header class="site-header">
+  <div class="inner">
+    <h1>Curiosity Explorer &mdash; Hypothesis Tracker</h1>
+    <p class="subtitle">Structured product learning, one hypothesis at a time</p>
+
+    <div class="summary-bar" id="summary-bar">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN CONTENT
+============================================================ -->
+<main class="main">
+
+  <!-- How to use -->
+  <details-polyfill><!-- handled by JS --></details-polyfill>
+  <div class="howto" id="howto">
+    <button class="howto-toggle" aria-expanded="false" aria-controls="howto-body" onclick="toggleHowTo(this)">
+      <span>How to use this tracker</span>
+      <span class="arrow">&#9658;</span>
+    </button>
+    <div class="howto-body" id="howto-body">
+      <ol>
+        <li>Open this file in any text editor (VS Code, Sublime, even Notepad).</li>
+        <li>Scroll to the top of the <code>&lt;script&gt;</code> tag and find the section marked <strong>EDIT YOUR DATA HERE</strong>.</li>
+        <li>Update any field in the <code>HYPOTHESES</code> or <code>PARKING_LOT</code> arrays.</li>
+        <li>Save the file, then refresh your browser — changes appear instantly.</li>
+        <li>To add a new hypothesis, copy an existing object in the array and paste it below the last one, then increment the <code>id</code>.</li>
+        <li>Status options: <code>"in-progress"</code>, <code>"validated"</code>, <code>"invalidated"</code>, <code>"inconclusive"</code>.</li>
+        <li>Confidence options: <code>"high"</code>, <code>"medium"</code>, <code>"low"</code>.</li>
+        <li>This page is print-friendly — use your browser&rsquo;s Print function for weekly reviews.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Hypotheses section -->
+  <p class="section-title">Active Hypotheses</p>
+  <div class="card-list" id="card-list">
+    <!-- Rendered by JS -->
+  </div>
+
+  <!-- Question patterns section -->
+  <p class="section-title" style="margin-top: 44px;">Question Patterns & Insights</p>
+  <div class="patterns-section" id="patterns-section"></div>
+
+  <!-- Parking lot section -->
+  <p class="section-title" style="margin-top: 44px;">Ideas Parking Lot</p>
+  <div class="parking-lot" id="parking-lot">
+    <!-- Rendered by JS -->
+  </div>
+
+</main>
+
+<script>
+/* ================================================================
+   EDIT YOUR DATA HERE
+   ================================================================
+   Instructions:
+   - Edit any field value below and refresh the browser.
+   - For multi-line text fields, use \n to add a new line.
+   - Leave a field as "" (empty string) if you have nothing yet.
+   - Add new hypotheses by copying one full object block and
+     pasting it inside the HYPOTHESES array, then updating fields.
+   ================================================================ */
+
+const HYPOTHESES = [
+  {
+    id: "H1",
+    title: "Core Retention Signal",
+    status: "invalidated",             // "in-progress" | "validated" | "invalidated" | "inconclusive"
+    confidence: "high",                // "high" | "medium" | "low"
+    hypothesis: "At least 2 out of 5 kids (aged 5–6) will return to Curiosity Explorer for a second session without being prompted by a parent within 7 days of first use.",
+    validationMethod: "Share app with 5 families with kids aged 5–6. Track return visits via GoatCounter analytics and Supabase qa_logs timestamps. Follow up with parents after 7 days asking 'Did your child ask to use it again?'",
+    evidence: "Updated Apr 9, 2026 — Kabir had a second session (~24 min), parent-initiated (mom made him try again). Once started, he was highly engaged — mom had to tell him to stop. Played 4 rounds of Spot the Mistake across 3 topics (Planes, Cars, Space), asked 1 free-form question. However, this does NOT count toward the hypothesis — it was not an unprompted return. Score remains 0/3 unprompted external returns. Zyansh (Patient Zero) continues daily use. Rushil (1 day) and Viaan (1 day) have not returned.",
+    verdict: "STILL INVALIDATED — 0/3 unprompted returns. Kabir's second session was parent-pushed, not kid-pulled. The core loop clearly works (24 min, had to be stopped) but nothing in the product pulls kids back on their own. Interesting signal: engagement on re-exposure is strong, suggesting the problem is recall/access, not product quality.",
+    keyLearnings: "Engagement ≠ retention. Kids love it when they're in it, but don't ask to come back. The product has a 'pull-back' problem, not an engagement problem. Parent-initiated re-engagement works — kid gets hooked again immediately. This suggests the app needs an external trigger (notification, parent nudge, routine) rather than relying on kid-initiated return.",
+    ideasSparked: ["Own child is Patient Zero — strong signal but can't self-validate. Watch for same pattern in external families.", "Need parent interviews: did kid ask to use it again? What stopped them?", "Consider PWA install prompt + push notifications as re-engagement mechanic", "Reframe: maybe retention is weeks not days — episodic use during 'bored moments'", "Parent-as-distribution-channel: if mom re-shares and kid gets hooked, is 'easy for parents to re-trigger' a valid retention mechanic?"],
+    dateStarted: "2026-02-23",
+    dateResolved: "2026-04-03"
+  },
+  {
+    id: "H2",
+    title: "Free Exploration vs Structured Missions",
+    status: "validated",
+    confidence: "high",
+    hypothesis: "Kids will spend more time and ask more questions in 'Ask Me Anything' mode than in structured missions (Build & Test, Spot the Mistake, Make a Choice).",
+    validationMethod: "Compare Supabase qa_logs volume from Ask Me Anything vs mission completion rates. Measure average questions per session in free mode vs missions attempted.",
+    evidence: "Updated Apr 9, 2026 — Prior data (711 Qs through Apr 3): 696 free-form (98%) vs 15 structured (2%), ratio 46:1. BUT Kabir's Apr 9 session flips this: 4 rounds of Spot the Mistake across 3 topics (Planes, Cars, Space) and only 1 free-form question — his session was 4:1 structured-to-free. Zyansh also played Spot the Mistake (Planes) same day. Recent Spot the Mistake redesign (difficulty tiers, badges, better copy) appears to be driving more mission engagement.",
+    verdict: "VALIDATED but WEAKENING — The 46:1 ratio was real through Apr 3 but recent Spot the Mistake improvements are changing the mix. Kabir's session was predominantly structured, the opposite pattern. Too early to flip verdict — need more sessions — but structured missions may not be dead weight after all when well-designed.",
+    keyLearnings: "The original verdict ('kill structured missions') was premature. When missions are well-designed (age-appropriate difficulty, badges, clear progress), kids do engage. The problem was mission quality, not the concept of structured play.",
+    ideasSparked: ["Are structured missions even needed? Or is free exploration the product?", "Consider making missions discoverable from within the chat flow rather than a separate section", "Don't kill structured missions — improve them. Kabir's engagement proves the concept works when execution is right.", "Watch if Spot the Mistake engagement sustains across more users or if Kabir is an outlier"],
+    dateStarted: "2026-02-23",
+    dateResolved: "2026-04-03"
+  },
+  {
+    id: "H3",
+    title: "Voice is the Killer Feature",
+    status: "inconclusive",
+    confidence: "low",
+    hypothesis: "Kids who use voice input and listen to TTS responses will ask 2x more questions per session than those who type and read.",
+    validationMethod: "Ask parents: 'Did your child mostly talk to it or type?' Cross-reference with session question counts in Supabase logs. Check if mute button state correlates with engagement.",
+    evidence: "Updated Apr 3, 2026 — No input_method field in qa_logs, so voice vs typed usage cannot be determined from data alone. Need to add instrumentation (boolean input_method column) and conduct parent interviews.",
+    verdict: "INCONCLUSIVE — No tracking data exists. Requires: (1) adding input_method field to qa_logs, (2) parent interviews asking 'Did your child mostly talk to it or type?'",
+    keyLearnings: "Instrument before hypothesizing. This hypothesis was formed without a way to measure it.",
+    ideasSparked: ["If voice is the main input, should we redesign around a voice-first UI?", "Add input_method boolean to qa_logs to resolve this in next batch of sessions"],
+    dateStarted: "2026-02-23",
+    dateResolved: ""
+  },
+  {
+    id: "H4",
+    title: "Parent Trust Gate",
+    status: "inconclusive",
+    confidence: "low",
+    hypothesis: "At least 3 out of 5 parents will say they would feel comfortable letting their child use Curiosity Explorer unsupervised after the first session.",
+    validationMethod: "Direct question in parent follow-up: 'Would you feel comfortable letting [child] use this without you watching?' Note hesitations and concerns.",
+    evidence: "Updated Apr 3, 2026 — No parent interview data collected yet. Boundary testing observed in logs (e.g. 'stop the poopy butt', keyboard mashing, violent image requests) suggests content filtering matters for trust. Combine with H1 retention interviews — ask parents about trust in the same conversation.",
+    verdict: "INCONCLUSIVE — Requires parent interviews. Bundle with H1 retention diagnosis calls.",
+    keyLearnings: "",
+    ideasSparked: [
+      "Could parent trust be solved by a 'safe mode' that restricts topics?",
+      "What if we showed parents a 'What your child learned today' summary?",
+      "Parent trust may be the hidden blocker behind H1 retention failure — if parents don't trust it, they won't re-open it"
+    ],
+    dateStarted: "2026-02-23",
+    dateResolved: ""
+  },
+  {
+    id: "H5",
+    title: "Topic Depth vs Breadth",
+    status: "validated",
+    confidence: "high",
+    hypothesis: "Kids will go deep on 1–2 topics rather than sampling all 6 available topics in their first session.",
+    validationMethod: "Analyze Supabase qa_logs to categorize questions by topic. Check if questions cluster around specific themes per user_id.",
+    evidence: "Updated Apr 3, 2026 — Strong clustering confirmed across sessions. Apr 3 session: natural disasters dominated (earthquake → hurricane → tsunami → flood → volcano = 7 consecutive queries). Mar 28: planes/rockets dominated (53/71 image requests were aviation/space). Historical: planes/aviation ~55%, history/firsts ~12%, animals ~10%, space ~8%. Per-session topic concentration is even higher — kids pick a theme and go deep within a single sitting.",
+    verdict: "VALIDATED — Clear topic clustering per session. Kids obsess over 1-2 themes per sitting rather than browsing broadly. Planes/aviation is the dominant macro-topic for Patient Zero, with natural disasters and space as secondary obsessions.",
+    keyLearnings: "Kids are natural 'deep divers' not 'browsers'. The app should lean into this by suggesting deeper exploration within the current topic rather than surfacing breadth.",
+    ideasSparked: ["Should the app adapt to a kid's dominant interest and suggest deeper content?", "Consider a 'topic journey' that tracks how deep a kid has gone on a subject", "Surface 'go deeper' prompts: 'Want to see inside a volcano?' after showing a volcano"],
+    dateStarted: "2026-02-23",
+    dateResolved: "2026-04-03"
+  },
+  {
+    id: "H6",
+    title: "Image Generation as Core Feature",
+    status: "validated",
+    confidence: "high",
+    hypothesis: "Kids use Curiosity Explorer primarily as a visual exploration tool — 'show me a picture of...' queries will outnumber factual questions at least 2:1.",
+    validationMethod: "Categorize Supabase qa_logs into image requests vs factual questions per user_id. Check if pattern holds across multiple kids, not just Patient Zero.",
+    evidence: "Updated Apr 3, 2026 — 711 total queries. Image requests: 387 (54.4%). Factual questions: 146 (20.5%). Ratio: 2.65:1, exceeding the 2:1 threshold. Per-session ratios are even higher for Patient Zero: 21/28 (75%) on Apr 3, 53/71 (75%) on Mar 28, 31/41 (76%) on Mar 15, 14/14 (100%) on Mar 14. Pattern is consistent across sessions. Caveat: external user sample too small (3 kids) to confirm cross-user generalizability, but Rushil's 8 queries were all factual — may indicate image-heavy pattern is kid-specific.",
+    verdict: "VALIDATED — 2.65:1 ratio overall, 75%+ per session for Patient Zero. Images are the core interaction loop. However, Rushil (external) asked 0 image questions in 8 queries, suggesting this may not be universal.",
+    keyLearnings: "The product is fundamentally a 'visual curiosity engine'. Chat is the input mechanism but images are the output kids care about. Some kids may prefer factual Q&A — need more external data to know if image-dominance is universal or user-specific.",
+    ideasSparked: ["If images are the core loop, should the UI be gallery-first instead of chat-first?", "Can we show related images automatically to keep the exploration going?", "Video requests appeared multiple times — is this the next unmet need?", "Rushil's factual-only session suggests there may be multiple user archetypes"],
+    dateStarted: "2026-02-25",
+    dateResolved: "2026-04-03"
+  },
+  {
+    id: "H7",
+    title: "Sequential Curiosity Chains",
+    status: "validated",
+    confidence: "high",
+    hypothesis: "Kids will naturally follow sequential curiosity threads (first X → second X → how X evolved) without any prompting from the app.",
+    validationMethod: "Analyze Supabase logs for sequential patterns within sessions — look for numbered/ordered queries or thematic chains. Check if other kids exhibit same behavior.",
+    evidence: "Updated Apr 3, 2026 — Chains confirmed across multiple sessions. Apr 3: desert → elephant in desert → real elephant → 1M elephants (scale chain); earthquake → hurricane → tsunami → flood → tall flood → volcano (disaster chain); rocket blasting off → rocket yesterday → Optimus blasting off (launch chain). Mar 28: rockets in space → rocket taking off → 3 rockets → rocket boarding → people in rocket → cockpit → A380 → plane taking off (aviation deep-dive chain). Historical: first car → first rickshaw → first train → first train track (evolution chain). Kid invents exploration patterns the app doesn't support.",
+    verdict: "VALIDATED — Curiosity chains are a consistent, repeatable behavior across sessions. Kids naturally build thematic sequences without any app prompting. This is a potential differentiator — the AI can enhance these chains with 'go deeper' suggestions.",
+    keyLearnings: "Kids are natural chain-thinkers. They don't ask isolated questions — each answer triggers the next question. The app should lean into this by suggesting the next link in the chain.",
+    ideasSparked: ["Build a 'time machine' feature that guides kids through the evolution of things?", "The app could suggest 'Want to see what came before this?' after showing an image", "AI-assisted chains: 'Want to see what's INSIDE a volcano?' after showing eruption", "This is the key differentiator over Google Images — guided curiosity chains"],
+    dateStarted: "2026-02-25",
+    dateResolved: "2026-04-03"
+  },
+  {
+    id: "H8",
+    title: "Companion vs Tool",
+    status: "invalidated",
+    confidence: "high",
+    hypothesis: "Kids treat Curiosity Explorer as a conversational companion (telling jokes, playing, testing boundaries) not just an information tool — at least 20% of queries will be social/playful rather than informational.",
+    validationMethod: "Categorize Supabase qa_logs into informational vs social/playful queries. Check if pattern holds across multiple kids.",
+    evidence: "Updated Apr 3, 2026 — 711 total queries. Social/playful: 42 (5.9%) including jokes, singing, nonsense, boundary testing. Even with generous categorization (adding joke requests which can be bulk — 'tell me 200 jokes', singing 'la la la', keyboard mashing, 'poopy butt'): ~10-12% at most. Well below the 20% threshold. Joke-requesting is a real behavior (kid asked for 50, 190, 200, and '2 billion' jokes across sessions) but it's bursty, not baseline. The dominant mode is visual exploration, not social companionship.",
+    verdict: "INVALIDATED at 20% threshold — Social/playful queries are ~6-12% of total, not 20%+. The companion behavior is real but minority. Kids primarily use the app as a visual exploration tool with occasional playful bursts. The hypothesis threshold was too high.",
+    keyLearnings: "Kids do treat the app as partly social (jokes, singing, boundary testing) but it's a secondary mode, not the primary one. The app is a tool first, companion second. Joke requests are bursty and volume-inflating ('tell me 200 jokes' = 1 query but huge output).",
+    ideasSparked: ["Should the app have a 'personality' that plays back — tells jokes, reacts to silly inputs?", "Boundary testing is natural for this age — need robust content filtering for parent trust (links to H4)", "Don't over-invest in companion features — lean into the visual exploration core loop instead"],
+    dateStarted: "2026-02-25",
+    dateResolved: "2026-04-03"
+  }
+];
+
+/* ================================================================
+   QUESTION PATTERNS & INSIGHTS
+   Track behavioral patterns observed in Supabase qa_logs.
+   Update this after each review of the logs.
+   ================================================================ */
+const QUESTION_PATTERNS = {
+  lastUpdated: "2026-04-03",
+  totalQuestions: 711,
+  dateRange: "Feb 23 – Apr 3, 2026",
+  activeUsers: 4,  // excluding test accounts (soumya-test, soumya, soumya_railway, Soumya - phone, dino, domingo, Tester, MenuTester, CAT, chandu). Real kids: Zyansh, Rushil, Kabir, Viaan
+  avgQuestionsPerDay: 18,  // 711 questions over ~40 days
+
+  /* ---- Query type breakdown ---- */
+  queryTypes: [
+    { type: "Image requests", percentage: 54, count: 387, example: "Can you show me a picture of a real volcano erupting", color: "#2563eb" },
+    { type: "Factual questions", percentage: 21, count: 146, example: "What is 3 million / 8", color: "#16a34a" },
+    { type: "Playful / social", percentage: 6, count: 42, example: "Stop singing la la la / chicken bock bock bock", color: "#d97706" },
+    { type: "Spot the Mistake", percentage: 3, count: 21, example: "Spot mistake: Rocket ships", color: "#78716c" },
+    { type: "Math questions", percentage: 1, count: 9, example: "What is 8 * 5", color: "#8b5cf6" },
+    { type: "Other / commands", percentage: 16, count: 112, example: "I'm singing / can you tell me 50 jokes", color: "#dc2626" }
+  ],
+
+  /* ---- Topic clusters ---- */
+  topicClusters: [
+    { topic: "Planes & Aviation", percentage: 45, notes: "Cockpits, takeoff/landing, Emirates A380, wheels folding, engines, cargo planes — still dominant but share declining as interests broaden" },
+    { topic: "Natural Disasters", percentage: 12, notes: "Earthquakes, tsunamis, hurricanes, floods, volcanoes — emerged as major theme in recent sessions (Apr 3)" },
+    { topic: "Animals & Nature", percentage: 12, notes: "Elephants (desert elephants, 1M elephants), blue whales, sharks, wolves, saber-toothed tigers, dinosaurs" },
+    { topic: "Space & Rockets", percentage: 10, notes: "Rockets blasting off, Artemis II launch, asteroids, comets, Antarctica — space remains consistent interest" },
+    { topic: "History / Firsts", percentage: 8, notes: "First car, first rickshaw, first train, first castle, first phone, first ship — kid-invented pattern" },
+    { topic: "Humor & Jokes", percentage: 8, notes: "Joke requests escalating in volume (50, 190, 200, '2 billion' jokes), singing, boundary testing" },
+    { topic: "Real-world places", percentage: 5, notes: "Deserts, Antarctica, schools, swim school, museums" }
+  ],
+
+  /* ---- Notable behavioral patterns ---- */
+  behavioralPatterns: [
+    {
+      pattern: "Sequential curiosity chains",
+      description: "Kid follows ordered sequences without prompting: first car → first rickshaw → second rickshaw → third rickshaw → first train → first train track. Also: first castle → first ship → first phone.",
+      frequency: "Multiple times per week",
+      insight: "Kids naturally explore history/evolution. The app doesn't support this but the kid does it anyway. Major product opportunity."
+    },
+    {
+      pattern: "Repeated questions",
+      description: "\"How many moons does Saturn have?\" asked 6+ times across sessions. Same question, different days.",
+      frequency: "Daily",
+      insight: "Repetition is how kids learn at this age. They're not confused — they're reinforcing. The app could acknowledge this: 'You asked about Saturn's moons before! Do you remember?'"
+    },
+    {
+      pattern: "Specificity escalation",
+      description: "Questions get progressively more specific within a session: plane → cockpit → inside of cockpit → cockpit with nobody inside → somebody controlling a cockpit during takeoff.",
+      frequency: "Every session",
+      insight: "The kid is zooming in. Each answer triggers a deeper question. This is genuine curiosity deepening in real time."
+    },
+    {
+      pattern: "Boundary testing",
+      description: "Tries violent/gross/silly content: 'soldiers killing a lion', 'animal dying', 'penguin pooping'. Also tries impossible requests: 'show me my house', 'show me my brother'.",
+      frequency: "1-2 per session",
+      insight: "Normal for age. Testing what the app will/won't do. Critical for parent trust (H4). Content filters need to handle this gracefully."
+    },
+    {
+      pattern: "Conversational play",
+      description: "Tells jokes to the app, says 'roar roar', makes nonsense sounds, gives commands like 'on your marks get set go'. Corrects the app when it gets a joke answer wrong.",
+      frequency: "Most sessions",
+      insight: "The kid sees this as a friend, not a tool. There's an unmet 'companion' need — the app could play back instead of just answering."
+    },
+    {
+      pattern: "Video requests (unmet need)",
+      description: "Asks for videos multiple times: 'show me a video of a plane taking off', 'show me a whole video of a plane taking off and its whole trip'.",
+      frequency: "2-3 times per week",
+      insight: "Images aren't enough for some topics. Motion/process matters for things like takeoff sequences. Video or animation is a clear unmet need."
+    },
+    {
+      pattern: "Size/scale fascination",
+      description: "Questions about relative size and extremes: 'how big is Earth', 'largest plane in the world', 'show me 9 million planes', 'show me 10 planes lined up', blue whale vs plane.",
+      frequency: "Most sessions",
+      insight: "Scale comparisons captivate kids. 'How big is X compared to Y' could be a dedicated feature."
+    }
+  ],
+
+  /* ---- Session metrics ---- */
+  sessionMetrics: [
+    { date: "2026-02-23", questions: 88, note: "First day. Longest session: 80+ questions in one sitting (Explorer account)" },
+    { date: "2026-02-24", questions: 43, note: "Multiple users. 'domingo' appeared — first external user?" },
+    { date: "2026-02-25", questions: 72, note: "Heavy plane session. First 'history of firsts' chain observed" },
+    { date: "2026-02-26", questions: 38, note: "Focused on planes and aviation deeply. Explored cargo planes, logos" },
+    { date: "2026-02-27", questions: 45, note: "Jokes phase started. 'Tell me 50 jokes', 'tell me 100 jokes'. Also airplane engine curiosity" },
+    { date: "2026-02-28", questions: 49, note: "History exploration peak: first car, rickshaw, train, castle, ship, phone, easel" },
+    { date: "2026-03-01", questions: 40, note: "Animals (elephants, cows, goats), natural disasters, first vehicles continued" }
+  ],
+
+  /* ---- Raw quotes worth remembering ---- */
+  notableQuotes: [
+    { quote: "why does the Moon look half from Earth when the moon is actually full forever in space", note: "Genuine scientific reasoning from a 5-year-old" },
+    { quote: "why do we smile when we want to lie", note: "Deep emotional/psychological question — asked twice across sessions" },
+    { quote: "are humans a animal or not", note: "Philosophical classification question" },
+    { quote: "how do cows make grass into milk", note: "Process thinking — wants to understand transformations" },
+    { quote: "what will happen if airplanes don't have tails on the end of their wig", note: "Counterfactual reasoning — 'what if X didn't exist'" },
+    { quote: "I wonder why a treehouse doesn't have a tree", note: "Kabir, Apr 9 — philosophical question asked after 4 rounds of Spot the Mistake. Emerged organically from structured play." },
+    { quote: "book a ticket to Hawaii with my parents", note: "Tried to use it as an actual service — expectation mismatch" },
+    { quote: "why did the candle go to the fireplace... you are wrong... the answer is because there is no more wood", note: "Told the app a joke, corrected its guess, insisted on the right answer" },
+    { quote: "why does my mom always say tell me to be quite finished not", note: "Brought a real-life frustration to the app — using it as emotional outlet" }
+  ]
+};
+
+/* ================================================================
+   IDEAS PARKING LOT
+   Each entry: { idea, source, date }
+   ================================================================ */
+const PARKING_LOT = [
+  {
+    idea: "Could parent trust be solved by a 'safe mode' that restricts topics?",
+    source: "H4",
+    date: "2026-02-23"
+  },
+  {
+    idea: "If voice is the main input, should we redesign around a voice-first UI?",
+    source: "H3",
+    date: "2026-02-23"
+  },
+  {
+    idea: "What if we showed parents a 'What your child learned today' summary?",
+    source: "H4",
+    date: "2026-02-23"
+  },
+  {
+    idea: "Kid asked for videos multiple times — is video the next media type to add after images?",
+    source: "H6",
+    date: "2026-02-25"
+  },
+  {
+    idea: "Build a 'time machine' mode: pick any object and explore its history from first invention to now",
+    source: "H7",
+    date: "2026-02-25"
+  },
+  {
+    idea: "The app could suggest 'Want to see what came before this?' to encourage sequential exploration",
+    source: "H7",
+    date: "2026-02-25"
+  },
+  {
+    idea: "Gallery/visual-first UI instead of chat-first — since 70% of queries are image requests",
+    source: "H6",
+    date: "2026-02-25"
+  },
+  {
+    idea: "Kid tried to show the app his own joke and corrected its answer — two-way conversation is an unmet need",
+    source: "H8",
+    date: "2026-02-25"
+  }
+];
+
+/* ================================================================
+   RENDERING LOGIC — no need to edit below this line
+   ================================================================ */
+
+/* ---- Helpers ---- */
+function statusLabel(s) {
+  return { "in-progress": "In Progress", "validated": "Validated", "invalidated": "Invalidated", "inconclusive": "Inconclusive" }[s] || s;
+}
+
+function confLabel(c) {
+  return { high: "High confidence", medium: "Medium confidence", low: "Low confidence" }[c] || c;
+}
+
+function formatDate(d) {
+  if (!d) return "";
+  const parts = d.split("-");
+  if (parts.length < 3) return d;
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return `${months[parseInt(parts[1], 10) - 1]} ${parseInt(parts[2], 10)}, ${parts[0]}`;
+}
+
+function empty(v) {
+  return !v || (Array.isArray(v) && v.length === 0) || v.trim() === "";
+}
+
+function escHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/* ---- Summary bar ---- */
+function renderSummary() {
+  const counts = { total: HYPOTHESES.length, "in-progress": 0, validated: 0, invalidated: 0, inconclusive: 0 };
+  HYPOTHESES.forEach(h => { if (counts[h.status] !== undefined) counts[h.status]++; });
+
+  const bar = document.getElementById("summary-bar");
+  bar.innerHTML = `
+    <div class="stat-chip">
+      <span class="count">${counts.total}</span>
+      <span class="label">Total</span>
+    </div>
+    <div class="stat-chip in-progress">
+      <span class="count">${counts["in-progress"]}</span>
+      <span class="label">In Progress</span>
+    </div>
+    <div class="stat-chip validated">
+      <span class="count">${counts.validated}</span>
+      <span class="label">Validated</span>
+    </div>
+    <div class="stat-chip invalidated">
+      <span class="count">${counts.invalidated}</span>
+      <span class="label">Invalidated</span>
+    </div>
+    <div class="stat-chip inconclusive">
+      <span class="count">${counts.inconclusive}</span>
+      <span class="label">Inconclusive</span>
+    </div>
+  `;
+}
+
+/* ---- Hypothesis cards ---- */
+function renderCards() {
+  const list = document.getElementById("card-list");
+  list.innerHTML = HYPOTHESES.map((h, idx) => {
+    const dateStr = h.dateResolved
+      ? `Started ${formatDate(h.dateStarted)} &middot; Resolved ${formatDate(h.dateResolved)}`
+      : `Started ${formatDate(h.dateStarted)}`;
+
+    const ideasHtml = (h.ideasSparked && h.ideasSparked.length > 0)
+      ? `<div class="ideas-list">${h.ideasSparked.map(i => `<div class="idea-pill">${escHtml(i)}</div>`).join("")}</div>`
+      : `<span class="field-value empty">None yet</span>`;
+
+    const verdictEmpty = empty(h.verdict);
+    const verdictHtml = `
+      <div class="verdict-callout ${verdictEmpty ? "" : "has-verdict"}">
+        <div class="verdict-label">Verdict</div>
+        ${verdictEmpty ? `<span style="font-style:italic;color:var(--text-muted)">Not yet determined</span>` : `<span>${escHtml(h.verdict)}</span>`}
+      </div>
+    `;
+
+    return `
+      <div class="hyp-card" id="card-${h.id}">
+        <div class="card-header" role="button" tabindex="0" aria-expanded="false"
+             onclick="toggleCard('card-${h.id}', this)"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCard('card-${h.id}', this)}">
+          <div class="card-id">${escHtml(h.id)}</div>
+          <div class="card-header-main">
+            <div class="card-top-row">
+              <span class="status-badge ${escHtml(h.status)}">${statusLabel(h.status)}</span>
+              <span class="conf-tag ${escHtml(h.confidence)}">${confLabel(h.confidence)}</span>
+            </div>
+            <div class="card-hypothesis">${escHtml(h.hypothesis)}</div>
+            <div class="card-dates">${dateStr}</div>
+          </div>
+          <div class="card-chevron" aria-hidden="true">&#9660;</div>
+        </div>
+
+        <div class="card-body">
+          <div class="fields-grid">
+            <div class="field full-width">
+              <div class="field-label">Validation Method</div>
+              <div class="field-value ${empty(h.validationMethod) ? "empty" : ""}">${empty(h.validationMethod) ? "Not defined yet" : escHtml(h.validationMethod)}</div>
+            </div>
+
+            <div class="field full-width">
+              <div class="field-label">Evidence</div>
+              <div class="field-value ${empty(h.evidence) ? "empty" : ""}">${empty(h.evidence) ? "No evidence collected yet" : escHtml(h.evidence)}</div>
+            </div>
+
+            <div class="field full-width">
+              ${verdictHtml}
+            </div>
+
+            <div class="field">
+              <div class="field-label">Key Learnings</div>
+              <div class="field-value ${empty(h.keyLearnings) ? "empty" : ""}">${empty(h.keyLearnings) ? "To be filled after resolution" : escHtml(h.keyLearnings)}</div>
+            </div>
+
+            <div class="field">
+              <div class="field-label">Ideas Sparked</div>
+              ${ideasHtml}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ---- Question patterns ---- */
+function renderPatterns() {
+  const p = QUESTION_PATTERNS;
+  const container = document.getElementById("patterns-section");
+
+  // Stats bar
+  const statsHtml = `
+    <div class="patterns-stats">
+      <div class="pat-stat"><span class="num">${p.totalQuestions}</span><span class="lbl">Questions</span></div>
+      <div class="pat-stat"><span class="num">${p.activeUsers}</span><span class="lbl">Users</span></div>
+      <div class="pat-stat"><span class="num">${p.avgQuestionsPerDay}</span><span class="lbl">Avg / Day</span></div>
+      <div class="pat-stat"><span class="num">${p.sessionMetrics.length}</span><span class="lbl">Days Active</span></div>
+    </div>
+  `;
+
+  // Query type bars
+  const barsHtml = p.queryTypes.map(q => `
+    <div class="bar-row">
+      <div class="bar-label">${escHtml(q.type)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${q.percentage}%;background:${q.color}"></div></div>
+      <div class="bar-pct">${q.percentage}%</div>
+    </div>
+    <div class="bar-example">${escHtml(q.example)}</div>
+  `).join("");
+
+  // Topic clusters
+  const topicsHtml = p.topicClusters.map(t => `
+    <div class="topic-row">
+      <div class="topic-name">${escHtml(t.topic)}</div>
+      <div class="topic-pct">${t.percentage}%</div>
+      <div class="topic-notes">${escHtml(t.notes)}</div>
+    </div>
+  `).join("");
+
+  // Behavioral patterns
+  const behHtml = p.behavioralPatterns.map(b => `
+    <div class="beh-card">
+      <div class="beh-card-header">
+        <span class="beh-name">${escHtml(b.pattern)}</span>
+        <span class="beh-freq">${escHtml(b.frequency)}</span>
+      </div>
+      <div class="beh-desc">${escHtml(b.description)}</div>
+      <div class="beh-insight">${escHtml(b.insight)}</div>
+    </div>
+  `).join("");
+
+  // Daily activity
+  const dailyHtml = p.sessionMetrics.map(s => `
+    <div class="daily-row">
+      <div class="daily-date">${formatDate(s.date)}</div>
+      <div class="daily-count">${s.questions} q</div>
+      <div class="daily-note">${escHtml(s.note)}</div>
+    </div>
+  `).join("");
+
+  // Notable quotes
+  const quotesHtml = p.notableQuotes.map(q => `
+    <div class="quote-card">
+      <div class="quote-text">${escHtml(q.quote)}</div>
+      <div class="quote-note">${escHtml(q.note)}</div>
+    </div>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="patterns-header">
+      <h2>Supabase Log Analysis</h2>
+      <span class="patterns-meta">Last updated ${formatDate(p.lastUpdated)} &middot; ${escHtml(p.dateRange)}</span>
+    </div>
+    ${statsHtml}
+    <div class="pat-subsection">
+      <div class="pat-subsection-title">Query Type Breakdown</div>
+      ${barsHtml}
+    </div>
+    <div class="pat-subsection">
+      <div class="pat-subsection-title">Topic Clusters</div>
+      ${topicsHtml}
+    </div>
+    <div class="pat-subsection">
+      <div class="pat-subsection-title">Behavioral Patterns</div>
+      ${behHtml}
+    </div>
+    <div class="pat-subsection">
+      <div class="pat-subsection-title">Daily Activity</div>
+      ${dailyHtml}
+    </div>
+    <div class="pat-subsection">
+      <div class="pat-subsection-title">Notable Quotes</div>
+      ${quotesHtml}
+    </div>
+  `;
+}
+
+/* ---- Parking lot ---- */
+function renderParkingLot() {
+  const container = document.getElementById("parking-lot");
+  if (!PARKING_LOT || PARKING_LOT.length === 0) {
+    container.innerHTML = `<div style="padding:20px;color:var(--text-muted);font-size:0.85rem;">No ideas parked yet. Add some to the PARKING_LOT array in the script.</div>`;
+    return;
+  }
+
+  const rows = PARKING_LOT.map(item => `
+    <div class="idea-row">
+      <div class="idea-text">${escHtml(item.idea)}</div>
+      <div class="idea-source">${escHtml(item.source)}</div>
+      <div class="idea-date">${formatDate(item.date)}</div>
+    </div>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="parking-lot-header">
+      <h2>Ideas Parking Lot</h2>
+      <span class="pl-meta">${PARKING_LOT.length} idea${PARKING_LOT.length !== 1 ? "s" : ""}</span>
+    </div>
+    <div class="parking-lot-body">${rows}</div>
+  `;
+}
+
+/* ---- Interactions ---- */
+function toggleCard(cardId, triggerEl) {
+  const card = document.getElementById(cardId);
+  const expanded = card.classList.toggle("expanded");
+  triggerEl.setAttribute("aria-expanded", expanded ? "true" : "false");
+}
+
+function toggleHowTo(btn) {
+  const body = document.getElementById("howto-body");
+  const isExpanded = btn.getAttribute("aria-expanded") === "true";
+  btn.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+  body.classList.toggle("open", !isExpanded);
+}
+
+/* ---- Bootstrap ---- */
+document.addEventListener("DOMContentLoaded", function () {
+  renderSummary();
+  renderCards();
+  renderPatterns();
+  renderParkingLot();
+});
+</script>
+</body>
+</html>
