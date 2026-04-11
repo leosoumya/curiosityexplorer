@@ -68,16 +68,19 @@ HOW TO TALK:
 - Simple words only (say "big" not "large")
 - Compare to kid things (big as a bus)
 - Say "Wow!" or "Cool!" to be fun
-- Short sentences (5-7 words max)
+- Short sentences (5-7 words each)
 
 FORMAT FOR REAL QUESTIONS:
-1. Fun answer (2 sentences max)
+1. Fun answer — MAXIMUM 3 SHORT SENTENCES. This is critical. Do NOT write more than 3 sentences. A 6-year-old will not read a paragraph.
 2. One emoji
 3. "Learn more:" with a markdown link [title](url)
 
 GOOD EXAMPLES:
 Kid: "How many moons does Saturn have?"
-You: "Wow, Saturn has 146 moons! That is so many! 🪐 Learn more: [NASA Saturn](https://nasa.gov/saturn)"
+You: "Wow, Saturn has 146 moons! That is more moons than any other planet! 🪐 Learn more: [NASA Saturn](https://nasa.gov/saturn)"
+
+Kid: "How fast do rockets go?"
+You: "Rockets go super fast — like 100 times faster than a car on the highway! They have to go that fast to get to space! 🚀 Learn more: [NASA Rockets](https://nasa.gov/rockets)"
 
 Kid: "Why did the cow jump over the moon?"
 You: "Ha ha, that's from a fun story! Cows can't really jump that high! 🐄"
@@ -135,7 +138,7 @@ def should_generate_image(question, answer):
         'bee', 'ant', 'ladybug', 'dragonfly',
         # Nature
         'volcano', 'rainbow', 'tornado', 'hurricane', 'waterfall', 'mountain', 'glacier', 'desert', 'forest', 'jungle',
-        'ocean', 'coral reef', 'beach',
+        'ocean', 'coral reef', 'beach', 'lightning', 'thunder', 'earthquake', 'tsunami', 'flood', 'avalanche',
         # Buildings/Landmarks
         'castle', 'pyramid', 'eiffel tower', 'statue of liberty', 'great wall',
         # Robots/Tech
@@ -157,9 +160,8 @@ def should_generate_image(question, answer):
     if is_pure_abstract:
         return False, None
 
-    # For other questions, let the LLM decide via the prompt generator
-    # This catches things like "what is a black hole" that aren't in our list
-    return False, None
+    # Default: show an image for most questions — kids are visual learners
+    return True, None
 
 
 def create_kid_friendly_image_prompt(question, answer):
@@ -457,7 +459,7 @@ def ask():
             input=full_input,
             tools=[{'type': 'web_search'}],
             tool_choice='required',
-            max_output_tokens=250
+            max_output_tokens=200
         ))
 
         # Extract text from response
@@ -474,12 +476,40 @@ def ask():
         # Check if we should generate an image
         should_image, _ = should_generate_image(question, reply)
 
+        # Generate 3 follow-up question suggestions
+        follow_ups = []
+        try:
+            fu_response = openai_retry(lambda: client.chat.completions.create(
+                model='gpt-4.1-nano',
+                messages=[{
+                    'role': 'user',
+                    'content': f"""A 6-year-old just asked: "{question}"
+And got this answer: "{reply}"
+
+Suggest 3 short follow-up questions this kid might ask next. Each must:
+- Be under 8 words
+- Start with an emoji
+- Be a different angle on the same topic or a natural "what next" curiosity
+
+Return ONLY a JSON array of 3 strings, nothing else.
+Example: ["🦴 Did T-Rex eat other dinosaurs?", "🥚 How big were dino eggs?", "☄️ What killed the dinosaurs?"]"""
+                }],
+                max_tokens=100,
+                temperature=0.9
+            ))
+            import json as json_mod
+            fu_text = fu_response.choices[0].message.content.strip()
+            follow_ups = json_mod.loads(fu_text)
+        except Exception:
+            follow_ups = []
+
         return jsonify({
             'answer': reply,
             'user_id': user_id,
             'should_generate_image': should_image,
             'question_for_image': question if should_image else None,
-            'answer_for_image': reply if should_image else None
+            'answer_for_image': reply if should_image else None,
+            'follow_ups': follow_ups
         })
 
     except Exception as e:
@@ -729,7 +759,7 @@ def tts():
         return jsonify({'error': str(e)}), 500
 
 
-def classify_image_type(question):
+def classify_image_type(question, answer=''):
     """Classify whether a question needs a real photo or AI-generated illustration.
     Returns ('real', 'search term') or ('generated', None)."""
     api_key = os.environ.get('OPENAI_API_KEY')
@@ -742,29 +772,31 @@ def classify_image_type(question):
             model='gpt-4.1-nano',
             messages=[{
                 'role': 'user',
-                'content': f"""Classify this kid's question: does it need a REAL photograph or an AI-GENERATED illustration?
+                'content': f"""Pick a Wikipedia search term that would find an image RELEVANT to this Q&A for a kid.
 
 Question: "{question}"
+Answer: "{answer[:200]}"
 
-REAL = factual/historical things that exist or existed in the real world, where a photo would be more accurate.
-Examples: "show me the first fire truck", "picture of the Eiffel Tower", "what does a koala look like", "show me the first laptop", "picture of a real elephant"
+The search term must be a SPECIFIC NOUN that Wikipedia would have a photo of.
 
-GENERATED = creative, fictional, extinct prehistoric, or abstract things where illustration is better.
-Examples: "what does a T-Rex look like", "show me a dinosaur", "draw a unicorn", "what does an alien look like", "show me a dragon"
+REAL = when there's a clear, specific THING to photograph (an animal, place, object, vehicle, landmark)
+GENERATED = when the question is about an activity, process, behavior, feeling, or fictional thing — Wikipedia won't have a good photo for these
 
 Reply with EXACTLY one line in this format:
-REAL|<short Wikipedia search term>
+REAL|<specific noun Wikipedia article title>
 or
 GENERATED
 
 Examples:
-"show me the first fire truck" -> REAL|fire engine history
-"show me the Eiffel Tower" -> REAL|Eiffel Tower
-"what does a T-Rex look like" -> GENERATED
-"show me a picture of the first laptop" -> REAL|history of laptops
-"show me the first airplane" -> REAL|Wright Flyer
-"what does a koala look like" -> REAL|koala
-"draw me a dragon" -> GENERATED"""
+Q: "How fast do rockets go?" A: "Rockets go super fast..." -> REAL|rocket launch
+Q: "What makes lightning?" A: "Lightning is a spark from clouds..." -> REAL|lightning
+Q: "Why are flamingos pink?" A: "They eat shrimp..." -> REAL|flamingo
+Q: "What is the Eiffel Tower?" A: "A tall tower in Paris..." -> REAL|Eiffel Tower
+Q: "What do people do on planes?" A: "People read, watch movies, nap..." -> GENERATED
+Q: "How do bees make honey?" A: "Bees collect nectar..." -> GENERATED
+Q: "How do volcanoes erupt?" A: "Hot magma pushes up..." -> GENERATED
+Q: "Why is the sky blue?" A: "Sunlight bounces around..." -> GENERATED
+Q: "Draw me a dragon" -> GENERATED"""
             }],
             max_tokens=30,
             temperature=0.0
@@ -796,16 +828,14 @@ def generate_image():
 
     try:
         # Classify whether this needs a real photo or AI illustration
-        image_type, search_term = classify_image_type(question)
+        image_type, search_term = classify_image_type(question, answer)
         print(f"[IMAGE] Classified '{question}' as {image_type}, term='{search_term}'")
 
-        # Try real photo sources for REAL classification
+        # Try Wikipedia/web only for REAL classification
         if image_type == 'real' and search_term:
-            # Try Wikipedia first (fast, reliable)
             wiki_result = search_wikipedia_image(search_term)
             print(f"[IMAGE] Wikipedia result: {wiki_result['image_url'][:80] if wiki_result else 'None'}")
             if wiki_result:
-                # Proxy Wikipedia images too - direct hotlinking gets 429 rate limited
                 proxied_url = f"/api/image-proxy?url={urllib.parse.quote(wiki_result['image_url'], safe='')}"
                 return jsonify({
                     'image_url': proxied_url,
@@ -813,11 +843,9 @@ def generate_image():
                     'image_attribution': wiki_result['attribution']
                 })
 
-            # Fall back to web search if Wikipedia has no image
             web_result = search_web_image(search_term, question)
             print(f"[IMAGE] Web search result: {web_result['image_url'][:80] if web_result else 'None'}")
             if web_result:
-                # Proxy the image through our server to avoid hotlink blocking
                 proxied_url = f"/api/image-proxy?url={urllib.parse.quote(web_result['image_url'], safe='')}"
                 return jsonify({
                     'image_url': proxied_url,
@@ -825,11 +853,7 @@ def generate_image():
                     'image_attribution': web_result['attribution']
                 })
 
-            # No real image found - return null, do NOT fall through to DALL-E
-            print(f"[IMAGE] No real image found for '{search_term}', returning null")
-            return jsonify({'image_url': None}), 200
-
-        # DALL-E path (generated illustrations only)
+        # DALL-E for GENERATED or when real sources fail
         image_prompt = create_kid_friendly_image_prompt(question, answer)
 
         if not image_prompt:
