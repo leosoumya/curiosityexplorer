@@ -2166,6 +2166,32 @@
         </div>
     </div>
 
+    <!-- Parent Disclaimer Modal (first-visit only) -->
+    <div class="about-modal" id="parentDisclaimerModal" style="z-index: 1002;">
+        <div class="about-content" style="max-width: 440px; padding: 24px;">
+            <h2 style="padding-right: 0; margin-bottom: 14px; font-size: 22px;">👋 A quick note for parents</h2>
+
+            <p style="color: #555; font-size: 14px; line-height: 1.5; margin: 0 0 12px 0;">
+                This is an early prototype I'm sharing with a few friends to learn what sparks kids' curiosity.
+            </p>
+            <p style="color: #555; font-size: 14px; line-height: 1.5; margin: 0 0 12px 0;">
+                <strong>What I log:</strong> your child's name/avatar, the questions they ask, and the app's answers. I read these myself; nothing is shared with anyone else.
+            </p>
+            <p style="color: #555; font-size: 14px; line-height: 1.5; margin: 0 0 16px 0;">
+                <strong>Want it removed?</strong> Email <a href="mailto:curiosityexplorer.feedback@gmail.com" style="color: #2196f3;">curiosityexplorer.feedback@gmail.com</a> with your child's name.
+            </p>
+
+            <button
+                onclick="acknowledgeParentDisclaimer()"
+                style="width: 100%; padding: 13px; background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                Got it — let's explore
+            </button>
+            <p style="text-align: center; color: #888; font-size: 12px; margin: 10px 0 0 0;">
+                Not comfortable? Close this tab — nothing has been logged yet.
+            </p>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Menu Button (inside container) -->
         <button class="menu-btn" onclick="toggleAboutModal()">
@@ -5346,9 +5372,19 @@
             speakText(`Hi ${name}! Let's explore!`);
         }
 
+        // Parent disclaimer — show once, persist acknowledgment locally
+        function acknowledgeParentDisclaimer() {
+            localStorage.setItem('parentDisclaimerAck_v1', new Date().toISOString());
+            document.getElementById('parentDisclaimerModal').classList.remove('active');
+            if (!getSavedName()) {
+                document.getElementById('nameModal').style.display = 'flex';
+            }
+        }
+
         // Initialize app
         function initializeApp() {
             const savedName = getSavedName();
+            const disclaimerAck = localStorage.getItem('parentDisclaimerAck_v1');
 
             // Always show welcome screen with topics + Ask Me Anything
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -5356,15 +5392,19 @@
 
             if (savedName) {
                 displayUserName(savedName);
-            } else {
-                // First-time user - show name modal
-                document.getElementById('nameModal').style.display = 'flex';
             }
 
             updateBadgeDisplay();
             updateDashboard();
             initMuteButton();
             initWelcomeScreen();
+
+            // Show parent disclaimer first on first visit; defer name modal until dismissed
+            if (!disclaimerAck) {
+                document.getElementById('parentDisclaimerModal').classList.add('active');
+            } else if (!savedName) {
+                document.getElementById('nameModal').style.display = 'flex';
+            }
         }
 
         // Allow Enter key to submit name

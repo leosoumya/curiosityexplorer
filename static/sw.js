@@ -1,4 +1,4 @@
-const CACHE_NAME = 'whyzee-v1';
+const CACHE_NAME = 'whyzee-v2';
 const PRECACHE = [
   '/',
   '/static/manifest.json'
