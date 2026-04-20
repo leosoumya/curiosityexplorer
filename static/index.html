@@ -4709,15 +4709,13 @@
                     showMission2Success();
                 } else {
                     // Show correct feedback and prepare for next question
-                    const feedbackPrefix = mission2QuestionCount <= 2 ? 'Lots of people think that, but... ' : mission2QuestionCount <= 4 ? 'That sounded right, but... ' : 'This one is surprising! ';
-                    document.getElementById('mission2CorrectFeedback').textContent = feedbackPrefix + currentMission2Fact.concept;
+                    document.getElementById('mission2CorrectFeedback').textContent = 'Yes! ' + currentMission2Fact.concept;
                     // Show progress as stars
                     updateProgressStars(mission2QuestionCount);
                     document.getElementById('mission2CorrectProgress').innerHTML =
                         document.getElementById('mission2Progress').innerHTML;
                     // Start speech first (async), then show screen immediately
-                    const tierPrefix = mission2QuestionCount <= 2 ? 'Lots of people think that, but...' : mission2QuestionCount <= 4 ? 'That sounded right, but...' : 'This one is surprising!';
-                    speakText(`Yes! ${tierPrefix} ${currentMission2Fact.concept}`);
+                    speakText(`Yes! ${currentMission2Fact.concept}`);
                     showScreen('mission2-correct');
                 }
             } else {
