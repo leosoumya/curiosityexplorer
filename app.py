@@ -49,6 +49,25 @@ SUPABASE_KEY = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# Simple in-memory cache for consistent answers to identical questions
+_answer_cache = {}
+_CACHE_TTL = 3600  # 1 hour
+_CACHE_MAX_SIZE = 200
+
+def get_cached_answer(question):
+    key = question.strip().lower()
+    entry = _answer_cache.get(key)
+    if entry and (time.time() - entry['time']) < _CACHE_TTL:
+        return entry['data']
+    return None
+
+def set_cached_answer(question, data):
+    key = question.strip().lower()
+    if len(_answer_cache) >= _CACHE_MAX_SIZE:
+        oldest = min(_answer_cache, key=lambda k: _answer_cache[k]['time'])
+        del _answer_cache[oldest]
+    _answer_cache[key] = {'data': data, 'time': time.time()}
+
 # Socratic prompt for kid-friendly responses
 SOCRATIC_PROMPT = """You are a friendly helper for a 6-7 year old child.
 
@@ -57,6 +76,11 @@ STRICT RULES:
 2. NO follow-up questions. NO "Do you know...?" NO "Can you...?" NO "What do you think...?"
 3. End with a statement, NOT a question.
 4. Include a "Learn more:" link at the end from your web search (for real questions only).
+
+"SHOW ME" OR "PICTURE OF" REQUESTS:
+If the kid asks to see a picture or show something, answer the FACTUAL question behind it. The app will find an image separately — your job is to give a fun fact answer about the subject.
+Example: "Show me a picture of the first airplane" → Answer about the Wright Flyer.
+Example: "What does a blue whale look like?" → Answer about blue whales.
 
 SILLY OR NONSENSE QUESTIONS:
 If the question is a joke, impossible, or doesn't make sense (like "why did the cow go to space" or "can fish fly to the moon"), respond playfully:
@@ -201,7 +225,7 @@ Example outputs:
 Image prompt:"""
             }],
             max_tokens=80,
-            temperature=0.7
+            temperature=0
         ))
 
         prompt = response.choices[0].message.content.strip()
@@ -434,6 +458,12 @@ def ask():
     if not question:
         return jsonify({'error': 'No question provided'}), 400
 
+    # Return cached answer for identical questions (ignores chat history for cache key)
+    cached = get_cached_answer(question)
+    if cached:
+        log_qa(user_id, user_name, question, cached['answer'])
+        return jsonify(cached)
+
     api_key = os.environ.get('OPENAI_API_KEY')
     if not api_key:
         return jsonify({'error': 'API key not configured'}), 500
@@ -459,16 +489,23 @@ def ask():
             input=full_input,
             tools=[{'type': 'web_search'}],
             tool_choice='required',
-            max_output_tokens=200
+            temperature=0,
+            max_output_tokens=400
         ))
 
-        # Extract text from response
-        reply = "Hmm, I'm not sure about that. Can you try asking in a different way?"
+        # Extract text from response — check all output blocks for text content
+        reply = ""
         if response.output:
             for item in response.output:
                 if item.type == 'message' and item.content:
-                    reply = item.content[0].text
-                    break
+                    for content_block in item.content:
+                        if hasattr(content_block, 'text') and content_block.text:
+                            reply = content_block.text
+                            break
+                    if reply:
+                        break
+        if not reply:
+            reply = "Hmm, I'm not sure about that. Can you try asking in a different way?"
 
         # Log the Q&A to Supabase
         log_qa(user_id, user_name, question, reply)
@@ -503,14 +540,16 @@ Example: ["🦴 Did T-Rex eat other dinosaurs?", "🥚 How big were dino eggs?",
         except Exception:
             follow_ups = []
 
-        return jsonify({
+        result = {
             'answer': reply,
             'user_id': user_id,
             'should_generate_image': should_image,
             'question_for_image': question if should_image else None,
             'answer_for_image': reply if should_image else None,
             'follow_ups': follow_ups
-        })
+        }
+        set_cached_answer(question, result)
+        return jsonify(result)
 
     except Exception as e:
         print(f"[ASK] Error type: {type(e).__name__}, MRO: {[c.__name__ for c in type(e).__mro__]}")

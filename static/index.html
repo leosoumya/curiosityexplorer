@@ -2073,6 +2073,15 @@
                 padding: 20px 15px !important;
                 min-height: 100px !important;
             }
+
+            /* Stack image below text on mobile */
+            .bubble-with-image {
+                grid-template-columns: 1fr !important;
+            }
+
+            .bubble-with-image .bubble-image img {
+                max-height: 260px !important;
+            }
         }
 
         /* Ensure touch targets are at least 44px (accessibility) */
