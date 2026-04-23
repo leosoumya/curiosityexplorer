@@ -384,20 +384,30 @@ Return ONLY the URL, nothing else. If you cannot find a suitable image, return N
 
 def clean_text_for_speech(text):
     """Clean text for TTS - remove URLs, emojis, markdown links."""
-    # Convert [text](url) to just text
-    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
-    # Remove HTML links, keep text
-    text = re.sub(r'<a[^>]*>([^<]*)</a>', r'\1', text, flags=re.IGNORECASE)
+    # Drop "more info"-style tails entirely (before markdown strip so URLs go too)
+    text = re.sub(
+        r'(?:\*\*)?(?:Learn more|Read more|More info|More information|Source|Sources|Reference|References|Check out|See also|Find out more)(?:\*\*)?\s*[:\-—].*$',
+        '',
+        text,
+        flags=re.IGNORECASE | re.MULTILINE,
+    )
+    # Remove markdown links entirely (text + url) — never read link text aloud
+    text = re.sub(r'\[[^\]]*\]\([^)]*\)', '', text)
+    # Remove HTML anchor tags entirely
+    text = re.sub(r'<a\b[^>]*>.*?</a>', '', text, flags=re.IGNORECASE | re.DOTALL)
     # Remove plain URLs
-    text = re.sub(r'https?://[^\s\])]+', '', text)
+    text = re.sub(r'https?://\S+', '', text)
     # Remove www links
-    text = re.sub(r'www\.[^\s\])]+', '', text)
+    text = re.sub(r'www\.\S+', '', text)
+    # Remove bare domains (common TLDs)
+    text = re.sub(r'\b[a-z0-9-]+\.(?:com|org|net|edu|gov|io|co|uk|info)(?:/\S*)?', '', text, flags=re.IGNORECASE)
     # Remove citation numbers like [1]
     text = re.sub(r'\[\d+\]', '', text)
-    # Remove "Source:" lines
-    text = re.sub(r'Source:.*$', '', text, flags=re.MULTILINE)
-    # Remove "Learn more:" lines
-    text = re.sub(r'Learn more:.*$', '', text, flags=re.MULTILINE)
+    # Strip leftover empty brackets/parens
+    text = re.sub(r'\(\s*\)', '', text)
+    text = re.sub(r'\[\s*\]', '', text)
+    # Remove leftover markdown bold markers
+    text = text.replace('**', '')
     # Remove emojis (common emoji ranges)
     text = re.sub(r'[\U0001F300-\U0001F9FF]|[\u2600-\u26FF]|[\u2700-\u27BF]', '', text)
     # Clean up extra spaces
