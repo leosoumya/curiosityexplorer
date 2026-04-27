@@ -764,6 +764,16 @@
             justify-content: center;
         }
 
+        .prompt-chips-label {
+            flex-basis: 100%;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            color: #7f8c8d;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
         .prompt-chip {
             background: white;
             border: 3px solid #4ecdc4;
@@ -5089,6 +5099,8 @@
             // Track total questions asked
             const totalQ = parseInt(localStorage.getItem('totalQuestionsAsked') || '0') + 1;
             localStorage.setItem('totalQuestionsAsked', totalQ);
+            // Mark first-visit as consumed so magic chips only show once
+            localStorage.setItem('hasUsedAskMeAnything', '1');
 
             // Add thinking indicator
             addChatMessage('Hmm, let me think... 🤔', 'thinking');
@@ -5180,27 +5192,39 @@
             populatePromptChips();
         }
 
-        // Populate question prompt chips with random suggestions
+        // Curated "magic" questions — hand-picked for first impression (paired with pre-cached answer + image on backend)
+        const MAGIC_CHIPS = [
+            '🦖 How big was a T-Rex?',
+            '🐋 How big is a blue whale?',
+            '🚀 How fast does a rocket go?',
+            '🌋 What\'s inside a volcano?',
+            '⚡ What makes lightning?',
+        ];
+
+        const REGULAR_CHIPS = [
+            '🦕 Why did dinosaurs disappear?',
+            '🌙 How does the moon glow?',
+            '🐠 Can fish sleep?',
+            '🌈 Why is the sky blue?',
+            '⭐ What are stars made of?',
+            '🐘 Why are elephants so big?',
+            '🌋 How do volcanoes erupt?',
+            '🦈 Do sharks ever stop swimming?',
+            '🐧 Why can\'t penguins fly?',
+            '🌊 Why is the ocean salty?',
+        ];
+
+        // Populate question prompt chips — magic set on first visit, regular pool after
         function populatePromptChips() {
-            const allChips = [
-                '🦕 Why did dinosaurs disappear?',
-                '🌙 How does the moon glow?',
-                '🐠 Can fish sleep?',
-                '🌈 Why is the sky blue?',
-                '⭐ What are stars made of?',
-                '🐘 Why are elephants so big?',
-                '🌋 How do volcanoes erupt?',
-                '🦈 Do sharks ever stop swimming?',
-                '🚀 How fast do rockets go?',
-                '🐧 Why can\'t penguins fly?',
-                '🌊 Why is the ocean salty?',
-                '⚡ What makes lightning?',
-            ];
-            const shuffled = allChips.sort(() => Math.random() - 0.5);
-            const picked = shuffled.slice(0, 3);
             const container = document.getElementById('promptChips');
             if (!container) return;
-            container.innerHTML = picked.map(text =>
+            const isFirstVisit = !localStorage.getItem('hasUsedAskMeAnything');
+            const pool = isFirstVisit ? MAGIC_CHIPS : REGULAR_CHIPS;
+            const picked = [...pool].sort(() => Math.random() - 0.5).slice(0, 3);
+            const labelHtml = isFirstVisit
+                ? '<div class="prompt-chips-label">Try one of these ✨</div>'
+                : '';
+            container.innerHTML = labelHtml + picked.map(text =>
                 `<button class="prompt-chip" onclick="usePromptChip(this)">${text}</button>`
             ).join('');
         }

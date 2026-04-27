@@ -54,6 +54,64 @@ _answer_cache = {}
 _CACHE_TTL = 3600  # 1 hour
 _CACHE_MAX_SIZE = 200
 
+# Hand-curated "magic" questions surfaced to first-visit users.
+# Pre-baked answer + follow-ups + Wikipedia search term so first tap returns in <500ms
+# instead of waiting on LLM + classification + image-search round-trips.
+MAGIC_QUESTIONS = {
+    "how big was a t-rex?": {
+        "answer": "Wow, T-Rex was as long as a school bus — about 40 feet! It weighed more than a big truck, around 8 tons. Its teeth were as long as bananas! 🦖",
+        "follow_ups": [
+            "🦴 Did T-Rex eat other dinosaurs?",
+            "🥚 How big were T-Rex eggs?",
+            "☄️ What killed the dinosaurs?",
+        ],
+        "image_term": "Tyrannosaurus rex",
+    },
+    "how big is a blue whale?": {
+        "answer": "Blue whales are the biggest animals EVER — bigger than any dinosaur! Their heart alone is as big as a small car. A baby blue whale grows 200 pounds every day! 🐋",
+        "follow_ups": [
+            "🌊 How deep can whales dive?",
+            "🦐 What do blue whales eat?",
+            "🎵 Can whales sing songs?",
+        ],
+        "image_term": "Blue whale",
+    },
+    "how fast does a rocket go?": {
+        "answer": "Rockets go super fast — about 17,500 miles per hour! That's 100 times faster than a car on the highway. They have to go that fast to escape Earth! 🚀",
+        "follow_ups": [
+            "🌕 How long does it take to reach the moon?",
+            "👨‍🚀 What do astronauts eat in space?",
+            "🛰️ How does a rocket launch work?",
+        ],
+        "image_term": "Rocket launch",
+    },
+    "what's inside a volcano?": {
+        "answer": "Inside a volcano is bubbly hot rock called magma! It's hotter than an oven — over 2,000 degrees. When it bursts out, it's called lava! 🌋",
+        "follow_ups": [
+            "🏔️ What's the biggest volcano on Earth?",
+            "🔥 Why do volcanoes erupt?",
+            "🏝️ Can volcanoes make islands?",
+        ],
+        "image_term": "Volcano eruption",
+    },
+    "what makes lightning?": {
+        "answer": "Lightning happens when clouds rub together and make giant electric sparks! A single bolt is 5 times hotter than the sun. Thunder is the sound of the air exploding! ⚡",
+        "follow_ups": [
+            "⛈️ Why is thunder so loud?",
+            "🌧️ What makes rain fall?",
+            "🌀 How do tornadoes form?",
+        ],
+        "image_term": "Lightning",
+    },
+}
+
+
+def get_magic_answer(question):
+    """Return pre-baked answer payload if question matches a curated magic question."""
+    if not question:
+        return None
+    return MAGIC_QUESTIONS.get(question.strip().lower())
+
 def get_cached_answer(question):
     key = question.strip().lower()
     entry = _answer_cache.get(key)
@@ -468,6 +526,19 @@ def ask():
     if not question:
         return jsonify({'error': 'No question provided'}), 400
 
+    # Curated magic questions short-circuit the LLM call — instant first-tap experience.
+    magic = get_magic_answer(question)
+    if magic:
+        log_qa(user_id, user_name, question, magic['answer'])
+        return jsonify({
+            'answer': magic['answer'],
+            'user_id': user_id,
+            'should_generate_image': True,
+            'question_for_image': question,
+            'answer_for_image': magic['answer'],
+            'follow_ups': magic['follow_ups'],
+        })
+
     # Return cached answer for identical questions (ignores chat history for cache key)
     cached = get_cached_answer(question)
     if cached:
@@ -876,9 +947,15 @@ def generate_image():
         return jsonify({'error': 'API key not configured'}), 500
 
     try:
-        # Classify whether this needs a real photo or AI illustration
-        image_type, search_term = classify_image_type(question, answer)
-        print(f"[IMAGE] Classified '{question}' as {image_type}, term='{search_term}'")
+        # Magic questions skip classification — use curated Wikipedia search term directly.
+        magic = get_magic_answer(question)
+        if magic:
+            image_type, search_term = 'real', magic['image_term']
+            print(f"[IMAGE] Magic question '{question}' → term='{search_term}'")
+        else:
+            # Classify whether this needs a real photo or AI illustration
+            image_type, search_term = classify_image_type(question, answer)
+            print(f"[IMAGE] Classified '{question}' as {image_type}, term='{search_term}'")
 
         # Try Wikipedia/web only for REAL classification
         if image_type == 'real' and search_term:
